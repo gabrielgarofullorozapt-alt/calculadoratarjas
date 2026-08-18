@@ -1,0 +1,929 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="download_date" content="2026-08-17T21:13:46.703Z"/>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRODUTOS TARJAS</title>
+  <style>body {
+  background-color: #000;
+  color: #fc6500;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  color: #fc6500;
+  text-shadow: none;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tabela-container {
+  overflow-x: auto;
+  margin: 20px auto;
+  width: calc(100% - 40px);
+  box-sizing: border-box;
+}
+
+.logo{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  text-align: center;
+  gap: 4px;
+}
+h1{
+  margin: 0;
+  color: #fc6500;
+  text-align: center;
+  text-shadow: none;
+  font-weight: 700;
+}
+.logo img{
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+  table-layout: fixed;
+  margin: 0 auto;
+}
+
+th:nth-child(1), td:nth-child(1) { width: 20%; }
+th:nth-child(2), td:nth-child(2) { width: 16%; }
+th:nth-child(3), td:nth-child(3) { width: 16%; }
+th:nth-child(4), td:nth-child(4) { width: 16%; }
+th:nth-child(5), td:nth-child(5) { width: 16%; }
+th:nth-child(6), td:nth-child(6) { width: 16%; }
+
+input {
+  width: 70px;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+
+
+ 
+
+h3 {
+  margin: 0;
+  margin-top: 10px;
+  color: #fc6500;
+  text-shadow: none;
+}
+
+th,
+td {
+  border: 1px solid #fc6500;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+th {
+  color: #fc6500;
+  font-weight: bold;
+}
+
+th:first-child, td:first-child {
+  font-weight: bold;
+  white-space: nowrap;
+  text-align: center;
+}
+
+input {
+  width: 60px;
+  text-align: center;
+}
+
+p {
+  margin: 0;
+  text-shadow: none;
+}
+
+#totais {
+  margin: 5px;
+  text-align: center;
+  color: #fc6500;
+  font-size: 25px;
+  text-shadow: none;
+}
+
+header {
+  color: #fc6500;
+  text-shadow: none;
+}
+
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #111;
+  color: #fc6500;
+}
+
+
+.dados-retorno {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.dados-retorno .dados-head {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.dados-retorno .dados-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+footer p {
+  color: #fc6500;
+  text-shadow: none;
+}
+
+.botoes-pedido {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#tipo-pagamento {
+  border: 2px solid #fc6500;
+  background: #111;
+  color: #fc6500;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 11px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#tipo-pagamento:hover {
+  background: #fc6500;
+  color: #000;
+}
+
+#finalizar-pedido {
+  border: 2px solid #fc6500;
+  background: #fc6500;
+  color: #000;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 11px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#finalizar-pedido:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+#pagamento-menu {
+  display: none;
+  position: absolute;
+  z-index: 10000;
+  background: #111;
+  border: 2px solid #fc6500;
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 0 20px rgba(252,101,0,.3);
+}
+
+#pagamento-menu button {
+  display: block;
+  width: 210px;
+  margin: 4px 0;
+  padding: 9px;
+  border: 1px solid #fc6500;
+  border-radius: 7px;
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#pagamento-menu button:hover {
+  background: #fc6500;
+  color: #000;
+}
+
+#totais {
+  margin-top: 14px;
+}
+
+#totais p {
+  margin: 5px 0;
+  font-size: 20px;
+  color: #fc6500;
+}
+/* Modal de confirmação do pedido */
+#pedido-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.78);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#pedido-modal .modal-caixa {
+  width: min(650px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #111;
+  border: 2px solid #fc6500;
+  border-radius: 16px;
+  box-shadow: 0 0 30px rgba(252, 101, 0, 0.25);
+  padding: 30px;
+  box-sizing: border-box;
+  text-align: center;
+}
+#pedido-modal h2 {
+  font-size: 27px;
+  margin-bottom: 22px;
+}
+#pedido-itens {
+  max-height: 48vh;
+  overflow-y: auto;
+  padding: 0 4px;
+}
+.item-pedido {
+  align-items: center;
+  padding: 12px 4px;
+  line-height: 1.4;
+}
+.resumo-vendedor {
+  background:#181818;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  line-height:1.7;
+}
+.comissao-box {
+  background:#181818;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:16px;
+  margin-top:18px;
+  line-height:1.6;
+}
+.comissao-box p { margin:9px 0; }
+.pix-box {
+  margin-top:16px;
+  padding:14px 16px;
+  border:2px solid #fc6500;
+  border-radius:10px;
+  background:#090909;
+  color:#fff;
+}
+.pix-box .pix-label {
+  color:#fc6500;
+  font-weight:bold;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.pix-box .pix-value {
+  margin-top:5px;
+  font-size:20px;
+  font-weight:bold;
+  color:#fff;
+  word-break:break-word;
+}
+#fechar-pedido {
+  margin-top:20px;
+  min-width:130px;
+}
+
+#pedido-modal h2 {
+  margin: 0 0 16px;
+  color: #fc6500;
+}
+
+#pedido-itens {
+  text-align: left;
+  margin: 0 0 18px;
+}
+
+.item-pedido {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  border-bottom: 1px solid #333;
+  padding: 9px 0;
+  color: #fff;
+}
+
+.item-pedido .item-qtd {
+  color: #fc6500;
+  font-weight: bold;
+}
+
+#pedido-modal .modal-total {
+  color: #fc6500;
+  font-size: 25px;
+  font-weight: bold;
+  margin: 16px 0;
+}
+
+#fechar-pedido {
+  border: none;
+  background: #fc6500;
+  color: #000;
+  font-size: 17px;
+  font-weight: bold;
+  padding: 10px 24px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+#fechar-pedido:hover {
+  filter: brightness(1.12);
+}
+
+.categoria-linha {
+  background: #111;
+  border-top: 2px solid #fc6500;
+  border-bottom: 2px solid #fc6500;
+}
+.categoria-linha td {
+  width: auto !important;
+  box-sizing: border-box;
+}
+.categoria-linha td {
+  color: #fc6500;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px;
+  text-shadow: none;
+}
+
+
+#cadastro-modal {
+  display:flex; position:fixed; inset:0; z-index:20000;
+  background:rgba(0,0,0,.88); justify-content:center; align-items:center;
+  padding:20px; box-sizing:border-box;
+}
+#cadastro-modal .cadastro-caixa {
+  width:min(460px,95vw); background:#111; border:2px solid #fc6500;
+  border-radius:14px; padding:24px; box-sizing:border-box; text-align:center;
+  box-shadow:0 0 30px rgba(252,101,0,.25);
+}
+#cadastro-modal h2 { color:#fc6500; margin-top:0; }
+.cadastro-campo { text-align:left; margin:12px 0; }
+.cadastro-campo label { display:block; color:#fc6500; font-weight:bold; margin-bottom:6px; }
+.cadastro-campo input {
+  width:100%; padding:11px; border:1px solid #fc6500; border-radius:8px;
+  background:#000; color:#fff; box-sizing:border-box;
+}
+#salvar-cadastro, #limpar-itens {
+  border:2px solid #fc6500; background:#fc6500; color:#000;
+  font-weight:bold; padding:11px 20px; border-radius:9px; cursor:pointer;
+}
+#limpar-itens { background:#111; color:#fc6500; }
+#limpar-itens:hover { background:#fc6500; color:#000; }
+.quantidade-controle { display:flex; align-items:center; justify-content:center; gap:5px; }
+.quantidade-controle button {
+  width:30px; height:30px; border:1px solid #fc6500; border-radius:7px;
+  background:#111; color:#fc6500; font-weight:bold; cursor:pointer;
+}
+.quantidade-controle input { width:58px; }
+.resumo-vendedor {
+  color:#fff; border-bottom:1px solid #333; padding-bottom:12px; margin-bottom:12px;
+}
+.resumo-vendedor strong { color:#fc6500; }
+.comissao-box {
+  border-top:1px solid #333; margin-top:14px; padding-top:14px; color:#fff;
+}
+.comissao-box p { margin:7px 0; }
+.comissao-box .destaque { color:#fc6500; font-size:21px; font-weight:bold; }
+
+
+/* Menu de tipo de pagamento */
+.botoes-pedido > div:first-child { position: relative; }
+#pagamento-menu {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 230px;
+}
+#pagamento-menu button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+/* Resumo compacto para captura de tela */
+#pedido-modal .modal-caixa {
+  width: min(560px, 88vw);
+  max-height: 78vh;
+  padding: 18px 20px;
+  border-radius: 14px;
+}
+#pedido-modal h2 {
+  font-size: 23px;
+  margin: 4px 0 14px;
+}
+#pedido-itens {
+  max-height: none;
+  overflow: visible;
+  padding: 0 2px;
+}
+#pedido-itens .resumo-vendedor {
+  padding: 9px 12px;
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+#pedido-itens .item-pedido {
+  padding: 7px 2px;
+  line-height: 1.25;
+}
+#pedido-itens .comissao-box {
+  padding: 10px 12px;
+  margin-top: 10px;
+  line-height: 1.35;
+}
+#pedido-itens .comissao-box p {
+  margin: 5px 0;
+}
+#pedido-itens .comissao-box .destaque {
+  font-size: 18px;
+}
+#pedido-itens .pix-box {
+  margin-top: 9px;
+  padding: 9px 12px;
+}
+#pedido-itens .pix-box .pix-value {
+  font-size: 17px;
+}
+#pedido-total {
+  margin: 10px 0 2px;
+  line-height: 1.2;
+}
+#fechar-pedido {
+  margin-top: 12px;
+  padding: 9px 24px;
+}
+
+
+/* Resumo sem barra interna: compacta automaticamente quando há muitos itens */
+#pedido-modal .modal-caixa {
+  max-height: 94vh;
+  overflow: visible;
+}
+#pedido-itens .item-pedido {
+  min-height: 28px;
+  box-sizing: border-box;
+}
+#pedido-itens.muitos-itens {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+  align-items: start;
+}
+#pedido-itens.muitos-itens .resumo-vendedor,
+#pedido-itens.muitos-itens .comissao-box {
+  grid-column: 1 / -1;
+}
+#pedido-itens.muitos-itens .item-pedido {
+  padding: 5px 2px;
+  font-size: 14px;
+}
+#pedido-itens.muitos-itens .item-qtd {
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  #pedido-itens.muitos-itens {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="https://cdn.discordapp.com/attachments/1341224116350484560/1539028728749756446/ChatGPT_Image_17_de_ago._de_2026_18_48_53.png?ex=6a84d3b2&is=6a838232&hm=a998e26efb386a2c2655dd2194ebd65b2041690baa4f840e301050d8d2b8325f&"
+      <h1 style="color:#fc6500;
+  text-shadow: none;">TARJAS</h1>
+      <p style="color:#fc6500;
+  text-shadow: none;">Bem vindo (a) a calculadora dos TARJAS! — CATÁLOGO DO JOGO</p>
+    </div>
+   
+  </header>
+
+  <main>
+    <div class="tabela-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Limpo (R$)</th>
+            <th>Sujo (R$)</th>
+            <th>Limpo Parceiro (R$)</th>
+            <th>Sujo Parceiro (R$)</th>
+            <th>Quantidade</th>
+          </tr>
+        </thead>
+        <tbody id="produtos"></tbody>
+      </table>
+    </div>
+
+    <div class="dados-retorno">
+      <div class="dados-body">
+        <div class="botoes-pedido">
+          <div style="position:relative;">
+            <button id="tipo-pagamento" type="button">Pagamento: Limpo ▾</button>
+            <div id="pagamento-menu">
+              <button type="button" data-pagamento="limpo">Limpo</button>
+              <button type="button" data-pagamento="sujo">Sujo</button>
+              <button type="button" data-pagamento="limpoParceiro">Limpo Parceiro</button>
+              <button type="button" data-pagamento="sujoParceiro">Sujo Parceiro</button>
+            </div>
+          </div>
+          <button id="limpar-itens" type="button">Limpar Itens</button>
+<button id="finalizar-pedido" type="button">Finalizar Pedido</button>
+        </div>
+        <div id="totais" aria-live="polite"></div>
+      </div>
+
+    </div>
+
+
+  </main>
+
+  <footer>
+
+  </footer>
+
+  <script>const produtos = [
+  { nome: "Five Seven", categoria: "PISTOLAS", limpo: 60000, sujo: 81000, limpoParceiro: 55000, sujoParceiro: 74250 },
+  { nome: "HK", categoria: "PISTOLAS", limpo: 30000, sujo: 40500, limpoParceiro: 25000, sujoParceiro: 33750 },
+  { nome: "Glock Rajada", categoria: "PISTOLAS", limpo: 120000, sujo: 162000, limpoParceiro: 100000, sujoParceiro: 135000 },
+  { nome: "G36", categoria: "FUZIS", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
+  { nome: "AK-74", categoria: "FUZIS", limpo: 260000, sujo: 351000, limpoParceiro: 240000, sujoParceiro: 324000 },
+  { nome: "SCAR L", categoria: "FUZIS", limpo: 350000, sujo: 472500, limpoParceiro: 300000, sujoParceiro: 405000 },
+  { nome: "AK COMPACT", categoria: "FUZIS", limpo: 210000, sujo: 283500, limpoParceiro: 190000, sujoParceiro: 256500 },
+  { nome: "MTAR 21", categoria: "SUB METRALHADORAS", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
+  { nome: "Tec-9", categoria: "SUB METRALHADORAS", limpo: 110000, sujo: 148500, limpoParceiro: 90000, sujoParceiro: 121500 },
+  { nome: "UZI", categoria: "SUB METRALHADORAS", limpo: 140000, sujo: 189000, limpoParceiro: 120000, sujoParceiro: 162000 },
+  { nome: "Thompson", categoria: "SUB METRALHADORAS", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
+  { nome: "DOZE", categoria: "SHOTGUN", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
+  { nome: "Lean", categoria: "DROGAS", limpo: 250, sujo: 338, limpoParceiro: 200, sujoParceiro: 270 },
+];
+
+const porcentagemVendedor = 0.10 //10%
+
+let tipoPagamentoSelecionado = "limpo";
+
+const nomesPagamento = {
+  limpo: "Limpo",
+  sujo: "Sujo",
+  limpoParceiro: "Limpo Parceiro",
+  sujoParceiro: "Sujo Parceiro"
+};
+
+const tbody = document.getElementById('produtos');
+// const totalLimpo = document.getElementById('total-limpo');
+// const totalSujo = document.getElementById('total-sujo');
+// const totalLimpoParceiro = document.getElementById('total-limpo-parceiro');
+// const totalSujoParceiro = document.getElementById('total-sujo-parceiro');
+
+// Preencher a tabela com produtos agrupados por categoria
+let categoriaAtual = "";
+
+produtos.forEach((produto, index) => {
+  if (produto.categoria !== categoriaAtual) {
+    categoriaAtual = produto.categoria;
+
+    const categoriaTr = document.createElement('tr');
+    categoriaTr.className = 'categoria-linha';
+    categoriaTr.innerHTML = `
+      <td colspan="6">${produto.categoria}</td>
+    `;
+    tbody.appendChild(categoriaTr);
+  }
+
+  const tr = document.createElement('tr');
+  tr.dataset.produtoIndex = index;
+  tr.innerHTML = `
+    <td>${produto.nome}</td>
+    <td class="limpo">R$ ${(produto.limpo * 0).toLocaleString('pt-BR')}</td>
+    <td class="sujo">R$ ${(produto.sujo * 0).toLocaleString('pt-BR')}</td>
+    <td class="limpo-parceiro">R$ ${(produto.limpoParceiro * 0).toLocaleString('pt-BR')}</td>
+    <td class="sujo-parceiro">R$ ${(produto.sujoParceiro * 0).toLocaleString('pt-BR')}</td>
+    <td>
+      <div class="quantidade-controle">
+        <button type="button" onclick="alterarQuantidade(${index}, -1)">−</button>
+        <input type="number" min="0" value="0" onchange="atualizaValor(${index}, this.value)">
+        <button type="button" onclick="alterarQuantidade(${index}, 1)">+</button>
+      </div>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// Atualizar os valores exibidos em cada linha.
+function atualizaValor(index, qtd) {
+  const produto = produtos[index];
+  const tr = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+  const quantidade = Math.max(0, Number(qtd) || 0);
+
+  const limpo = produto.limpo * quantidade;
+  const sujo = produto.sujo * quantidade;
+  const limpoParceiro = produto.limpoParceiro * quantidade;
+  const sujoParceiro = produto.sujoParceiro * quantidade;
+
+  tr.querySelector('.limpo').textContent = `R$ ${limpo.toLocaleString('pt-BR')}`;
+  tr.querySelector('.sujo').textContent = `R$ ${sujo.toLocaleString('pt-BR')}`;
+  tr.querySelector('.limpo-parceiro').textContent = `R$ ${limpoParceiro.toLocaleString('pt-BR')}`;
+  tr.querySelector('.sujo-parceiro').textContent = `R$ ${sujoParceiro.toLocaleString('pt-BR')}`;
+}
+
+function formatBrl(value) {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}
+
+// Finaliza o pedido e mostra o total calculado conforme as quantidades.
+// Como o seletor de pagamento foi removido, o total principal usa o valor "Limpo".
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+  }[ch]));
+}
+
+function finalizarPedido() {
+  let total = 0;
+  let quantidadeTotal = 0;
+  const itens = [];
+
+  produtos.forEach((produto, index) => {
+    const linhaProduto = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+    const input = linhaProduto.querySelector('input[type="number"]');
+    const qtd = Math.max(0, Number(input.value) || 0);
+
+    if (qtd > 0) {
+      const preco = Number(produto[tipoPagamentoSelecionado]) || 0;
+      const subtotal = preco * qtd;
+      total += subtotal;
+      quantidadeTotal += qtd;
+
+      itens.push({
+        nome: produto.nome,
+        quantidade: qtd,
+        subtotal: subtotal
+      });
+    }
+  });
+
+  if (quantidadeTotal === 0) {
+    alert("Adicione pelo menos um item ao pedido antes de finalizar.");
+    document.querySelector("#totais").innerHTML =
+      "<p>Nenhum produto foi selecionado.</p>";
+    return;
+  }
+
+  const comissao = total * porcentagemVendedor;
+  const repasse = total - comissao;
+
+  const resumoItens = document.querySelector("#pedido-itens");
+  resumoItens.classList.toggle("muitos-itens", itens.length >= 7);
+
+  document.querySelector("#pedido-itens").innerHTML = `
+    <div class="resumo-vendedor">
+      <div><strong>Vendedor:</strong> ${escapeHtml(dadosVendedor.nome)}</div>
+      <div><strong>Passaporte / ID:</strong> ${escapeHtml(dadosVendedor.id)}</div>
+    </div>
+
+    ${itens.map(item => `
+      <div class="item-pedido">
+        <span>${escapeHtml(item.nome)}</span>
+        <span class="item-qtd">${item.quantidade}x — ${formatBrl(item.subtotal)}</span>
+      </div>
+    `).join("")}
+
+    <div class="comissao-box">
+      <p><strong>Valor total do pedido:</strong> ${formatBrl(total)}</p>
+      <p><strong>Comissão do vendedor (10%):</strong> ${formatBrl(comissao)}</p>
+      <p class="destaque"><strong>Valor a repassar:</strong> ${formatBrl(repasse)}</p>
+      <p style="font-size:13px;color:#aaa;">
+        Chave PIX : <strong> ( 5688 ) GABRIEL CRUZ </strong>
+      </p>
+    </div>
+  `;
+
+  document.querySelector("#pedido-total").innerHTML =
+    `Pedido concluído<br><span style="font-size:18px;color:#fff;">Valor total: ${formatBrl(total)}</span>`;
+
+  document.querySelector("#pedido-modal").style.display = "flex";
+  document.querySelector("#totais").innerHTML =
+    `<p>Valor total do pedido: ${formatBrl(total)}</p>`;
+}
+
+function fecharModalPedido() {
+  document.querySelector("#pedido-modal").style.display = "none";
+}
+
+
+
+</script>
+
+
+
+
+  <!-- Janela que aparece ao finalizar o pedido -->
+  <div id="pedido-modal">
+    <div class="modal-caixa">
+      <h2>Resumo do Pedido</h2>
+      <div id="pedido-itens"></div>
+      <div class="modal-total" id="pedido-total"></div>
+      <button id="fechar-pedido" type="button">Fechar</button>
+    </div>
+  </div>
+
+<div id="cadastro-modal">
+  <div class="cadastro-caixa">
+    <h2>Cadastro do Vendedor</h2>
+    <p style="color:#fff;">Preencha seus dados antes de iniciar o pedido.</p>
+    <div class="cadastro-campo">
+      <label for="cadastro-nome">Nome</label>
+      <input id="cadastro-nome" type="text" autocomplete="name" placeholder="Nome do vendedor">
+    </div>
+    <div class="cadastro-campo">
+      <label for="cadastro-id">Passaporte / ID</label>
+      <input id="cadastro-id" type="text" placeholder="Passaporte ou identificação">
+    </div>
+    <button id="salvar-cadastro" type="button">Entrar na Calculadora</button>
+  </div>
+</div>
+
+
+
+
+<script>
+let dadosVendedor = { nome: "", id: "" };
+
+const cadastroModal = document.getElementById("cadastro-modal");
+const salvarCadastro = document.getElementById("salvar-cadastro");
+const nomeCadastro = document.getElementById("cadastro-nome");
+const idCadastro = document.getElementById("cadastro-id");
+
+salvarCadastro.addEventListener("click", () => {
+  const nome = nomeCadastro.value.trim();
+  const id = idCadastro.value.trim();
+
+  if (!nome || !id) {
+    alert("Preencha o Nome e o Passaporte / ID.");
+    return;
+  }
+
+  dadosVendedor = { nome, id };
+  cadastroModal.style.display = "none";
+});
+
+function alterarQuantidade(index, delta) {
+  const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+  if (!linha) return;
+
+  const input = linha.querySelector('input[type="number"]');
+  const atual = Math.max(0, Number(input.value) || 0);
+  const nova = Math.max(0, atual + delta);
+
+  input.value = nova;
+  atualizaValor(index, nova);
+}
+
+document.getElementById("limpar-itens").addEventListener("click", () => {
+  let tinhaItens = false;
+
+  produtos.forEach((produto, index) => {
+    const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+    const input = linha.querySelector('input[type="number"]');
+
+    if (Number(input.value) > 0) tinhaItens = true;
+
+    input.value = 0;
+    atualizaValor(index, 0);
+  });
+
+  document.querySelector("#totais").innerHTML =
+    tinhaItens
+      ? "<p>Todos os itens foram limpos.</p>"
+      : "<p>A tabela já estava zerada.</p>";
+});
+
+/* Tipo de pagamento */
+const botaoPagamento = document.getElementById("tipo-pagamento");
+const menuPagamento = document.getElementById("pagamento-menu");
+
+function fecharMenuPagamento() {
+  menuPagamento.style.display = "none";
+}
+
+botaoPagamento.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  menuPagamento.style.display =
+    menuPagamento.style.display === "block" ? "none" : "block";
+});
+
+menuPagamento.querySelectorAll("button[data-pagamento]").forEach((botao) => {
+  botao.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const tipo = botao.dataset.pagamento;
+
+    if (!nomesPagamento[tipo]) return;
+
+    tipoPagamentoSelecionado = tipo;
+    botaoPagamento.textContent =
+      `Pagamento: ${nomesPagamento[tipo]} ▾`;
+
+    fecharMenuPagamento();
+
+    produtos.forEach((produto, index) => {
+      const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+      if (!linha) return;
+
+      const input = linha.querySelector('input[type="number"]');
+      atualizaValor(index, input.value);
+    });
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (!menuPagamento.contains(e.target) && e.target !== botaoPagamento) {
+    fecharMenuPagamento();
+  }
+});
+
+/* Finalizar pedido */
+document.getElementById("finalizar-pedido").addEventListener("click", finalizarPedido);
+
+/* Fechar resumo com confirmação */
+const pedidoModal = document.getElementById("pedido-modal");
+const fecharPedido = document.getElementById("fechar-pedido");
+
+function tentarFecharResumo() {
+  const confirmar = confirm("Tem certeza que deseja fechar o resumo do pedido?");
+
+  if (confirmar) {
+    pedidoModal.style.display = "none";
+  }
+}
+
+fecharPedido.addEventListener("click", (e) => {
+  e.preventDefault();
+  tentarFecharResumo();
+});
+
+pedidoModal.addEventListener("click", (e) => {
+  if (e.target === pedidoModal) {
+    tentarFecharResumo();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && pedidoModal.style.display === "flex") {
+    tentarFecharResumo();
+  }
+});
+</script>
+
+</body>
