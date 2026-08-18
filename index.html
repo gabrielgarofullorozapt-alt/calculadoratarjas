@@ -798,6 +798,35 @@ footer p {
   color:#aaa;
   padding:12px;
 }
+
+.encomenda-acoes {
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.encomenda-acao {
+  border:1px solid #fc6500;
+  background:#111;
+  color:#fc6500;
+  border-radius:8px;
+  padding:8px 13px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.encomenda-acao:hover {
+  background:#fc6500;
+  color:#000;
+}
+.encomenda-acao.concluir {
+  background:#fc6500;
+  color:#000;
+}
+.encomenda-acao.concluir:hover {
+  filter:brightness(1.12);
+}
+
 @media (max-width:600px) {
   .encomenda-produto-cab,
   .encomenda-produto-linha {
@@ -993,7 +1022,7 @@ function carregarEstoque() {
     const salvo = JSON.parse(localStorage.getItem(CHAVE_ESTOQUE) || "{}");
     return produtos.reduce((obj, produto) => {
       const valor = Number(salvo[produto.nome]);
-      obj[produto.nome] = Number.isFinite(valor) && valor >= 0 ? Math.floor(valor) : 0;
+      obj[produto.nome] = Number.isFinite(valor) ? Math.floor(valor) : 0;
       return obj;
     }, {});
   } catch (_) {
@@ -1038,7 +1067,7 @@ function fecharEstoque() {
 function salvarEstoqueFormulario() {
   document.querySelectorAll("[data-estoque-produto]").forEach(input => {
     const nome = input.dataset.estoqueProduto;
-    estoque[nome] = Math.max(0, Math.floor(Number(input.value) || 0));
+    estoque[nome] = Math.floor(Number(input.value) || 0);
   });
   salvarEstoque();
   fecharEstoque();
@@ -1323,7 +1352,7 @@ document.addEventListener("keydown", (e) => {
       <button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button>
     </div>
     <h2>Estoque</h2>
-    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Ao finalizar um pedido, a quantidade vendida será descontada automaticamente.</p>
+    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Encomendas não exigem estoque e a quantidade só é descontada quando a entrega for concluída.</p>
     <div id="estoque-lista" class="estoque-lista"></div>
     <button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button>
   </div>
@@ -1394,6 +1423,107 @@ document.addEventListener("keydown", (e) => {
     </div>
 
     <button id="salvar-encomenda" class="gestao-salvar" type="button">Salvar Encomenda</button>
+    <button id="cancelar-edicao-encomenda" class="gestao-salvar" type="button" style="display:none;background:#111;color:#fc6500;">Cancelar Edição</button>
+    <div id="encomendas-lista" class="encomendas-lista"></div>
+  </div>
+</div>
+
+<!-- Entregas -->
+<div id="entregas-hoje-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo" style="align-items:center;justify-content:space-between;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label for="entregas-data-busca" style="color:#fc6500;font-weight:bold;font-size:14px;">Buscar dia:</label>
+        <input id="entregas-data-busca" type="date"
+          style="padding:7px 9px;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff;">
+      </div>
+      <button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button>
+    </div>
+    <h2 id="titulo-entregas-data">ENTREGAS DE HOJE</h2>
+    <p class="estoque-aviso">Selecione uma data no canto superior para ver as entregas daquele dia.</p>
+    <div id="entregas-hoje-lista" class="encomendas-lista"></div>
+  </div>
+</div>
+
+<!-- Gestão de estoque -->
+<div id="estoque-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button>
+    </div>
+    <h2>Estoque</h2>
+    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Encomendas não exigem estoque e a quantidade só é descontada quando a entrega for concluída.</p>
+    <div id="estoque-lista" class="estoque-lista"></div>
+    <button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button>
+  </div>
+</div>
+
+<!-- Gestão de encomendas -->
+<div id="encomendas-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharEncomendas()">Fechar</button>
+    </div>
+    <h2>Encomendas</h2>
+
+    <div class="encomenda-vendedor">
+      <div class="encomenda-campo">
+        <label>Vendedor</label>
+        <input id="encomenda-vendedor-nome" type="text" readonly>
+      </div>
+      <div class="encomenda-campo">
+        <label>Passaporte / ID</label>
+        <input id="encomenda-vendedor-id" type="text" readonly>
+      </div>
+    </div>
+
+    <div class="encomenda-campo">
+      <label for="encomenda-cliente">Quem fez a encomenda</label>
+      <input id="encomenda-cliente" type="text" placeholder="Nome do cliente">
+    </div>
+
+    <div class="encomenda-campo">
+      <label for="encomenda-telefone">Número do telefone</label>
+      <input id="encomenda-telefone" type="tel" placeholder="Telefone do cliente">
+    </div>
+
+    <div class="encomenda-pagamento">
+      <select id="encomenda-pagamento">
+        <option value="limpo">Pagamento: Limpo</option>
+        <option value="sujo">Pagamento: Sujo</option>
+        <option value="limpoParceiro">Pagamento: Limpo Parceiro</option>
+        <option value="sujoParceiro">Pagamento: Sujo Parceiro</option>
+      </select>
+    </div>
+
+    <div class="encomenda-produtos">
+      <div class="encomenda-produto-cab">
+        <div>Produto</div>
+        <div style="text-align:center;">Quantidade</div>
+        <div style="text-align:center;">Subtotal</div>
+      </div>
+      <div id="encomenda-produtos-lista"></div>
+    </div>
+
+    <div id="encomenda-calculo" class="encomenda-calculo">
+      <div><strong>Valor total:</strong> R$ 0,00</div>
+      <div><strong>Comissão do vendedor (10%):</strong> R$ 0,00</div>
+      <div class="destaque"><strong>Valor a repassar:</strong> R$ 0,00</div>
+    </div>
+
+    <div class="encomenda-datahora">
+      <div class="encomenda-campo">
+        <label for="encomenda-data">Data da entrega</label>
+        <input id="encomenda-data" type="date">
+      </div>
+      <div class="encomenda-campo">
+        <label for="encomenda-hora">Horário da entrega</label>
+        <input id="encomenda-hora" type="time">
+      </div>
+    </div>
+
+    <button id="salvar-encomenda" class="gestao-salvar" type="button">Salvar Encomenda</button>
+    <button id="cancelar-edicao-encomenda" class="gestao-salvar" type="button" style="display:none;background:#111;color:#fc6500;">Cancelar Edição</button>
     <div id="encomendas-lista" class="encomendas-lista"></div>
   </div>
 </div>
@@ -1407,6 +1537,24 @@ document.addEventListener("keydown", (e) => {
     <h2>ENTREGAS DE HOJE</h2>
     <p class="estoque-aviso">Aqui aparecem somente as encomendas marcadas para a data de hoje.</p>
     <div id="entregas-hoje-lista" class="encomendas-lista"></div>
+  </div>
+</div>
+
+<!-- Entregas de outros dias -->
+<div id="outras-entregas-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharOutrasEntregas()">Fechar</button>
+    </div>
+    <h2>OUTRAS ENTREGAS</h2>
+    <p class="estoque-aviso">Escolha uma data para ver as encomendas agendadas para outros dias.</p>
+
+    <div class="encomenda-campo" style="max-width:360px;margin:0 auto 16px;">
+      <label for="outras-entregas-data">Ver entregas do dia</label>
+      <input id="outras-entregas-data" type="date" style="width:100%;box-sizing:border-box;">
+    </div>
+
+    <div id="outras-entregas-lista" class="encomendas-lista"></div>
   </div>
 </div>
 
@@ -1441,6 +1589,119 @@ function formatarDataEntrega(dataISO) {
   if (!dataISO) return "Não informada";
   const partes = dataISO.split("-");
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataISO;
+}
+
+let encomendaEditandoId = null;
+
+function preencherFormularioEncomenda(encomenda) {
+  document.getElementById("cancelar-edicao-encomenda").style.display = "block";
+  document.getElementById("encomenda-cliente").value = encomenda.cliente || "";
+  document.getElementById("encomenda-telefone").value = encomenda.telefone || "";
+  document.getElementById("encomenda-data").value = encomenda.dataEntrega || hojeISO();
+  document.getElementById("encomenda-hora").value = encomenda.horaEntrega || "";
+  document.getElementById("encomenda-pagamento").value = encomenda.pagamento || "limpo";
+
+  produtos.forEach((produto, index) => {
+    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
+    const item = (encomenda.itens || []).find(i => i.nome === produto.nome);
+    if (input) input.value = item ? Number(item.quantidade) || 0 : 0;
+  });
+
+  atualizarCalculoEncomenda();
+  document.getElementById("salvar-encomenda").textContent = "Salvar Alterações";
+}
+
+function cancelarEdicaoEncomenda() {
+  encomendaEditandoId = null;
+  document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
+  document.getElementById("cancelar-edicao-encomenda").style.display = "none";
+  limparFormularioEncomenda();
+}
+
+function editarEncomenda(id) {
+  const encomenda = encomendas.find(item => item.id === id);
+  if (!encomenda) return;
+
+  encomendaEditandoId = id;
+  document.getElementById("encomenda-vendedor-nome").value = encomenda.vendedor || dadosVendedor.nome || "";
+  document.getElementById("encomenda-vendedor-id").value = encomenda.vendedorId || dadosVendedor.id || "";
+  renderizarProdutosEncomenda();
+  preencherFormularioEncomenda(encomenda);
+  document.getElementById("encomendas-modal").style.display = "flex";
+  document.getElementById("encomenda-cliente").focus();
+}
+
+function concluirEntrega(id) {
+  const encomenda = encomendas.find(item => item.id === id);
+  if (!encomenda) return;
+
+  // Antes de concluir, confira TODOS os itens da encomenda.
+  // Se faltar qualquer produto, a entrega é bloqueada e nada é descontado.
+  const faltasEstoque = (encomenda.itens || [])
+    .map(item => {
+      const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
+      const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
+      return {
+        nome: item.nome,
+        quantidade,
+        disponivel
+      };
+    })
+    .filter(item => item.quantidade > item.disponivel);
+
+  if (faltasEstoque.length > 0) {
+    const mensagem = faltasEstoque
+      .map(item => `${item.nome}: disponível ${item.disponivel}, necessário ${item.quantidade}`)
+      .join("\n");
+
+    alert(
+      "Não é possível concluir esta entrega porque não há estoque suficiente:\n\n" +
+      mensagem +
+      "\n\nAtualize o estoque antes de concluir a entrega."
+    );
+    return;
+  }
+
+  const confirmar = confirm(
+    `Deseja confirmar a entrega de ${encomenda.cliente}?\n\n` +
+    `Ao confirmar, a encomenda será excluída e o estoque será atualizado conforme os itens entregues.`
+  );
+
+  if (!confirmar) return;
+
+  // Revalidação imediatamente antes da baixa para garantir que o estoque
+  // nunca fique negativo mesmo que os dados tenham mudado.
+  const estoqueInsuficiente = (encomenda.itens || []).some(item => {
+    const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
+    const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
+    return quantidade > disponivel;
+  });
+
+  if (estoqueInsuficiente) {
+    alert("O estoque foi alterado e não é mais suficiente para concluir esta entrega. Atualize o estoque e tente novamente.");
+    return;
+  }
+
+  (encomenda.itens || []).forEach(item => {
+    const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
+    const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
+    estoque[item.nome] = disponivel - quantidade;
+  });
+
+  salvarEstoque();
+  encomendas = encomendas.filter(item => item.id !== id);
+  salvarEncomendas();
+
+  if (encomendaEditandoId === id) {
+    encomendaEditandoId = null;
+    document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
+    limparFormularioEncomenda();
+  }
+
+  renderizarEncomendas();
+  renderizarEntregasHoje();
+
+  alert("Entrega concluída. A encomenda foi excluída e o estoque foi atualizado.");
 }
 
 function limparFormularioEncomenda() {
@@ -1537,6 +1798,9 @@ function atualizarCalculoEncomenda() {
 }
 
 function abrirEncomendas() {
+  encomendaEditandoId = null;
+  document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
+  document.getElementById("cancelar-edicao-encomenda").style.display = "none";
   document.getElementById("encomenda-vendedor-nome").value = dadosVendedor.nome || "";
   document.getElementById("encomenda-vendedor-id").value = dadosVendedor.id || "";
   document.getElementById("encomenda-pagamento").value = tipoPagamentoSelecionado || "limpo";
@@ -1572,37 +1836,55 @@ function renderizarEncomendas() {
       <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)}</div>
       <div><strong>Passaporte / ID:</strong> ${escapeHtml(encomenda.vendedorId)}</div>
       <div style="color:#777;font-size:12px;margin-top:5px;">Cadastrada em ${escapeHtml(encomenda.cadastradaEm)}</div>
+      <div class="encomenda-acoes">
+        <button class="encomenda-acao" type="button" onclick="editarEncomenda(${encomenda.id})">Editar Encomenda</button>
+        <button class="encomenda-acao concluir" type="button" onclick="concluirEntrega(${encomenda.id})">Entrega Concluída</button>
+      </div>
     </div>
   `).join("");
 }
 
 function renderizarEntregasHoje() {
   const lista = document.getElementById("entregas-hoje-lista");
+  const campoData = document.getElementById("entregas-data-busca");
+  const titulo = document.getElementById("titulo-entregas-data");
+  const dataSelecionada = campoData.value || hojeISO();
   const hoje = hojeISO();
 
+  titulo.textContent = dataSelecionada === hoje
+    ? "ENTREGAS DE HOJE"
+    : `ENTREGAS DE ${formatarDataEntrega(dataSelecionada)}`;
+
   const entregas = encomendas
-    .filter(encomenda => encomenda.dataEntrega === hoje)
+    .filter(encomenda => encomenda.dataEntrega === dataSelecionada)
     .sort((a, b) => String(a.horaEntrega || "").localeCompare(String(b.horaEntrega || "")));
 
   if (!entregas.length) {
-    lista.innerHTML = '<div class="entrega-vazia">Nenhuma entrega cadastrada para hoje.</div>';
+    lista.innerHTML = `<div class="entrega-vazia">Nenhuma entrega cadastrada para ${formatarDataEntrega(dataSelecionada)}.</div>`;
     return;
   }
 
   lista.innerHTML = entregas.map(encomenda => `
     <div class="entrega-card">
       <div class="entrega-horario">${escapeHtml(encomenda.horaEntrega || "Horário não informado")}</div>
+      <div><strong>Data:</strong> ${formatarDataEntrega(encomenda.dataEntrega)}</div>
       <div><strong>Cliente:</strong> ${escapeHtml(encomenda.cliente)}</div>
       <div><strong>Telefone:</strong> ${escapeHtml(encomenda.telefone)}</div>
       <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
       <div><strong>Valor:</strong> ${formatBrl(Number(encomenda.valor) || 0)}</div>
       <div><strong>Comissão:</strong> ${formatBrl(Number(encomenda.comissao) || 0)}</div>
       <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)} — Passaporte/ID: ${escapeHtml(encomenda.vendedorId)}</div>
+      <div class="encomenda-acoes">
+        <button class="encomenda-acao" type="button" onclick="editarEncomenda(${encomenda.id})">Editar Encomenda</button>
+        <button class="encomenda-acao concluir" type="button" onclick="concluirEntrega(${encomenda.id})">Entrega Concluída</button>
+      </div>
     </div>
   `).join("");
 }
 
 function abrirEntregasHoje() {
+  const campoData = document.getElementById("entregas-data-busca");
+  campoData.value = hojeISO();
   renderizarEntregasHoje();
   document.getElementById("entregas-hoje-modal").style.display = "flex";
 }
@@ -1614,8 +1896,11 @@ function fecharEntregasHoje() {
 document.getElementById("abrir-estoque").addEventListener("click", abrirEstoque);
 document.getElementById("abrir-encomendas").addEventListener("click", abrirEncomendas);
 document.getElementById("abrir-entregas-hoje").addEventListener("click", abrirEntregasHoje);
+document.getElementById("entregas-data-busca").addEventListener("change", renderizarEntregasHoje);
 
 document.getElementById("encomenda-pagamento").addEventListener("change", atualizarCalculoEncomenda);
+
+document.getElementById("cancelar-edicao-encomenda").addEventListener("click", cancelarEdicaoEncomenda);
 
 document.getElementById("salvar-encomenda").addEventListener("click", () => {
   const cliente = document.getElementById("encomenda-cliente").value.trim();
@@ -1638,8 +1923,7 @@ document.getElementById("salvar-encomenda").addEventListener("click", () => {
     .map(item => `${item.quantidade}x ${item.nome}`)
     .join(", ");
 
-  encomendas.push({
-    id: Date.now(),
+  const dadosEncomenda = {
     cliente,
     telefone,
     valor: calculo.total,
@@ -1651,7 +1935,32 @@ document.getElementById("salvar-encomenda").addEventListener("click", () => {
     dataEntrega,
     horaEntrega,
     vendedor: dadosVendedor.nome,
-    vendedorId: dadosVendedor.id,
+    vendedorId: dadosVendedor.id
+  };
+
+  if (encomendaEditandoId !== null) {
+    const indice = encomendas.findIndex(item => item.id === encomendaEditandoId);
+
+    if (indice !== -1) {
+      encomendas[indice] = {
+        ...encomendas[indice],
+        ...dadosEncomenda
+      };
+      salvarEncomendas();
+      encomendaEditandoId = null;
+      document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
+      document.getElementById("cancelar-edicao-encomenda").style.display = "none";
+      renderizarEncomendas();
+      renderizarEntregasHoje();
+      limparFormularioEncomenda();
+      alert("Encomenda alterada com sucesso.");
+      return;
+    }
+  }
+
+  encomendas.push({
+    id: Date.now(),
+    ...dadosEncomenda,
     cadastradaEm: new Date().toLocaleString("pt-BR")
   });
 
@@ -1660,7 +1969,7 @@ document.getElementById("salvar-encomenda").addEventListener("click", () => {
   renderizarEntregasHoje();
   limparFormularioEncomenda();
 
-  alert("Encomenda registrada com sucesso.");
+  alert("Encomenda registrada com sucesso. O estoque só será alterado quando a entrega for concluída.");
 });
 
 document.getElementById("estoque-modal").addEventListener("click", (e) => {
