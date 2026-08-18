@@ -528,6 +528,296 @@ footer p {
   }
 }
 
+
+/* Gestão de estoque e encomendas — adicionado sem alterar o layout principal */
+.gestao-botoes {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.gestao-btn {
+  border:2px solid #fc6500;
+  background:#111;
+  color:#fc6500;
+  font-size:16px;
+  font-weight:bold;
+  padding:9px 18px;
+  border-radius:9px;
+  cursor:pointer;
+}
+.gestao-btn:hover {
+  background:#fc6500;
+  color:#000;
+}
+.gestao-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:21000;
+  background:rgba(0,0,0,.88);
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  box-sizing:border-box;
+}
+.gestao-caixa {
+  width:min(760px,95vw);
+  max-height:90vh;
+  overflow:auto;
+  background:#111;
+  border:2px solid #fc6500;
+  border-radius:14px;
+  padding:22px;
+  box-sizing:border-box;
+  box-shadow:0 0 30px rgba(252,101,0,.25);
+}
+.gestao-caixa h2 {
+  color:#fc6500;
+  text-align:center;
+  margin:0 0 16px;
+}
+.gestao-topo {
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:8px;
+}
+.gestao-fechar {
+  border:1px solid #fc6500;
+  background:#000;
+  color:#fc6500;
+  border-radius:8px;
+  padding:6px 12px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.estoque-lista {
+  display:grid;
+  grid-template-columns:1fr 150px;
+  border:1px solid #333;
+  border-radius:10px;
+  overflow:hidden;
+}
+.estoque-lista > div {
+  padding:8px 10px;
+  border-bottom:1px solid #333;
+}
+.estoque-lista > div:nth-last-child(-n+2) {
+  border-bottom:none;
+}
+.estoque-lista .estoque-cab {
+  color:#fc6500;
+  font-weight:bold;
+  background:#181818;
+}
+.estoque-input {
+  width:100%;
+  box-sizing:border-box;
+  padding:7px;
+  text-align:center;
+  border:1px solid #fc6500;
+  border-radius:7px;
+  background:#000;
+  color:#fff;
+}
+.gestao-salvar {
+  width:100%;
+  margin-top:14px;
+  border:2px solid #fc6500;
+  background:#fc6500;
+  color:#000;
+  font-weight:bold;
+  padding:10px;
+  border-radius:9px;
+  cursor:pointer;
+}
+.encomenda-campo {
+  margin:10px 0;
+}
+.encomenda-campo label {
+  display:block;
+  color:#fc6500;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+.encomenda-campo input,
+.encomenda-campo textarea {
+  width:100%;
+  box-sizing:border-box;
+  padding:9px;
+  border:1px solid #fc6500;
+  border-radius:7px;
+  background:#000;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+.encomenda-campo textarea {
+  min-height:80px;
+  resize:vertical;
+}
+.encomenda-vendedor {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.encomenda-vendedor input {
+  background:#181818;
+  color:#aaa;
+}
+.encomendas-lista {
+  margin-top:18px;
+}
+.encomenda-card {
+  border:1px solid #333;
+  border-radius:10px;
+  padding:12px;
+  margin-top:10px;
+  background:#090909;
+  color:#fff;
+  line-height:1.5;
+}
+.encomenda-card strong {
+  color:#fc6500;
+}
+.estoque-aviso {
+  color:#aaa;
+  font-size:13px;
+  text-align:center;
+  margin:8px 0 14px;
+}
+.encomenda-pagamento {
+  display:flex;
+  justify-content:center;
+  margin:12px 0 16px;
+}
+.encomenda-pagamento select {
+  width:100%;
+  max-width:360px;
+  padding:10px;
+  border:2px solid #fc6500;
+  border-radius:9px;
+  background:#000;
+  color:#fc6500;
+  font-weight:bold;
+}
+.encomenda-produtos {
+  border:1px solid #333;
+  border-radius:10px;
+  overflow:hidden;
+  margin:12px 0 16px;
+}
+.encomenda-produto-cab,
+.encomenda-produto-linha {
+  display:grid;
+  grid-template-columns:1fr 170px 145px;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+}
+.encomenda-produto-cab {
+  color:#fc6500;
+  background:#181818;
+  font-weight:bold;
+}
+.encomenda-produto-linha {
+  border-top:1px solid #333;
+  color:#fff;
+}
+.encomenda-produto-linha .preco-encomenda {
+  color:#aaa;
+  text-align:center;
+  font-size:13px;
+}
+.encomenda-qtd-controle {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+}
+.encomenda-qtd-controle button {
+  width:30px;
+  height:30px;
+  border:1px solid #fc6500;
+  border-radius:7px;
+  background:#111;
+  color:#fc6500;
+  font-weight:bold;
+  cursor:pointer;
+}
+.encomenda-qtd-controle input {
+  width:58px !important;
+  text-align:center;
+  padding:6px !important;
+}
+.encomenda-calculo {
+  border:2px solid #fc6500;
+  border-radius:10px;
+  background:#090909;
+  padding:12px 14px;
+  margin:12px 0;
+  color:#fff;
+  line-height:1.6;
+}
+.encomenda-calculo strong {
+  color:#fc6500;
+}
+.encomenda-calculo .destaque {
+  color:#fc6500;
+  font-size:20px;
+  font-weight:bold;
+}
+.encomenda-datahora {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.encomenda-datahora input {
+  width:100%;
+}
+.entrega-card {
+  border:1px solid #333;
+  border-radius:10px;
+  padding:12px;
+  margin-top:10px;
+  background:#090909;
+  color:#fff;
+  line-height:1.5;
+}
+.entrega-card strong {
+  color:#fc6500;
+}
+.entrega-card .entrega-horario {
+  color:#fc6500;
+  font-weight:bold;
+  font-size:16px;
+}
+.entrega-vazia {
+  text-align:center;
+  color:#aaa;
+  padding:12px;
+}
+@media (max-width:600px) {
+  .encomenda-produto-cab,
+  .encomenda-produto-linha {
+    grid-template-columns:1fr 115px 100px;
+    font-size:13px;
+  }
+  .encomenda-datahora {
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:600px) {
+  .encomenda-vendedor {
+    grid-template-columns:1fr;
+  }
+  .estoque-lista {
+    grid-template-columns:1fr 110px;
+  }
+}
+
 </style>
 </head>
 
@@ -574,6 +864,11 @@ footer p {
           </div>
           <button id="limpar-itens" type="button">Limpar Itens</button>
 <button id="finalizar-pedido" type="button">Finalizar Pedido</button>
+        </div>
+        <div class="gestao-botoes">
+          <button id="abrir-estoque" class="gestao-btn" type="button">Estoque</button>
+          <button id="abrir-encomendas" class="gestao-btn" type="button">Encomendas</button>
+          <button id="abrir-entregas-hoje" class="gestao-btn" type="button">ENTREGAS DE HOJE</button>
         </div>
         <div id="totais" aria-live="polite"></div>
       </div>
@@ -686,6 +981,85 @@ function escapeHtml(value) {
   }[ch]));
 }
 
+
+/* =========================
+   ESTOQUE
+   ========================= */
+const CHAVE_ESTOQUE = "tarjas_estoque_v1";
+const CHAVE_ENCOMENDAS = "tarjas_encomendas_v1";
+
+function carregarEstoque() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem(CHAVE_ESTOQUE) || "{}");
+    return produtos.reduce((obj, produto) => {
+      const valor = Number(salvo[produto.nome]);
+      obj[produto.nome] = Number.isFinite(valor) && valor >= 0 ? Math.floor(valor) : 0;
+      return obj;
+    }, {});
+  } catch (_) {
+    return produtos.reduce((obj, produto) => {
+      obj[produto.nome] = 0;
+      return obj;
+    }, {});
+  }
+}
+
+let estoque = carregarEstoque();
+
+function salvarEstoque() {
+  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
+}
+
+function renderizarEstoque() {
+  const lista = document.getElementById("estoque-lista");
+  lista.innerHTML = `
+    <div class="estoque-cab">Produto</div>
+    <div class="estoque-cab">Quantidade</div>
+    ${produtos.map(produto => `
+      <div>${escapeHtml(produto.nome)}</div>
+      <div>
+        <input class="estoque-input" type="number" min="0" step="1"
+          data-estoque-produto="${escapeHtml(produto.nome)}"
+          value="${estoque[produto.nome] || 0}">
+      </div>
+    `).join("")}
+  `;
+}
+
+function abrirEstoque() {
+  renderizarEstoque();
+  document.getElementById("estoque-modal").style.display = "flex";
+}
+
+function fecharEstoque() {
+  document.getElementById("estoque-modal").style.display = "none";
+}
+
+function salvarEstoqueFormulario() {
+  document.querySelectorAll("[data-estoque-produto]").forEach(input => {
+    const nome = input.dataset.estoqueProduto;
+    estoque[nome] = Math.max(0, Math.floor(Number(input.value) || 0));
+  });
+  salvarEstoque();
+  fecharEstoque();
+  alert("Estoque salvo com sucesso.");
+}
+
+function estoqueDisponivel(nome) {
+  return Number(estoque[nome]) || 0;
+}
+
+function itensSelecionadosTexto() {
+  const selecionados = [];
+  produtos.forEach((produto, index) => {
+    const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
+    const input = linha && linha.querySelector('input[type="number"]');
+    const qtd = input ? Math.max(0, Number(input.value) || 0) : 0;
+    if (qtd > 0) selecionados.push(`${qtd}x ${produto.nome}`);
+  });
+  return selecionados.join(", ");
+}
+
 function finalizarPedido() {
   let total = 0;
   let quantidadeTotal = 0;
@@ -710,12 +1084,27 @@ function finalizarPedido() {
     }
   });
 
+  const faltasEstoque = itens.filter(item => estoqueDisponivel(item.nome) < item.quantidade);
+  if (faltasEstoque.length > 0) {
+    const mensagem = faltasEstoque
+      .map(item => `${item.nome}: disponível ${estoqueDisponivel(item.nome)}, solicitado ${item.quantidade}`)
+      .join("\n");
+    alert("Estoque insuficiente para finalizar o pedido:\n\n" + mensagem + "\n\nAbra o botão Estoque para atualizar as quantidades.");
+    return;
+  }
+
   if (quantidadeTotal === 0) {
     alert("Adicione pelo menos um item ao pedido antes de finalizar.");
     document.querySelector("#totais").innerHTML =
       "<p>Nenhum produto foi selecionado.</p>";
     return;
   }
+
+  /* Baixa automática do estoque somente depois de validar o pedido. */
+  itens.forEach(item => {
+    estoque[item.nome] = Math.max(0, estoqueDisponivel(item.nome) - item.quantidade);
+  });
+  salvarEstoque();
 
   const comissao = total * porcentagemVendedor;
   const repasse = total - comissao;
@@ -922,6 +1311,375 @@ pedidoModal.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && pedidoModal.style.display === "flex") {
     tentarFecharResumo();
+  }
+});
+</script>
+
+
+<!-- Gestão de estoque -->
+<div id="estoque-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button>
+    </div>
+    <h2>Estoque</h2>
+    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Ao finalizar um pedido, a quantidade vendida será descontada automaticamente.</p>
+    <div id="estoque-lista" class="estoque-lista"></div>
+    <button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button>
+  </div>
+</div>
+
+<!-- Gestão de encomendas -->
+<div id="encomendas-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharEncomendas()">Fechar</button>
+    </div>
+    <h2>Encomendas</h2>
+
+    <div class="encomenda-vendedor">
+      <div class="encomenda-campo">
+        <label>Vendedor</label>
+        <input id="encomenda-vendedor-nome" type="text" readonly>
+      </div>
+      <div class="encomenda-campo">
+        <label>Passaporte / ID</label>
+        <input id="encomenda-vendedor-id" type="text" readonly>
+      </div>
+    </div>
+
+    <div class="encomenda-campo">
+      <label for="encomenda-cliente">Quem fez a encomenda</label>
+      <input id="encomenda-cliente" type="text" placeholder="Nome do cliente">
+    </div>
+
+    <div class="encomenda-campo">
+      <label for="encomenda-telefone">Número do telefone</label>
+      <input id="encomenda-telefone" type="tel" placeholder="Telefone do cliente">
+    </div>
+
+    <div class="encomenda-pagamento">
+      <select id="encomenda-pagamento">
+        <option value="limpo">Pagamento: Limpo</option>
+        <option value="sujo">Pagamento: Sujo</option>
+        <option value="limpoParceiro">Pagamento: Limpo Parceiro</option>
+        <option value="sujoParceiro">Pagamento: Sujo Parceiro</option>
+      </select>
+    </div>
+
+    <div class="encomenda-produtos">
+      <div class="encomenda-produto-cab">
+        <div>Produto</div>
+        <div style="text-align:center;">Quantidade</div>
+        <div style="text-align:center;">Subtotal</div>
+      </div>
+      <div id="encomenda-produtos-lista"></div>
+    </div>
+
+    <div id="encomenda-calculo" class="encomenda-calculo">
+      <div><strong>Valor total:</strong> R$ 0,00</div>
+      <div><strong>Comissão do vendedor (10%):</strong> R$ 0,00</div>
+      <div class="destaque"><strong>Valor a repassar:</strong> R$ 0,00</div>
+    </div>
+
+    <div class="encomenda-datahora">
+      <div class="encomenda-campo">
+        <label for="encomenda-data">Data da entrega</label>
+        <input id="encomenda-data" type="date">
+      </div>
+      <div class="encomenda-campo">
+        <label for="encomenda-hora">Horário da entrega</label>
+        <input id="encomenda-hora" type="time">
+      </div>
+    </div>
+
+    <button id="salvar-encomenda" class="gestao-salvar" type="button">Salvar Encomenda</button>
+    <div id="encomendas-lista" class="encomendas-lista"></div>
+  </div>
+</div>
+
+<!-- Entregas de hoje -->
+<div id="entregas-hoje-modal" class="gestao-modal">
+  <div class="gestao-caixa">
+    <div class="gestao-topo">
+      <button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button>
+    </div>
+    <h2>ENTREGAS DE HOJE</h2>
+    <p class="estoque-aviso">Aqui aparecem somente as encomendas marcadas para a data de hoje.</p>
+    <div id="entregas-hoje-lista" class="encomendas-lista"></div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   ENCOMENDAS E ENTREGAS
+   ========================= */
+function carregarEncomendas() {
+  try {
+    const dados = JSON.parse(localStorage.getItem(CHAVE_ENCOMENDAS) || "[]");
+    return Array.isArray(dados) ? dados : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+let encomendas = carregarEncomendas();
+
+function salvarEncomendas() {
+  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
+}
+
+function hojeISO() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+function formatarDataEntrega(dataISO) {
+  if (!dataISO) return "Não informada";
+  const partes = dataISO.split("-");
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataISO;
+}
+
+function limparFormularioEncomenda() {
+  document.getElementById("encomenda-cliente").value = "";
+  document.getElementById("encomenda-telefone").value = "";
+  document.getElementById("encomenda-data").value = hojeISO();
+  document.getElementById("encomenda-hora").value = "";
+
+  produtos.forEach((produto, index) => {
+    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
+    if (input) input.value = 0;
+  });
+
+  atualizarCalculoEncomenda();
+}
+
+function renderizarProdutosEncomenda() {
+  const lista = document.getElementById("encomenda-produtos-lista");
+  let categoriaAtual = "";
+
+  lista.innerHTML = produtos.map((produto, index) => {
+    const categoria = produto.categoria !== categoriaAtual
+      ? `<div style="grid-column:1/-1;color:#fc6500;font-weight:bold;background:#111;border-top:1px solid #fc6500;padding:7px 10px;">${escapeHtml(produto.categoria)}</div>`
+      : "";
+
+    categoriaAtual = produto.categoria;
+
+    return `
+      ${categoria}
+      <div class="encomenda-produto-linha">
+        <div><strong>${escapeHtml(produto.nome)}</strong></div>
+        <div class="encomenda-qtd-controle">
+          <button type="button" onclick="alterarQuantidadeEncomenda(${index}, -1)">−</button>
+          <input type="number" min="0" step="1" value="0"
+                 data-encomenda-produto="${index}"
+                 onchange="atualizarCalculoEncomenda()">
+          <button type="button" onclick="alterarQuantidadeEncomenda(${index}, 1)">+</button>
+        </div>
+        <div class="preco-encomenda" data-encomenda-subtotal="${index}">R$ 0,00</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function alterarQuantidadeEncomenda(index, delta) {
+  const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
+  if (!input) return;
+
+  const atual = Math.max(0, Number(input.value) || 0);
+  input.value = Math.max(0, Math.floor(atual + delta));
+  atualizarCalculoEncomenda();
+}
+
+function obterItensEncomenda() {
+  const tipo = document.getElementById("encomenda-pagamento").value;
+
+  return produtos.map((produto, index) => {
+    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
+    const quantidade = Math.max(0, Math.floor(Number(input?.value) || 0));
+    const precoUnitario = Number(produto[tipo]) || 0;
+
+    return {
+      nome: produto.nome,
+      quantidade,
+      precoUnitario,
+      subtotal: precoUnitario * quantidade
+    };
+  }).filter(item => item.quantidade > 0);
+}
+
+function calcularEncomenda() {
+  const itens = obterItensEncomenda();
+  const total = itens.reduce((soma, item) => soma + item.subtotal, 0);
+  const comissao = total * porcentagemVendedor;
+  const repasse = total - comissao;
+
+  return { itens, total, comissao, repasse };
+}
+
+function atualizarCalculoEncomenda() {
+  const calculo = calcularEncomenda();
+
+  produtos.forEach((produto, index) => {
+    const elemento = document.querySelector(`[data-encomenda-subtotal="${index}"]`);
+    const item = calculo.itens.find(i => i.nome === produto.nome);
+    if (elemento) elemento.textContent = formatBrl(item ? item.subtotal : 0);
+  });
+
+  document.getElementById("encomenda-calculo").innerHTML = `
+    <div><strong>Valor total:</strong> ${formatBrl(calculo.total)}</div>
+    <div><strong>Comissão do vendedor (10%):</strong> ${formatBrl(calculo.comissao)}</div>
+    <div class="destaque"><strong>Valor a repassar:</strong> ${formatBrl(calculo.repasse)}</div>
+  `;
+}
+
+function abrirEncomendas() {
+  document.getElementById("encomenda-vendedor-nome").value = dadosVendedor.nome || "";
+  document.getElementById("encomenda-vendedor-id").value = dadosVendedor.id || "";
+  document.getElementById("encomenda-pagamento").value = tipoPagamentoSelecionado || "limpo";
+
+  renderizarProdutosEncomenda();
+  limparFormularioEncomenda();
+  renderizarEncomendas();
+  document.getElementById("encomendas-modal").style.display = "flex";
+}
+
+function fecharEncomendas() {
+  document.getElementById("encomendas-modal").style.display = "none";
+}
+
+function renderizarEncomendas() {
+  const lista = document.getElementById("encomendas-lista");
+
+  if (!encomendas.length) {
+    lista.innerHTML = '<p style="color:#aaa;text-align:center;">Nenhuma encomenda cadastrada.</p>';
+    return;
+  }
+
+  lista.innerHTML = encomendas.slice().reverse().map(encomenda => `
+    <div class="encomenda-card">
+      <div><strong>Cliente:</strong> ${escapeHtml(encomenda.cliente)}</div>
+      <div><strong>Telefone:</strong> ${escapeHtml(encomenda.telefone)}</div>
+      <div><strong>Entrega:</strong> ${formatarDataEntrega(encomenda.dataEntrega)} às ${escapeHtml(encomenda.horaEntrega || "Não informado")}</div>
+      <div><strong>Pagamento:</strong> ${escapeHtml(nomesPagamento[encomenda.pagamento] || encomenda.pagamento || "Limpo")}</div>
+      <div><strong>Valor total:</strong> ${formatBrl(Number(encomenda.valor) || 0)}</div>
+      <div><strong>Comissão:</strong> ${formatBrl(Number(encomenda.comissao) || 0)}</div>
+      <div><strong>Valor a repassar:</strong> ${formatBrl(Number(encomenda.repasse) || 0)}</div>
+      <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
+      <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)}</div>
+      <div><strong>Passaporte / ID:</strong> ${escapeHtml(encomenda.vendedorId)}</div>
+      <div style="color:#777;font-size:12px;margin-top:5px;">Cadastrada em ${escapeHtml(encomenda.cadastradaEm)}</div>
+    </div>
+  `).join("");
+}
+
+function renderizarEntregasHoje() {
+  const lista = document.getElementById("entregas-hoje-lista");
+  const hoje = hojeISO();
+
+  const entregas = encomendas
+    .filter(encomenda => encomenda.dataEntrega === hoje)
+    .sort((a, b) => String(a.horaEntrega || "").localeCompare(String(b.horaEntrega || "")));
+
+  if (!entregas.length) {
+    lista.innerHTML = '<div class="entrega-vazia">Nenhuma entrega cadastrada para hoje.</div>';
+    return;
+  }
+
+  lista.innerHTML = entregas.map(encomenda => `
+    <div class="entrega-card">
+      <div class="entrega-horario">${escapeHtml(encomenda.horaEntrega || "Horário não informado")}</div>
+      <div><strong>Cliente:</strong> ${escapeHtml(encomenda.cliente)}</div>
+      <div><strong>Telefone:</strong> ${escapeHtml(encomenda.telefone)}</div>
+      <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
+      <div><strong>Valor:</strong> ${formatBrl(Number(encomenda.valor) || 0)}</div>
+      <div><strong>Comissão:</strong> ${formatBrl(Number(encomenda.comissao) || 0)}</div>
+      <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)} — Passaporte/ID: ${escapeHtml(encomenda.vendedorId)}</div>
+    </div>
+  `).join("");
+}
+
+function abrirEntregasHoje() {
+  renderizarEntregasHoje();
+  document.getElementById("entregas-hoje-modal").style.display = "flex";
+}
+
+function fecharEntregasHoje() {
+  document.getElementById("entregas-hoje-modal").style.display = "none";
+}
+
+document.getElementById("abrir-estoque").addEventListener("click", abrirEstoque);
+document.getElementById("abrir-encomendas").addEventListener("click", abrirEncomendas);
+document.getElementById("abrir-entregas-hoje").addEventListener("click", abrirEntregasHoje);
+
+document.getElementById("encomenda-pagamento").addEventListener("change", atualizarCalculoEncomenda);
+
+document.getElementById("salvar-encomenda").addEventListener("click", () => {
+  const cliente = document.getElementById("encomenda-cliente").value.trim();
+  const telefone = document.getElementById("encomenda-telefone").value.trim();
+  const dataEntrega = document.getElementById("encomenda-data").value;
+  const horaEntrega = document.getElementById("encomenda-hora").value;
+  const calculo = calcularEncomenda();
+
+  if (!cliente || !telefone || !dataEntrega || !horaEntrega) {
+    alert("Preencha o nome, telefone, data e horário da entrega.");
+    return;
+  }
+
+  if (!calculo.itens.length) {
+    alert("Selecione pelo menos uma arma ou item para a encomenda.");
+    return;
+  }
+
+  const itensTexto = calculo.itens
+    .map(item => `${item.quantidade}x ${item.nome}`)
+    .join(", ");
+
+  encomendas.push({
+    id: Date.now(),
+    cliente,
+    telefone,
+    valor: calculo.total,
+    comissao: calculo.comissao,
+    repasse: calculo.repasse,
+    itensTexto,
+    itens: calculo.itens,
+    pagamento: document.getElementById("encomenda-pagamento").value,
+    dataEntrega,
+    horaEntrega,
+    vendedor: dadosVendedor.nome,
+    vendedorId: dadosVendedor.id,
+    cadastradaEm: new Date().toLocaleString("pt-BR")
+  });
+
+  salvarEncomendas();
+  renderizarEncomendas();
+  renderizarEntregasHoje();
+  limparFormularioEncomenda();
+
+  alert("Encomenda registrada com sucesso.");
+});
+
+document.getElementById("estoque-modal").addEventListener("click", (e) => {
+  if (e.target.id === "estoque-modal") fecharEstoque();
+});
+
+document.getElementById("encomendas-modal").addEventListener("click", (e) => {
+  if (e.target.id === "encomendas-modal") fecharEncomendas();
+});
+
+document.getElementById("entregas-hoje-modal").addEventListener("click", (e) => {
+  if (e.target.id === "entregas-hoje-modal") fecharEntregasHoje();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    fecharEstoque();
+    fecharEncomendas();
+    fecharEntregasHoje();
   }
 });
 </script>
