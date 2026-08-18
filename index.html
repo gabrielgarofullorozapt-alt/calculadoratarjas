@@ -1018,7 +1018,6 @@ const SUPABASE_URL = "https://siuwooarjrpbdfuqcwcw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Fe5esrf571UXT5t0lPNyIw_NWaDxubm";
 const SUPABASE_HEADERS = {
   "apikey": SUPABASE_KEY,
-  "Authorization": `Bearer ${SUPABASE_KEY}`,
   "Content-Type": "application/json"
 };
 let bancoCompartilhadoPronto = false;
@@ -2014,7 +2013,7 @@ document.addEventListener("keydown", (e) => {
     await carregarBancoCompartilhado();
   } catch (erro) {
     console.error(erro);
-    alert("Não foi possível conectar ao banco compartilhado. Confira a configuração do Supabase e recarregue a página.");
+    alert("Não foi possível conectar ao banco compartilhado.\n\nDetalhes: " + (erro?.message || "erro desconhecido") + "\n\nConfira a configuração do Supabase e recarregue a página.");
   }
 })();
 
