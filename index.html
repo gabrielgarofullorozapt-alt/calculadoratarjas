@@ -1012,6 +1012,147 @@ function escapeHtml(value) {
 
 
 /* =========================
+   BANCO COMPARTILHADO - SUPABASE
+   ========================= */
+const SUPABASE_URL = "https://siuwooarjrpbdfuqcwcw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Fe5esrf571UXT5t0lPNyIw_NWaDxubm";
+const SUPABASE_HEADERS = {
+  "apikey": SUPABASE_KEY,
+  "Authorization": `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json"
+};
+let bancoCompartilhadoPronto = false;
+
+async function supabaseFetch(path, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: { ...SUPABASE_HEADERS, ...(options.headers || {}) }
+  });
+  if (!response.ok) {
+    const texto = await response.text();
+    throw new Error(`Supabase ${response.status}: ${texto || response.statusText}`);
+  }
+  const texto = await response.text();
+  return texto ? JSON.parse(texto) : null;
+}
+
+async function carregarBancoCompartilhado() {
+  const [stockRows, orderRows] = await Promise.all([
+    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
+    supabaseFetch("orders?select=*&order=id.asc")
+  ]);
+
+  // Migra automaticamente os dados locais apenas quando o banco ainda está vazio.
+  const localStock = carregarEstoque();
+  if (!stockRows.length) {
+    const rows = produtos.map(p => ({ product_name: p.nome, quantity: Math.max(0, Math.floor(Number(localStock[p.nome]) || 0)) }));
+    await supabaseFetch("stock", {
+      method: "POST",
+      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify(rows)
+    });
+  }
+
+  const stockFinal = stockRows.length ? stockRows : await supabaseFetch("stock?select=product_name,quantity&order=product_name.asc");
+  estoque = produtos.reduce((obj, produto) => {
+    const row = stockFinal.find(r => r.product_name === produto.nome);
+    obj[produto.nome] = row ? Math.max(0, Math.floor(Number(row.quantity) || 0)) : 0;
+    return obj;
+  }, {});
+
+  const localOrders = carregarEncomendas();
+  if (!orderRows.length && localOrders.length) {
+    await supabaseFetch("orders", {
+      method: "POST",
+      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify(localOrders.map(encomendaParaBanco))
+    });
+  }
+
+  const orderFinal = orderRows.length ? orderRows : await supabaseFetch("orders?select=*&order=id.asc");
+  encomendas = orderFinal.map(encomendaDoBanco);
+  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
+  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
+  bancoCompartilhadoPronto = true;
+  renderizarEstoque();
+  renderizarEncomendas();
+  renderizarEntregasHoje();
+}
+
+function encomendaParaBanco(e) {
+  return {
+    id: Number(e.id), cliente: e.cliente || "", telefone: e.telefone || "",
+    valor: Number(e.valor) || 0, comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0,
+    itens_texto: e.itensTexto || "", itens: Array.isArray(e.itens) ? e.itens : [],
+    pagamento: e.pagamento || "limpo", data_entrega: e.dataEntrega, hora_entrega: e.horaEntrega || "",
+    vendedor: e.vendedor || "", vendedor_id: e.vendedorId || "", cadastrada_em: e.cadastradaEm || ""
+  };
+}
+
+function encomendaDoBanco(e) {
+  return {
+    id: Number(e.id), cliente: e.cliente || "", telefone: e.telefone || "", valor: Number(e.valor) || 0,
+    comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0, itensTexto: e.itens_texto || "",
+    itens: Array.isArray(e.itens) ? e.itens : [], pagamento: e.pagamento || "limpo",
+    dataEntrega: e.data_entrega, horaEntrega: e.hora_entrega || "", vendedor: e.vendedor || "",
+    vendedorId: e.vendedor_id || "", cadastradaEm: e.cadastrada_em || ""
+  };
+}
+
+async function atualizarEstoqueNoBanco() {
+  const rows = produtos.map(p => ({
+    product_name: p.nome,
+    quantity: Math.max(0, Math.floor(Number(estoque[p.nome]) || 0)),
+    updated_at: new Date().toISOString()
+  }));
+  await supabaseFetch("stock", {
+    method: "POST",
+    headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify(rows)
+  });
+}
+
+async function atualizarEncomendaNoBanco(e) {
+  await supabaseFetch("orders", {
+    method: "POST",
+    headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify(encomendaParaBanco(e))
+  });
+}
+
+async function excluirEncomendaDoBanco(id) {
+  await supabaseFetch(`orders?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+async function concluirEntregaNoBanco(id) {
+  const resultado = await supabaseFetch("rpc/complete_delivery", {
+    method: "POST",
+    body: JSON.stringify({ p_order_id: Number(id) })
+  });
+  return resultado;
+}
+
+async function recarregarBancoCompartilhado() {
+  const [stockRows, orderRows] = await Promise.all([
+    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
+    supabaseFetch("orders?select=*&order=id.asc")
+  ]);
+  estoque = produtos.reduce((obj, produto) => {
+    const row = stockRows.find(r => r.product_name === produto.nome);
+    obj[produto.nome] = row ? Math.max(0, Math.floor(Number(row.quantity) || 0)) : 0;
+    return obj;
+  }, {});
+  encomendas = orderRows.map(encomendaDoBanco);
+  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
+  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
+  if (document.getElementById("estoque-modal")?.style.display !== "flex") {
+    renderizarEstoque();
+  }
+  renderizarEncomendas();
+  renderizarEntregasHoje();
+}
+
+/* =========================
    ESTOQUE
    ========================= */
 const CHAVE_ESTOQUE = "tarjas_estoque_v1";
@@ -1037,6 +1178,7 @@ let estoque = carregarEstoque();
 
 function salvarEstoque() {
   localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
+  return atualizarEstoqueNoBanco();
 }
 
 function renderizarEstoque() {
@@ -1064,14 +1206,23 @@ function fecharEstoque() {
   document.getElementById("estoque-modal").style.display = "none";
 }
 
-function salvarEstoqueFormulario() {
+async function salvarEstoqueFormulario() {
+  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
+  const anterior = { ...estoque };
   document.querySelectorAll("[data-estoque-produto]").forEach(input => {
     const nome = input.dataset.estoqueProduto;
-    estoque[nome] = Math.floor(Number(input.value) || 0);
+    estoque[nome] = Math.max(0, Math.floor(Number(input.value) || 0));
   });
-  salvarEstoque();
-  fecharEstoque();
-  alert("Estoque salvo com sucesso.");
+  try {
+    await atualizarEstoqueNoBanco();
+    localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
+    fecharEstoque();
+    alert("Estoque compartilhado salvo com sucesso.");
+  } catch (erro) {
+    estoque = anterior;
+    alert("Não foi possível salvar o estoque online. Verifique sua conexão e tente novamente.");
+    console.error(erro);
+  }
 }
 
 function estoqueDisponivel(nome) {
@@ -1445,119 +1596,6 @@ document.addEventListener("keydown", (e) => {
   </div>
 </div>
 
-<!-- Gestão de estoque -->
-<div id="estoque-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button>
-    </div>
-    <h2>Estoque</h2>
-    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Encomendas não exigem estoque e a quantidade só é descontada quando a entrega for concluída.</p>
-    <div id="estoque-lista" class="estoque-lista"></div>
-    <button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button>
-  </div>
-</div>
-
-<!-- Gestão de encomendas -->
-<div id="encomendas-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharEncomendas()">Fechar</button>
-    </div>
-    <h2>Encomendas</h2>
-
-    <div class="encomenda-vendedor">
-      <div class="encomenda-campo">
-        <label>Vendedor</label>
-        <input id="encomenda-vendedor-nome" type="text" readonly>
-      </div>
-      <div class="encomenda-campo">
-        <label>Passaporte / ID</label>
-        <input id="encomenda-vendedor-id" type="text" readonly>
-      </div>
-    </div>
-
-    <div class="encomenda-campo">
-      <label for="encomenda-cliente">Quem fez a encomenda</label>
-      <input id="encomenda-cliente" type="text" placeholder="Nome do cliente">
-    </div>
-
-    <div class="encomenda-campo">
-      <label for="encomenda-telefone">Número do telefone</label>
-      <input id="encomenda-telefone" type="tel" placeholder="Telefone do cliente">
-    </div>
-
-    <div class="encomenda-pagamento">
-      <select id="encomenda-pagamento">
-        <option value="limpo">Pagamento: Limpo</option>
-        <option value="sujo">Pagamento: Sujo</option>
-        <option value="limpoParceiro">Pagamento: Limpo Parceiro</option>
-        <option value="sujoParceiro">Pagamento: Sujo Parceiro</option>
-      </select>
-    </div>
-
-    <div class="encomenda-produtos">
-      <div class="encomenda-produto-cab">
-        <div>Produto</div>
-        <div style="text-align:center;">Quantidade</div>
-        <div style="text-align:center;">Subtotal</div>
-      </div>
-      <div id="encomenda-produtos-lista"></div>
-    </div>
-
-    <div id="encomenda-calculo" class="encomenda-calculo">
-      <div><strong>Valor total:</strong> R$ 0,00</div>
-      <div><strong>Comissão do vendedor (10%):</strong> R$ 0,00</div>
-      <div class="destaque"><strong>Valor a repassar:</strong> R$ 0,00</div>
-    </div>
-
-    <div class="encomenda-datahora">
-      <div class="encomenda-campo">
-        <label for="encomenda-data">Data da entrega</label>
-        <input id="encomenda-data" type="date">
-      </div>
-      <div class="encomenda-campo">
-        <label for="encomenda-hora">Horário da entrega</label>
-        <input id="encomenda-hora" type="time">
-      </div>
-    </div>
-
-    <button id="salvar-encomenda" class="gestao-salvar" type="button">Salvar Encomenda</button>
-    <button id="cancelar-edicao-encomenda" class="gestao-salvar" type="button" style="display:none;background:#111;color:#fc6500;">Cancelar Edição</button>
-    <div id="encomendas-lista" class="encomendas-lista"></div>
-  </div>
-</div>
-
-<!-- Entregas de hoje -->
-<div id="entregas-hoje-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button>
-    </div>
-    <h2>ENTREGAS DE HOJE</h2>
-    <p class="estoque-aviso">Aqui aparecem somente as encomendas marcadas para a data de hoje.</p>
-    <div id="entregas-hoje-lista" class="encomendas-lista"></div>
-  </div>
-</div>
-
-<!-- Entregas de outros dias -->
-<div id="outras-entregas-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharOutrasEntregas()">Fechar</button>
-    </div>
-    <h2>OUTRAS ENTREGAS</h2>
-    <p class="estoque-aviso">Escolha uma data para ver as encomendas agendadas para outros dias.</p>
-
-    <div class="encomenda-campo" style="max-width:360px;margin:0 auto 16px;">
-      <label for="outras-entregas-data">Ver entregas do dia</label>
-      <input id="outras-entregas-data" type="date" style="width:100%;box-sizing:border-box;">
-    </div>
-
-    <div id="outras-entregas-lista" class="encomendas-lista"></div>
-  </div>
-</div>
-
 <script>
 /* =========================
    ENCOMENDAS E ENTREGAS
@@ -1631,77 +1669,37 @@ function editarEncomenda(id) {
   document.getElementById("encomenda-cliente").focus();
 }
 
-function concluirEntrega(id) {
+async function concluirEntrega(id) {
+  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
   const encomenda = encomendas.find(item => item.id === id);
   if (!encomenda) return;
 
-  // Antes de concluir, confira TODOS os itens da encomenda.
-  // Se faltar qualquer produto, a entrega é bloqueada e nada é descontado.
-  const faltasEstoque = (encomenda.itens || [])
-    .map(item => {
-      const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
-      const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
-      return {
-        nome: item.nome,
-        quantidade,
-        disponivel
-      };
-    })
-    .filter(item => item.quantidade > item.disponivel);
-
-  if (faltasEstoque.length > 0) {
-    const mensagem = faltasEstoque
-      .map(item => `${item.nome}: disponível ${item.disponivel}, necessário ${item.quantidade}`)
-      .join("\n");
-
-    alert(
-      "Não é possível concluir esta entrega porque não há estoque suficiente:\n\n" +
-      mensagem +
-      "\n\nAtualize o estoque antes de concluir a entrega."
-    );
-    return;
-  }
-
   const confirmar = confirm(
     `Deseja confirmar a entrega de ${encomenda.cliente}?\n\n` +
-    `Ao confirmar, a encomenda será excluída e o estoque será atualizado conforme os itens entregues.`
+    `Ao confirmar, a encomenda será excluída e o estoque compartilhado será atualizado.`
   );
-
   if (!confirmar) return;
 
-  // Revalidação imediatamente antes da baixa para garantir que o estoque
-  // nunca fique negativo mesmo que os dados tenham mudado.
-  const estoqueInsuficiente = (encomenda.itens || []).some(item => {
-    const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
-    const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
-    return quantidade > disponivel;
-  });
+  try {
+    const resultado = await concluirEntregaNoBanco(id);
+    if (!resultado || resultado.success !== true) {
+      alert(`Não é possível concluir esta entrega.\n\n${resultado?.message || "Estoque insuficiente ou encomenda já concluída."}`);
+      await recarregarBancoCompartilhado();
+      return;
+    }
 
-  if (estoqueInsuficiente) {
-    alert("O estoque foi alterado e não é mais suficiente para concluir esta entrega. Atualize o estoque e tente novamente.");
-    return;
+    await recarregarBancoCompartilhado();
+    if (encomendaEditandoId === id) {
+      encomendaEditandoId = null;
+      document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
+      document.getElementById("cancelar-edicao-encomenda").style.display = "none";
+      limparFormularioEncomenda();
+    }
+    alert("Entrega concluída. A encomenda foi excluída e o estoque foi atualizado para todos.");
+  } catch (erro) {
+    console.error(erro);
+    alert("Não foi possível concluir a entrega online. Nada foi alterado. Tente novamente.");
   }
-
-  (encomenda.itens || []).forEach(item => {
-    const quantidade = Math.max(0, Math.floor(Number(item.quantidade) || 0));
-    const disponivel = Math.max(0, Math.floor(Number(estoque[item.nome]) || 0));
-    estoque[item.nome] = disponivel - quantidade;
-  });
-
-  salvarEstoque();
-  encomendas = encomendas.filter(item => item.id !== id);
-  salvarEncomendas();
-
-  if (encomendaEditandoId === id) {
-    encomendaEditandoId = null;
-    document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
-    limparFormularioEncomenda();
-  }
-
-  renderizarEncomendas();
-  renderizarEntregasHoje();
-
-  alert("Entrega concluída. A encomenda foi excluída e o estoque foi atualizado.");
 }
 
 function limparFormularioEncomenda() {
@@ -1902,7 +1900,8 @@ document.getElementById("encomenda-pagamento").addEventListener("change", atuali
 
 document.getElementById("cancelar-edicao-encomenda").addEventListener("click", cancelarEdicaoEncomenda);
 
-document.getElementById("salvar-encomenda").addEventListener("click", () => {
+document.getElementById("salvar-encomenda").addEventListener("click", async () => {
+  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
   const cliente = document.getElementById("encomenda-cliente").value.trim();
   const telefone = document.getElementById("encomenda-telefone").value.trim();
   const dataEntrega = document.getElementById("encomenda-data").value;
@@ -1942,10 +1941,18 @@ document.getElementById("salvar-encomenda").addEventListener("click", () => {
     const indice = encomendas.findIndex(item => item.id === encomendaEditandoId);
 
     if (indice !== -1) {
-      encomendas[indice] = {
+      const encomendaAtualizada = {
         ...encomendas[indice],
         ...dadosEncomenda
       };
+      try {
+        await atualizarEncomendaNoBanco(encomendaAtualizada);
+      } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível salvar a alteração online. Tente novamente.");
+        return;
+      }
+      encomendas[indice] = encomendaAtualizada;
       salvarEncomendas();
       encomendaEditandoId = null;
       document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
@@ -1958,12 +1965,21 @@ document.getElementById("salvar-encomenda").addEventListener("click", () => {
     }
   }
 
-  encomendas.push({
+  const novaEncomenda = {
     id: Date.now(),
     ...dadosEncomenda,
     cadastradaEm: new Date().toLocaleString("pt-BR")
-  });
+  };
 
+  try {
+    await atualizarEncomendaNoBanco(novaEncomenda);
+  } catch (erro) {
+    console.error(erro);
+    alert("Não foi possível registrar a encomenda online. Tente novamente.");
+    return;
+  }
+
+  encomendas.push(novaEncomenda);
   salvarEncomendas();
   renderizarEncomendas();
   renderizarEntregasHoje();
@@ -1991,6 +2007,21 @@ document.addEventListener("keydown", (e) => {
     fecharEntregasHoje();
   }
 });
+
+// Carrega os dados compartilhados e atualiza a tela periodicamente.
+(async function iniciarBancoCompartilhado() {
+  try {
+    await carregarBancoCompartilhado();
+  } catch (erro) {
+    console.error(erro);
+    alert("Não foi possível conectar ao banco compartilhado. Confira a configuração do Supabase e recarregue a página.");
+  }
+})();
+
+setInterval(async () => {
+  if (!bancoCompartilhadoPronto || document.visibilityState !== "visible") return;
+  try { await recarregarBancoCompartilhado(); } catch (erro) { console.error(erro); }
+}, 15000);
 </script>
 
 </body>
