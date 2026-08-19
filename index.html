@@ -847,10 +847,129 @@ footer p {
   }
 }
 
+
+/* TARJAS - CONTAS E ADMIN */
+#auth-screen{position:fixed;inset:0;z-index:50000;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at top,#1a120d 0%,#050505 45%,#000 100%);padding:20px;box-sizing:border-box}
+.auth-card{width:min(480px,96vw);background:#101010;border:1px solid #fc6500;border-radius:18px;box-shadow:0 0 45px rgba(252,101,0,.2);padding:28px;box-sizing:border-box}
+.auth-brand{text-align:center;color:#fc6500;font-size:28px;font-weight:900;letter-spacing:1px}
+.auth-subtitle{text-align:center;color:#aaa;margin:5px 0 22px}
+.auth-tabs{display:flex;gap:8px;margin-bottom:18px}.auth-tab{flex:1;border:1px solid #333;background:#090909;color:#aaa;padding:10px;border-radius:9px;cursor:pointer;font-weight:bold}.auth-tab.active{border-color:#fc6500;color:#000;background:#fc6500}
+.auth-field{margin:10px 0}.auth-field label{display:block;color:#fc6500;font-weight:bold;font-size:13px;margin-bottom:5px}.auth-field input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #333;border-radius:8px;background:#050505;color:#fff}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auth-primary,.auth-secondary{width:100%;padding:12px;border-radius:9px;font-weight:900;cursor:pointer;margin-top:10px}.auth-primary{border:0;background:#fc6500;color:#000}.auth-secondary{border:1px solid #fc6500;background:#111;color:#fc6500}
+.auth-message{min-height:20px;margin-top:10px;color:#bbb;text-align:center;font-size:13px}.auth-message.error{color:#ff6b6b}.auth-message.ok{color:#7dff9b}
+#pending-screen{text-align:center;color:#fff}#pending-screen .pending-icon{font-size:48px}#pending-screen h2{color:#fc6500}
+.user-bar{width:calc(100% - 40px);max-width:1200px;margin:8px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;box-sizing:border-box;border:1px solid #222;border-radius:10px;background:#090909}
+.user-info{color:#aaa;font-size:13px}.user-info strong{color:#fc6500}.user-actions{display:flex;gap:7px;flex-wrap:wrap}.small-action{border:1px solid #333;background:#111;color:#fff;border-radius:7px;padding:7px 10px;cursor:pointer;font-weight:bold}.small-action.admin{border-color:#fc6500;color:#fc6500}.small-action.logout{color:#ff7777;border-color:#633}
+#admin-modal,#profile-modal{display:none;position:fixed;inset:0;z-index:45000;background:rgba(0,0,0,.86);justify-content:center;align-items:center;padding:18px;box-sizing:border-box}
+.admin-box{width:min(1100px,96vw);max-height:92vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 0 35px rgba(252,101,0,.18)}
+.admin-header{display:flex;justify-content:space-between;align-items:center;gap:10px}.admin-header h2{color:#fc6500;margin:0}.admin-close{border:1px solid #555;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+.admin-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0}.admin-tab{border:1px solid #333;background:#111;color:#aaa;padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:bold}.admin-tab.active{border-color:#fc6500;background:#fc6500;color:#000}
+.admin-section{display:none}.admin-section.active{display:block}.admin-card{background:#111;border:1px solid #282828;border-radius:10px;padding:12px;margin:8px 0}.admin-card strong{color:#fc6500}.admin-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.admin-btn{border:1px solid #444;background:#171717;color:#fff;padding:7px 10px;border-radius:7px;cursor:pointer}.admin-btn.ok{border-color:#2d7b42;color:#7dff9b}.admin-btn.warn{border-color:#8b6b00;color:#ffc107}.admin-btn.danger{border-color:#713030;color:#ff7777}.admin-btn.orange{border-color:#fc6500;color:#fc6500}
+.admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.admin-form-field label{display:block;color:#fc6500;font-size:12px;font-weight:bold;margin-bottom:4px}.admin-form-field input,.admin-form-field select{width:100%;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:7px;padding:9px}
+.permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.permission-item{border:1px solid #282828;padding:8px;border-radius:7px;color:#ddd}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.admin-stat{background:#111;border:1px solid #252525;border-radius:10px;padding:12px}.admin-stat b{display:block;color:#fc6500;font-size:22px}.admin-stat span{color:#aaa;font-size:12px}
+.admin-badge{display:inline-block;padding:4px 7px;border-radius:999px;font-size:11px;font-weight:bold;border:1px solid #444}.admin-badge.pending{color:#ffc107;border-color:#8b6b00}.admin-badge.approved{color:#7dff9b;border-color:#27713a}.admin-badge.rejected,.admin-badge.suspended{color:#ff7777;border-color:#713030}
+@media(max-width:700px){.auth-grid,.admin-form-grid,.permission-grid{grid-template-columns:1fr}.admin-stat-grid{grid-template-columns:1fr 1fr}.user-bar{flex-direction:column;align-items:flex-start}}
+#cadastro-modal{display:none!important}
+
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <div id="auth-login-register">
+      <div class="auth-brand">TARJAS</div>
+      <p class="auth-subtitle">Sistema de vendas e encomendas</p>
+      <div class="auth-tabs">
+        <button id="auth-tab-login" class="auth-tab active" type="button">ENTRAR</button>
+        <button id="auth-tab-register" class="auth-tab" type="button">CRIAR CONTA</button>
+      </div>
+      <form id="login-form">
+        <div class="auth-field"><label>E-mail</label><input id="login-email" type="email" required></div>
+        <div class="auth-field"><label>Senha</label><input id="login-password" type="password" required></div>
+        <button class="auth-primary" type="submit">ENTRAR</button>
+      </form>
+      <form id="register-form" style="display:none;">
+        <div class="auth-grid">
+          <div class="auth-field"><label>Nome</label><input id="reg-name" required></div>
+          <div class="auth-field"><label>Idade</label><input id="reg-age" type="number" min="1" max="100" required></div>
+          <div class="auth-field"><label>Telefone no jogo</label><input id="reg-phone" required></div>
+          <div class="auth-field"><label>Passaporte</label><input id="reg-passport" required></div>
+        </div>
+        <div class="auth-field"><label>E-mail</label><input id="reg-email" type="email" required></div>
+        <div class="auth-grid">
+          <div class="auth-field"><label>Senha</label><input id="reg-password" type="password" minlength="6" required></div>
+          <div class="auth-field"><label>Confirmar senha</label><input id="reg-password2" type="password" minlength="6" required></div>
+        </div>
+        <button class="auth-primary" type="submit">ENVIAR CADASTRO</button>
+      </form>
+      <div id="auth-message" class="auth-message"></div>
+    </div>
+    <div id="pending-screen" style="display:none;">
+      <div class="pending-icon">⏳</div>
+      <h2>CADASTRO EM ANÁLISE</h2>
+      <p>Seu cadastro foi salvo e está aguardando autorização dos administradores.</p>
+      <p>Depois da aprovação você poderá usar o sistema.</p>
+      <button id="pending-logout" class="auth-secondary" type="button">Sair</button>
+    </div>
+  </div>
+</div>
+
+<div id="admin-modal">
+  <div class="admin-box">
+    <div class="admin-header"><h2>PAINEL ADMINISTRATIVO</h2><button class="admin-close" onclick="fecharAdmin()">Fechar</button></div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-admin-tab="dashboard">Visão geral</button>
+      <button class="admin-tab" data-admin-tab="members">Membros</button>
+      <button class="admin-tab" data-admin-tab="sales">Aprovar vendas</button>
+      <button class="admin-tab" data-admin-tab="stock">Estoque</button>
+      <button class="admin-tab" data-admin-tab="roles">Cargos</button>
+      <button class="admin-tab" data-admin-tab="deliveries">Entregas finalizadas</button>
+      <button class="admin-tab" data-admin-tab="logs">Logs</button>
+    </div>
+    <section id="admin-dashboard" class="admin-section active">
+      <div class="admin-stat-grid">
+        <div class="admin-stat"><b id="stat-members">0</b><span>Membros</span></div>
+        <div class="admin-stat"><b id="stat-pending-members">0</b><span>Cadastros pendentes</span></div>
+        <div class="admin-stat"><b id="stat-pending-sales">0</b><span>Vendas pendentes</span></div>
+        <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas finalizadas</span></div>
+      </div>
+      <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;">Aqui você aprova membros e vendas, administra cargos, controla o estoque e consulta todo o histórico.</p></div>
+    </section>
+    <section id="admin-members" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarMembrosAdmin()">Atualizar</button></div><div id="admin-members-list"></div></section>
+    <section id="admin-sales" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarVendasAdmin()">Atualizar</button></div><div id="admin-sales-list"></div></section>
+    <section id="admin-stock" class="admin-section">
+      <div class="admin-card"><strong>Controle de estoque</strong><p style="color:#aaa;">O estoque só pode ser alterado por quem possui a permissão de estoque.</p>
+      <div id="admin-stock-list" class="admin-form-grid"></div><div class="admin-actions"><button class="admin-btn orange" onclick="salvarEstoqueAdmin()">Salvar estoque</button></div></div>
+    </section>
+    <section id="admin-roles" class="admin-section">
+      <div class="admin-card"><strong>Criar novo cargo</strong>
+        <div class="admin-form-grid" style="margin-top:10px;">
+          <div class="admin-form-field"><label>Nome</label><input id="new-role-name" placeholder="Ex.: Supervisor"></div>
+          <div class="admin-form-field"><label>Identificador</label><input id="new-role-slug" placeholder="ex: supervisor"></div>
+        </div>
+        <div class="admin-form-field" style="margin-top:10px;"><label>Descrição</label><input id="new-role-description"></div>
+        <div id="permissions-create-grid" class="permission-grid"></div>
+        <div class="admin-actions"><button class="admin-btn orange" onclick="criarCargoAdmin()">Criar cargo</button></div>
+      </div>
+      <div id="admin-roles-list"></div>
+    </section>
+    <section id="admin-deliveries" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasAdmin()">Atualizar</button></div><div id="admin-deliveries-list"></div></section>
+    <section id="admin-logs" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarLogsAdmin()">Atualizar</button></div><div id="admin-logs-list"></div></section>
+  </div>
+</div>
+
+<div id="profile-modal">
+  <div class="admin-box" style="max-width:600px;">
+    <div class="admin-header"><h2>MEU PERFIL</h2><button class="admin-close" onclick="fecharPerfil()">Fechar</button></div>
+    <div id="profile-content"></div>
+  </div>
+</div>
+
   <header>
     <div class="logo">
       <img src="https://cdn.discordapp.com/attachments/1341224116350484560/1539028728749756446/ChatGPT_Image_17_de_ago._de_2026_18_48_53.png?ex=6a84d3b2&is=6a838232&hm=a998e26efb386a2c2655dd2194ebd65b2041690baa4f840e301050d8d2b8325f&"
@@ -861,6 +980,16 @@ footer p {
     </div>
    
   </header>
+
+
+<div id="user-bar" class="user-bar" style="display:none;">
+  <div class="user-info">Logado como <strong id="user-name-label">—</strong><span id="user-role-label"></span></div>
+  <div class="user-actions">
+    <button id="abrir-perfil" class="small-action" type="button">Meu Perfil</button>
+    <button id="abrir-admin" class="small-action admin" type="button" style="display:none;">ADMIN</button>
+    <button id="logout-btn" class="small-action logout" type="button">Sair</button>
+  </div>
+</div>
 
   <main>
     <div class="tabela-container">
@@ -898,6 +1027,7 @@ footer p {
           <button id="abrir-estoque" class="gestao-btn" type="button">Estoque</button>
           <button id="abrir-encomendas" class="gestao-btn" type="button">Encomendas</button>
           <button id="abrir-entregas-hoje" class="gestao-btn" type="button">ENTREGAS DE HOJE</button>
+          <button id="abrir-admin-main" class="gestao-btn" type="button" style="display:none;">ADMIN</button>
         </div>
         <div id="totais" aria-live="polite"></div>
       </div>
@@ -1023,9 +1153,18 @@ const SUPABASE_HEADERS = {
 let bancoCompartilhadoPronto = false;
 
 async function supabaseFetch(path, options = {}) {
+  let authHeaders = {};
+  try {
+    const sessionResult = window.supabaseClient
+      ? await window.supabaseClient.auth.getSession()
+      : { data: { session: null } };
+    const token = sessionResult?.data?.session?.access_token;
+    if (token) authHeaders = { "Authorization": `Bearer ${token}` };
+  } catch (_) {}
+
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
-    headers: { ...SUPABASE_HEADERS, ...(options.headers || {}) }
+    headers: { ...SUPABASE_HEADERS, ...authHeaders, ...(options.headers || {}) }
   });
   if (!response.ok) {
     const texto = await response.text();
@@ -1084,7 +1223,8 @@ function encomendaParaBanco(e) {
     valor: Number(e.valor) || 0, comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0,
     itens_texto: e.itensTexto || "", itens: Array.isArray(e.itens) ? e.itens : [],
     pagamento: e.pagamento || "limpo", data_entrega: e.dataEntrega, hora_entrega: e.horaEntrega || "",
-    vendedor: e.vendedor || "", vendedor_id: e.vendedorId || "", cadastrada_em: e.cadastradaEm || ""
+    vendedor: e.vendedor || "", vendedor_id: e.vendedorId || "", cadastrada_em: e.cadastradaEm || "",
+    status: e.status || "pending", created_by: e.createdBy || null, approved_by: e.approvedBy || null, approved_at: e.approvedAt || null, rejected_by: e.rejectedBy || null, rejected_at: e.rejectedAt || null, rejection_reason: e.rejectionReason || ""
   };
 }
 
@@ -1094,7 +1234,8 @@ function encomendaDoBanco(e) {
     comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0, itensTexto: e.itens_texto || "",
     itens: Array.isArray(e.itens) ? e.itens : [], pagamento: e.pagamento || "limpo",
     dataEntrega: e.data_entrega, horaEntrega: e.hora_entrega || "", vendedor: e.vendedor || "",
-    vendedorId: e.vendedor_id || "", cadastradaEm: e.cadastrada_em || ""
+    vendedorId: e.vendedor_id || "", cadastradaEm: e.cadastrada_em || "",
+    status: e.status || "pending", createdBy: e.created_by || null, approvedBy: e.approved_by || null, approvedAt: e.approved_at || null, rejectedBy: e.rejected_by || null, rejectedAt: e.rejected_at || null, rejectionReason: e.rejection_reason || ""
   };
 }
 
@@ -1262,16 +1403,6 @@ function finalizarPedido() {
       });
     }
   });
-
-  const faltasEstoque = itens.filter(item => estoqueDisponivel(item.nome) < item.quantidade);
-  if (faltasEstoque.length > 0) {
-    const mensagem = faltasEstoque
-      .map(item => `${item.nome}: disponível ${estoqueDisponivel(item.nome)}, solicitado ${item.quantidade}`)
-      .join("\n");
-    alert("Estoque insuficiente para finalizar o pedido:\n\n" + mensagem + "\n\nAbra o botão Estoque para atualizar as quantidades.");
-    return;
-  }
-
   if (quantidadeTotal === 0) {
     alert("Adicione pelo menos um item ao pedido antes de finalizar.");
     document.querySelector("#totais").innerHTML =
@@ -1279,12 +1410,8 @@ function finalizarPedido() {
     return;
   }
 
-  /* Baixa automática do estoque somente depois de validar o pedido. */
-  itens.forEach(item => {
-    estoque[item.nome] = Math.max(0, estoqueDisponivel(item.nome) - item.quantidade);
-  });
-  salvarEstoque();
-
+  /* O estoque NÃO baixa aqui. A baixa ocorre somente quando a entrega
+     for aprovada e concluída no Supabase. */
   const comissao = total * porcentagemVendedor;
   const repasse = total - comissao;
 
@@ -1812,6 +1939,16 @@ function fecharEncomendas() {
   document.getElementById("encomendas-modal").style.display = "none";
 }
 
+function statusBadgeHtml(encomenda) {
+  const m = {
+    pending:["pending","AGUARDANDO APROVAÇÃO"],
+    approved:["approved","COMPRA VERIFICADA PELOS ADMINS"],
+    rejected:["rejected","RECUSADA"]
+  };
+  const x=m[encomenda.status]||["pending",String(encomenda.status||"PENDENTE").toUpperCase()];
+  return `<span class="admin-badge ${x[0]}">${escapeHtml(x[1])}</span>`;
+}
+
 function renderizarEncomendas() {
   const lista = document.getElementById("encomendas-lista");
 
@@ -1832,6 +1969,7 @@ function renderizarEncomendas() {
       <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
       <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)}</div>
       <div><strong>Passaporte / ID:</strong> ${escapeHtml(encomenda.vendedorId)}</div>
+      <div><strong>Status:</strong> ${statusBadgeHtml(encomenda)}</div>
       <div style="color:#777;font-size:12px;margin-top:5px;">Cadastrada em ${escapeHtml(encomenda.cadastradaEm)}</div>
       <div class="encomenda-acoes">
         <button class="encomenda-acao" type="button" onclick="editarEncomenda(${encomenda.id})">Editar Encomenda</button>
@@ -1933,7 +2071,9 @@ document.getElementById("salvar-encomenda").addEventListener("click", async () =
     dataEntrega,
     horaEntrega,
     vendedor: dadosVendedor.nome,
-    vendedorId: dadosVendedor.id
+    vendedorId: dadosVendedor.id,
+    status: "pending",
+    createdBy: window.authUser?.id || null
   };
 
   if (encomendaEditandoId !== null) {
@@ -2007,20 +2147,191 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Carrega os dados compartilhados e atualiza a tela periodicamente.
-(async function iniciarBancoCompartilhado() {
-  try {
-    await carregarBancoCompartilhado();
-  } catch (erro) {
-    console.error(erro);
-    alert("Não foi possível conectar ao banco compartilhado.\n\nDetalhes: " + (erro?.message || "erro desconhecido") + "\n\nConfira a configuração do Supabase e recarregue a página.");
-  }
-})();
+// O banco começa a carregar somente depois que um usuário aprovado entra.
+window.iniciarBancoDepoisDoLogin = async function() {
+  try { await carregarBancoCompartilhado(); }
+  catch (erro) { console.error(erro); alert("Não foi possível conectar ao banco compartilhado.\n\nDetalhes: " + (erro?.message || "erro desconhecido")); }
+};
 
 setInterval(async () => {
-  if (!bancoCompartilhadoPronto || document.visibilityState !== "visible") return;
+  if (!bancoCompartilhadoPronto || !window.authUser || document.visibilityState !== "visible") return;
   try { await recarregarBancoCompartilhado(); } catch (erro) { console.error(erro); }
 }, 15000);
 </script>
 
 </body>
+<script>
+
+(function(){
+  const client = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  window.supabaseClient=client; window.authUser=null; window.currentProfile=null; window.currentPermissions=new Set();
+  const $=id=>document.getElementById(id), screen=$("auth-screen"), msgEl=$("auth-message");
+  const msg=(t,c="")=>{msgEl.textContent=t||"";msgEl.className="auth-message "+c;};
+  const mode=m=>{ $("auth-tab-login").classList.toggle("active",m==="login"); $("auth-tab-register").classList.toggle("active",m==="register"); $("login-form").style.display=m==="login"?"block":"none"; $("register-form").style.display=m==="register"?"block":"none"; msg(""); };
+  $("auth-tab-login").onclick=()=>mode("login"); $("auth-tab-register").onclick=()=>mode("register");
+
+  $("login-form").onsubmit=async e=>{
+    e.preventDefault(); msg("Entrando...");
+    const {error}=await client.auth.signInWithPassword({email:$("login-email").value.trim(),password:$("login-password").value});
+    if(error) msg(error.message,"error");
+  };
+  $("register-form").onsubmit=async e=>{
+    e.preventDefault();
+    const name=$("reg-name").value.trim(), age=Number($("reg-age").value), phone=$("reg-phone").value.trim(), passport=$("reg-passport").value.trim(), email=$("reg-email").value.trim(), pass=$("reg-password").value, pass2=$("reg-password2").value;
+    if(pass!==pass2){msg("As senhas não conferem.","error");return;}
+    msg("Enviando cadastro...");
+    const {data,error}=await client.auth.signUp({email,password:pass,options:{data:{name,age,game_phone:phone,passport}}});
+    if(error){msg(error.message,"error");return;}
+    if(!data.session) msg("Cadastro criado. Confirme o e-mail se o Supabase solicitar e depois entre novamente.","ok");
+    else msg("Cadastro enviado para aprovação.","ok");
+  };
+  const logout=()=>client.auth.signOut(); $("logout-btn").onclick=logout; $("pending-logout").onclick=logout;
+
+  async function loadProfile(user){
+    const {data,error}=await client.from("profiles").select("*,roles(id,name,slug,description)").eq("id",user.id).single();
+    if(error) throw error; window.currentProfile=data;
+    const {data:rp,error:pe}=await client.from("role_permissions").select("permissions(slug,name)").eq("role_id",data.role_id);
+    if(pe) throw pe; window.currentPermissions=new Set((rp||[]).map(x=>x.permissions?.slug).filter(Boolean)); return data;
+  }
+  const has=p=>window.currentPermissions.has(p);
+
+  function enter(profile){
+    dadosVendedor = { nome: profile.name || "", id: profile.passport || "" };
+    screen.style.display="none"; $("user-bar").style.display="flex"; $("user-name-label").textContent=profile.name||window.authUser.email; $("user-role-label").textContent=profile.roles?.name?` • ${profile.roles.name}`:"";
+    const admin=["approve_members","manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries","view_logs"].some(has);
+    $("abrir-admin").style.display=admin?"inline-block":"none"; $("abrir-admin-main").style.display=admin?"inline-block":"none"; $("abrir-estoque").style.display="none";
+    if(window.iniciarBancoDepoisDoLogin) window.iniciarBancoDepoisDoLogin();
+  }
+  function pending(){screen.style.display="flex";$("auth-login-register").style.display="none";$("pending-screen").style.display="block";$("user-bar").style.display="none";$("abrir-admin").style.display="none";$("abrir-admin-main").style.display="none";}
+  function loginView(){screen.style.display="flex";$("auth-login-register").style.display="block";$("pending-screen").style.display="none";$("user-bar").style.display="none";}
+
+  async function refresh(){
+    const {data}=await client.auth.getSession();
+    if(!data.session){window.authUser=null;loginView();return;}
+    window.authUser=data.session.user;
+    try{const p=await loadProfile(window.authUser); if(p.status!=="approved"){pending();return;} enter(p);}
+    catch(e){console.error(e);loginView();msg("Perfil não encontrado. Execute o SQL de configuração novamente.","error");}
+  }
+  client.auth.onAuthStateChange(async()=>{await refresh();});
+
+  $("abrir-perfil").onclick=async()=>{
+    const p=window.currentProfile;
+    $("profile-content").innerHTML=`<div class="admin-card"><div class="admin-form-grid">
+      <div class="admin-form-field"><label>Nome</label><input id="pf-name" value="${escapeHtml(p.name||"")}"></div>
+      <div class="admin-form-field"><label>Idade</label><input id="pf-age" type="number" value="${p.age||""}"></div>
+      <div class="admin-form-field"><label>Telefone no jogo</label><input id="pf-phone" value="${escapeHtml(p.game_phone||"")}"></div>
+      <div class="admin-form-field"><label>Passaporte</label><input id="pf-passport" value="${escapeHtml(p.passport||"")}"></div>
+    </div><p style="color:#aaa">E-mail: ${escapeHtml(p.email||window.authUser.email)}</p><p style="color:#aaa">Cargo: <strong style="color:#fc6500">${escapeHtml(p.roles?.name||"Sem cargo")}</strong></p>
+    <div class="admin-actions"><button class="admin-btn orange" onclick="salvarMeuPerfil()">Salvar</button></div></div>`;
+    $("profile-modal").style.display="flex";
+  };
+  window.fecharPerfil=()=>{$("profile-modal").style.display="none";};
+  window.salvarMeuPerfil=async()=>{
+    const patch={name:$("pf-name").value.trim(),age:Number($("pf-age").value)||null,game_phone:$("pf-phone").value.trim(),passport:$("pf-passport").value.trim()};
+    const {error}=await client.from("profiles").update(patch).eq("id",window.authUser.id); if(error){alert(error.message);return;}
+    await loadProfile(window.authUser); fecharPerfil(); enter(window.currentProfile); alert("Perfil atualizado.");
+  };
+
+  window.fecharAdmin=()=>{$("admin-modal").style.display="none";};
+  window.abrirAdmin=async()=>{$("admin-modal").style.display="flex";await Promise.all([carregarDashboardAdmin(),carregarMembrosAdmin(),carregarVendasAdmin(),carregarEstoqueAdmin(),carregarCargosAdmin(),carregarEntregasAdmin(),carregarLogsAdmin(),montarPermissoes()]);};
+  document.querySelectorAll(".admin-tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".admin-section").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("admin-"+b.dataset.adminTab).classList.add("active");});
+  $("abrir-admin").onclick=window.abrirAdmin; $("abrir-admin-main").onclick=window.abrirAdmin;
+
+  async function carregarDashboardAdmin(){
+    const [a,b,c,d]=await Promise.all([
+      client.from("profiles").select("id",{count:"exact",head:true}),
+      client.from("profiles").select("id",{count:"exact",head:true}).eq("status","pending"),
+      client.from("orders").select("id",{count:"exact",head:true}).eq("status","pending"),
+      client.from("delivery_history").select("id",{count:"exact",head:true})
+    ]);
+    $("stat-members").textContent=a.count??0;$("stat-pending-members").textContent=b.count??0;$("stat-pending-sales").textContent=c.count??0;$("stat-deliveries").textContent=d.count??0;
+  }
+
+  window.carregarMembrosAdmin=async()=>{
+    const {data,error}=await client.from("profiles").select("*,roles(id,name,slug)").order("created_at",{ascending:false});
+    if(error){$("admin-members-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    const {data:roles}=await client.from("roles").select("*").order("name");
+    $("admin-members-list").innerHTML=(data||[]).map(p=>`<div class="admin-card">
+      <strong>${escapeHtml(p.name||"Sem nome")}</strong> — ${escapeHtml(p.email||"")}
+      <div style="color:#bbb">Idade: ${p.age??"—"} • Telefone: ${escapeHtml(p.game_phone||"—")} • Passaporte: ${escapeHtml(p.passport||"—")}</div>
+      <div>Status: <span class="admin-badge ${escapeHtml(p.status)}">${escapeHtml(p.status.toUpperCase())}</span> • Cargo: <strong>${escapeHtml(p.roles?.name||"Sem cargo")}</strong></div>
+      <div class="admin-actions">
+      ${p.status==="pending"?`<button class="admin-btn ok" onclick="alterarStatusMembro('${p.id}','approved')">Aprovar</button><button class="admin-btn danger" onclick="alterarStatusMembro('${p.id}','rejected')">Recusar</button>`:""}
+      <button class="admin-btn orange" onclick="editarMembroAdmin('${p.id}')">Editar perfil</button>
+      ${p.status==="approved"?`<button class="admin-btn warn" onclick="alterarStatusMembro('${p.id}','suspended')">Suspender</button>`:""}
+      ${(p.status==="suspended"||p.status==="rejected")?`<button class="admin-btn ok" onclick="alterarStatusMembro('${p.id}','approved')">Reativar</button>`:""}
+      <select class="admin-btn" onchange="alterarCargoMembro('${p.id}',this.value)"><option value="">Alterar cargo...</option>${(roles||[]).map(r=>`<option value="${r.id}" ${p.role_id===r.id?"selected":""}>${escapeHtml(r.name)}</option>`).join("")}</select>
+      </div></div>`).join("")||`<div class="admin-card">Nenhum membro.</div>`;
+  };
+  window.alterarStatusMembro=async(id,status)=>{const reason=status==="rejected"?(prompt("Motivo (opcional):")||""):"";const {data,error}=await client.rpc("admin_set_member_status",{p_user_id:id,p_status:status,p_reason:reason});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarMembrosAdmin();await carregarDashboardAdmin();};
+  
+  window.editarMembroAdmin=async(id)=>{
+    const {data:p,error}=await client.from("profiles").select("*").eq("id",id).single();
+    if(error){alert(error.message);return;}
+    const name=prompt("Nome:",p.name||""); if(name===null)return;
+    const ageRaw=prompt("Idade:",p.age??""); if(ageRaw===null)return;
+    const phone=prompt("Telefone no jogo:",p.game_phone||""); if(phone===null)return;
+    const passport=prompt("Passaporte:",p.passport||""); if(passport===null)return;
+    const {error:e}=await client.from("profiles").update({
+      name:name.trim(), age:Number(ageRaw)||null, game_phone:phone.trim(), passport:passport.trim()
+    }).eq("id",id);
+    if(e){alert(e.message);return;}
+    await carregarMembrosAdmin();
+    alert("Perfil atualizado.");
+  };
+
+window.alterarCargoMembro=async(id,role)=>{if(!role)return;const {data,error}=await client.rpc("admin_set_member_role",{p_user_id:id,p_role_id:Number(role)});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarMembrosAdmin();};
+
+  window.carregarVendasAdmin=async()=>{
+    const {data,error}=await client.from("orders").select("*").order("id",{ascending:false});
+    if(error){$("admin-sales-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    const rows=(data||[]).filter(o=>o.status==="pending"||o.status==="rejected");
+    $("admin-sales-list").innerHTML=rows.map(o=>`<div class="admin-card"><strong>Venda #${o.id}</strong> <span class="admin-badge ${o.status}">${escapeHtml((o.status||"").toUpperCase())}</span>
+      <div style="color:#bbb">Cliente: ${escapeHtml(o.cliente)} • Telefone: ${escapeHtml(o.telefone)}</div>
+      <div style="color:#bbb">Vendedor: ${escapeHtml(o.vendedor)} • Passaporte: ${escapeHtml(o.vendedor_id)}</div>
+      <div style="color:#bbb">Entrega: ${escapeHtml(o.data_entrega||"—")} às ${escapeHtml(o.hora_entrega||"—")}</div>
+      <div>${escapeHtml(o.itens_texto||"")}</div><div><strong>Valor:</strong> ${formatBrl(Number(o.valor)||0)} • <strong>Comissão:</strong> ${formatBrl(Number(o.comissao)||0)}</div>
+      ${o.rejection_reason?`<div style="color:#ff7777">Motivo: ${escapeHtml(o.rejection_reason)}</div>`:""}
+      <div class="admin-actions"><button class="admin-btn ok" onclick="alterarStatusVenda(${o.id},'approved')">Aprovar</button><button class="admin-btn danger" onclick="recusarVenda(${o.id})">Recusar</button></div></div>`).join("")||`<div class="admin-card">Nenhuma venda pendente.</div>`;
+  };
+  window.alterarStatusVenda=async(id,status)=>{const {data,error}=await client.rpc("admin_set_order_status",{p_order_id:id,p_status:status,p_reason:""});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();};
+  window.recusarVenda=async id=>{const reason=prompt("Motivo (opcional):")||"";const {data,error}=await client.rpc("admin_set_order_status",{p_order_id:id,p_status:"rejected",p_reason:reason});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();};
+
+  window.carregarEstoqueAdmin=async()=>{
+    const {data,error}=await client.from("stock").select("product_name,quantity").order("product_name");
+    if(error){$("admin-stock-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    $("admin-stock-list").innerHTML=(data||[]).map(r=>`<div class="admin-form-field"><label>${escapeHtml(r.product_name)}</label><input type="number" min="0" data-admin-stock="${escapeHtml(r.product_name)}" value="${Number(r.quantity)||0}"></div>`).join("");
+  };
+  window.salvarEstoqueAdmin=async()=>{
+    const rows=[...document.querySelectorAll("[data-admin-stock]")].map(i=>({product_name:i.dataset.adminStock,quantity:Math.max(0,Math.floor(Number(i.value)||0)),updated_at:new Date().toISOString()}));
+    const {error}=await client.from("stock").upsert(rows,{onConflict:"product_name"});if(error){alert(error.message);return;}await recarregarBancoCompartilhado();alert("Estoque salvo.");
+  };
+
+  async function montarPermissoes(){const {data}=await client.from("permissions").select("*").order("name");$("permissions-create-grid").innerHTML=(data||[]).map(p=>`<label class="permission-item"><input type="checkbox" value="${p.id}" data-new-perm> ${escapeHtml(p.name)}</label>`).join("");}
+  window.criarCargoAdmin=async()=>{
+    const name=$("new-role-name").value.trim(),slug=$("new-role-slug").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,"-"),description=$("new-role-description").value.trim(),ids=[...document.querySelectorAll("[data-new-perm]:checked")].map(x=>Number(x.value));
+    if(!name||!slug){alert("Informe nome e identificador.");return;}
+    const {data:role,error}=await client.from("roles").insert({name,slug,description}).select().single();if(error){alert(error.message);return;}
+    if(ids.length){const {error:e}=await client.from("role_permissions").insert(ids.map(permission_id=>({role_id:role.id,permission_id})));if(e){alert(e.message);return;}}
+    $("new-role-name").value="";$("new-role-slug").value="";$("new-role-description").value="";await carregarCargosAdmin();alert("Cargo criado.");
+  };
+  window.carregarCargosAdmin=async()=>{
+    const {data,error}=await client.from("roles").select("*,role_permissions(permission_id,permissions(id,name,slug))").order("name");
+    if(error){$("admin-roles-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    $("admin-roles-list").innerHTML=(data||[]).map(r=>`<div class="admin-card"><strong>${escapeHtml(r.name)}</strong> <span style="color:#777">(${escapeHtml(r.slug)})</span><div style="color:#aaa">${escapeHtml(r.description||"")}</div><div style="color:#bbb">Permissões: ${(r.role_permissions||[]).map(x=>escapeHtml(x.permissions?.name||"")).join(", ")||"Nenhuma"}</div></div>`).join("");
+  };
+  window.carregarEntregasAdmin=async()=>{
+    const {data,error}=await client.from("delivery_history").select("*").order("completed_at",{ascending:false}).limit(100);
+    if(error){$("admin-deliveries-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    $("admin-deliveries-list").innerHTML=(data||[]).map(d=>`<div class="admin-card"><strong>Entrega #${d.order_id}</strong> • ${escapeHtml(d.client||"")}<div style="color:#bbb">${escapeHtml(d.items_text||"")}</div><div style="color:#bbb">Vendedor: ${escapeHtml(d.seller||"")} • Passaporte: ${escapeHtml(d.seller_id||"")}</div><div>Valor: ${formatBrl(Number(d.value)||0)} • Comissão: ${formatBrl(Number(d.commission)||0)}</div><div style="color:#777;font-size:12px">${new Date(d.completed_at).toLocaleString("pt-BR")}</div></div>`).join("")||`<div class="admin-card">Nenhuma entrega.</div>`;
+  };
+  window.carregarLogsAdmin=async()=>{
+    const {data,error}=await client.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(150);
+    if(error){$("admin-logs-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
+    $("admin-logs-list").innerHTML=(data||[]).map(l=>`<div class="admin-card"><strong>${escapeHtml(l.action)}</strong> • ${escapeHtml(l.entity_type)} #${escapeHtml(l.entity_id)}<div style="color:#aaa">${escapeHtml(JSON.stringify(l.details||{}))}</div><div style="color:#777;font-size:12px">${new Date(l.created_at).toLocaleString("pt-BR")}</div></div>`).join("")||`<div class="admin-card">Nenhum log.</div>`;
+  };
+
+  refresh();
+})();
+
+</script>
