@@ -875,6 +875,15 @@ footer p {
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* Detalhes do calendário são exibidos no centro, sem deslocar a página. */
+.calendar-day-modal{display:none;position:fixed;inset:0;z-index:42000;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.82)}
+.calendar-day-dialog{width:min(680px,96vw);max-height:86vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 20px 70px rgba(0,0,0,.72)}
+.calendar-day-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid #292929}.calendar-day-modal-head h2{margin:4px 0 0;color:#fff;font-size:20px}.calendar-day-modal-head button{width:36px;height:36px;border:1px solid #555;border-radius:8px;background:#111;color:#fff;font-size:25px;line-height:1;cursor:pointer}.calendar-day-modal-head button:hover{background:#fc6500;color:#000;border-color:#fc6500}.calendar-day-dialog .calendar-events-head{margin-top:14px}.calendar-day-dialog .calendar-event{margin-top:8px}
+@media(max-width:600px){.calendar-day-dialog{padding:14px;max-height:90vh}.calendar-day-modal-head h2{font-size:17px}}
+/* Menu do usuário e configurações administrativas. */
+.user-menu-wrap{position:relative}.user-avatar-button{width:42px;height:42px;border:1px solid #fc6500;border-radius:50%;background:#17110b;color:#fc6500;font-size:21px;cursor:pointer}.user-avatar-button:hover{background:#fc6500;color:#000}.user-menu{position:absolute;right:0;top:50px;z-index:47000;width:150px;padding:6px;border:1px solid #fc6500;border-radius:10px;background:#0d0d0d;box-shadow:0 12px 30px rgba(0,0,0,.55)}.user-menu button{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:#fff;text-align:left;font-weight:bold;cursor:pointer}.user-menu button:hover{background:#24201c}.user-menu button.logout{color:#ff8585}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.settings-title{color:#fc6500;font-weight:900;margin:18px 0 6px}.settings-help{color:#777;font-size:11px;line-height:1.45;margin:0 0 8px}.settings-save{margin-top:14px}.level-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid #fc6500;border-radius:999px;background:#18110b;color:#fc6500;font-weight:900;font-size:11px}@media(max-width:650px){.settings-grid{grid-template-columns:1fr}}
+</style>
 </head>
 
 <body>
@@ -930,15 +939,17 @@ footer p {
           <button class="admin-tab" data-admin-tab="sales">Aprovar operações</button>
           <button class="admin-tab" data-admin-tab="stock">Estoque</button>
           <button class="admin-tab" data-admin-tab="roles">Cargos e permissões</button>
-          <button class="admin-tab" data-admin-tab="deliveries">Entregas finalizadas</button>
+          <button class="admin-tab" data-admin-tab="deliveries">Entregas aprovadas</button>
+          <button class="admin-tab" data-admin-tab="cancelled">Entregas recusadas</button>
           <button class="admin-tab" data-admin-tab="missions">Missões e recompensas</button>
+          <button id="admin-settings-tab" class="admin-tab" data-admin-tab="settings" style="display:none">Configurações</button>
         </div>
         <section id="admin-dashboard" class="admin-section active">
           <div class="admin-stat-grid">
             <div class="admin-stat"><b id="stat-members">0</b><span>Membros</span></div>
-            <div class="admin-stat"><b id="stat-pending-sales">0</b><span>Operações pendentes</span></div>
-            <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas finalizadas</span></div>
-            <div class="admin-stat"><b id="stat-rejected">0</b><span>Operações recusadas</span></div>
+            <div class="admin-stat"><b id="stat-pending-sales">0</b><span>Operações em análise</span></div>
+            <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas aprovadas</span></div>
+            <div class="admin-stat"><b id="stat-rejected">0</b><span>Registros encerrados</span></div>
           </div>
           <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;line-height:1.6">Use a coluna esquerda para acompanhar quem está online e o volume de vendas e encomendas de cada membro. Em <b style="color:#fc6500">Cargos e permissões</b> você define exatamente o que cada cargo pode fazer.</p></div>
           <div id="admin-dashboard-members"></div>
@@ -960,6 +971,7 @@ footer p {
           <div id="admin-roles-list"></div>
         </section>
         <section id="admin-deliveries" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasAdmin()">Atualizar</button></div><div id="admin-deliveries-list"></div></section>
+        <section id="admin-cancelled" class="admin-section"><div class="admin-card"><strong>ENTREGAS RECUSADAS</strong><p style="color:#aaa;margin:6px 0 0">Operações recusadas pelos administradores. O estoque não é alterado.</p></div><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasRecusadasAdmin()">Atualizar</button></div><div id="admin-cancelled-list"></div></section>
         <section id="admin-missions" class="admin-section">
           <div class="mission-admin-grid">
             <div class="admin-card">
@@ -1002,6 +1014,7 @@ footer p {
               <div class="admin-form-grid" style="margin-top:12px">
                 <div class="admin-form-field"><label>Nome da recompensa</label><input id="reward-name" placeholder="Ex.: Folga premium"></div>
                 <div class="admin-form-field"><label>Custo em estrelas</label><input id="reward-cost" type="number" min="1" step="1" value="10"></div>
+                <div class="admin-form-field"><label>Quantidade disponível</label><input id="reward-quantity" type="number" min="1" step="1" value="1"></div>
               </div>
               <div class="admin-form-field" style="margin-top:10px"><label>Descrição</label><textarea id="reward-description" class="mission-textarea" placeholder="O que o player recebe"></textarea></div>
               <button class="admin-btn orange" type="button" onclick="criarRecompensaAdmin()">Criar recompensa</button>
@@ -1011,6 +1024,9 @@ footer p {
               <div id="admin-reward-redemptions"></div>
             </div>
           </div>
+        </section>
+        <section id="admin-settings" class="admin-section">
+          <div class="admin-card"><strong>CONFIGURAÇÕES RESTRITAS</strong><p style="color:#aaa;line-height:1.5">Somente o Dono e Administradores podem alterar imagens, webhooks e a experiência de cada ação.</p><div id="admin-settings-content"></div></div>
         </section>
       </div>
     </div>
@@ -1057,10 +1073,9 @@ footer p {
 <div id="user-bar" class="user-bar" style="display:none;">
   <div class="user-info">Logado como <strong id="user-name-label">—</strong><span id="user-role-label"></span></div>
   <div class="user-actions">
-    <button id="abrir-perfil" class="small-action" type="button">Meu Perfil</button>
     <button id="abrir-missoes-bar" class="small-action mission-small" type="button">MISSÕES ★</button>
     <button id="abrir-admin" class="small-action admin" type="button" style="display:none;">ADMIN</button>
-    <button id="logout-btn" class="small-action logout" type="button">Sair</button>
+    <div class="user-menu-wrap"><button id="user-menu-toggle" class="user-avatar-button" type="button" aria-label="Abrir opções do usuário">👤</button><div id="user-menu" class="user-menu" style="display:none"><button id="abrir-perfil" type="button">Meu perfil</button><button id="logout-btn" class="logout" type="button">Sair</button></div></div>
   </div>
 </div>
 
@@ -1071,34 +1086,36 @@ footer p {
       <h2>Organize suas vendas em um só lugar.</h2>
       <p>Registre uma venda ou encomenda, acompanhe a aprovação e visualize sua agenda diretamente no calendário.</p>
     </div>
-    <div class="hero-actions">
+    <div class="hero-actions-wrap">
+      <div class="hero-actions">
       <button id="abrir-realizar-venda" class="hero-primary" type="button"><span>＋</span> REALIZAR VENDA/ ENCOMENDA</button>
       <button id="abrir-estoque" class="hero-secondary" type="button">ESTOQUE</button>
       <button id="abrir-entregas-hoje" class="hero-secondary" type="button">ENTREGAS</button>
       <button id="abrir-missoes" class="hero-secondary mission-trigger" type="button">MISSÕES ★</button>
       <button id="abrir-admin-main" class="hero-secondary" type="button" style="display:none;">ADMIN</button>
+      </div>
     </div>
   </section>
 
   <section class="home-stats">
-    <div class="home-stat"><span>AGENDADOS NO MÊS</span><strong id="home-stat-orders">0</strong></div>
-    <div class="home-stat"><span>VENDAS NO MÊS</span><strong id="home-stat-sales">0</strong></div>
-    <div class="home-stat"><span>PENDENTES</span><strong id="home-stat-pending">0</strong></div>
-    <div class="home-stat"><span>APROVADOS</span><strong id="home-stat-approved">0</strong></div>
+    <div class="home-stat"><span>VENDAS</span><strong id="home-stat-sales">0</strong></div>
+    <div class="home-stat"><span>ENCOMENDAS</span><strong id="home-stat-orders">0</strong></div>
+    <div class="home-stat"><span>MISSÕES</span><strong id="home-stat-missions">0</strong></div>
+    <div class="home-stat"><span>CONCLUÍDAS</span><strong id="home-stat-completed">0</strong></div>
   </section>
-  <section class="home-finance-card">
+  <section id="home-finance-card" class="home-finance-card">
     <div class="home-finance-head">
-      <div><span class="hero-kicker">RESULTADO TARJAS</span><h2>Saldo e faturamento</h2><p>Somente vendas e encomendas <strong style="color:#fff">aprovadas</strong> entram nestes valores. Pendentes e recusadas ficam fora do saldo.</p></div>
+      <div><span class="hero-kicker">RESULTADO TARJAS</span><h2>Saldo e faturamento</h2><p>Valores financeiros das suas vendas e encomendas já confirmadas.</p></div>
       <button id="home-finance-refresh" class="home-team-refresh" type="button">↻ Atualizar</button>
     </div>
     <div class="home-finance-grid">
-      <div class="home-finance-item"><span>VENDAS APROVADAS</span><strong id="home-finance-sales-count">0</strong><small id="home-finance-sales-total">R$ 0,00</small></div>
-      <div class="home-finance-item"><span>ENCOMENDAS APROVADAS</span><strong id="home-finance-orders-count">0</strong><small id="home-finance-orders-total">R$ 0,00</small></div>
-      <div class="home-finance-item highlight"><span>SALDO TOTAL</span><strong id="home-finance-total">R$ 0,00</strong><small>Vendas + encomendas aprovadas</small></div>
-      <div class="home-finance-item"><span>COMISSÃO TOTAL</span><strong id="home-finance-commission">R$ 0,00</strong><small>Comissões de vendas aprovadas</small></div>
+      <div class="home-finance-item"><span>VENDAS</span><strong id="home-finance-sales-count">0</strong><small id="home-finance-sales-total">R$ 0,00</small></div>
+      <div class="home-finance-item"><span>ENCOMENDAS</span><strong id="home-finance-orders-count">0</strong><small id="home-finance-orders-total">R$ 0,00</small></div>
+      <div class="home-finance-item highlight"><span>SALDO TOTAL</span><strong id="home-finance-total">R$ 0,00</strong><small>Vendas + encomendas confirmadas</small></div>
+      <div class="home-finance-item"><span>COMISSÃO TOTAL</span><strong id="home-finance-commission">R$ 0,00</strong><small>Comissões das vendas confirmadas</small></div>
     </div>
   </section>
-  <aside class="home-player-sidebar">
+  <aside id="home-team-card" class="home-player-sidebar">
     <div class="home-player-sidebar-head">
       <div><div class="home-player-title">PLAYERS</div><div class="home-player-subtitle">Online e offline</div></div>
       <button id="home-team-refresh" class="home-player-refresh" type="button" title="Atualizar players">↻</button>
@@ -1106,7 +1123,7 @@ footer p {
     <div id="home-member-directory" class="home-player-list"><div class="home-member-loading">Carregando players...</div></div>
   </aside>
 
-  <section class="calendar-card">
+  <section id="calendar-section" class="calendar-card">
     <div class="calendar-toolbar">
       <button id="calendar-prev" class="calendar-nav" type="button">‹</button>
       <div>
@@ -1125,10 +1142,14 @@ footer p {
       <span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
     </div>
     <div id="calendar-grid" class="calendar-grid"></div>
-    <div id="calendar-events" class="calendar-events">
-      <div class="calendar-empty">Selecione um dia para ver as movimentações.</div>
-    </div>
   </section>
+
+  <div id="calendar-day-modal" class="calendar-day-modal" aria-hidden="true">
+    <div class="calendar-day-dialog" role="dialog" aria-modal="true" aria-labelledby="calendar-day-modal-title">
+      <div class="calendar-day-modal-head"><div><div class="calendar-label">AGENDA TARJAS</div><h2 id="calendar-day-modal-title">Movimentações</h2></div><button id="calendar-day-modal-close" type="button" aria-label="Fechar movimentações">×</button></div>
+      <div id="calendar-day-modal-content"></div>
+    </div>
+  </div>
 </main>
 
 <footer></footer>
@@ -1138,25 +1159,30 @@ footer p {
    CATÁLOGO + OPERAÇÃO
    ========================= */
 const produtos = [
-  { nome: "Five Seven", categoria: "PISTOLAS", limpo: 60000, sujo: 81000, limpoParceiro: 55000, sujoParceiro: 74250 },
-  { nome: "HK", categoria: "PISTOLAS", limpo: 30000, sujo: 40500, limpoParceiro: 25000, sujoParceiro: 33750 },
-  { nome: "Glock Rajada", categoria: "PISTOLAS", limpo: 120000, sujo: 162000, limpoParceiro: 100000, sujoParceiro: 135000 },
-  { nome: "G36", categoria: "FUZIS", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
-  { nome: "AK-74", categoria: "FUZIS", limpo: 260000, sujo: 351000, limpoParceiro: 240000, sujoParceiro: 324000 },
-  { nome: "SCAR L", categoria: "FUZIS", limpo: 350000, sujo: 472500, limpoParceiro: 300000, sujoParceiro: 405000 },
-  { nome: "AK COMPACT", categoria: "FUZIS", limpo: 210000, sujo: 283500, limpoParceiro: 190000, sujoParceiro: 256500 },
-  { nome: "MTAR 21", categoria: "SUB METRALHADORAS", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
-  { nome: "Tec-9", categoria: "SUB METRALHADORAS", limpo: 110000, sujo: 148500, limpoParceiro: 90000, sujoParceiro: 121500 },
-  { nome: "UZI", categoria: "SUB METRALHADORAS", limpo: 140000, sujo: 189000, limpoParceiro: 120000, sujoParceiro: 162000 },
-  { nome: "Thompson", categoria: "SUB METRALHADORAS", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
-  { nome: "DOZE", categoria: "SHOTGUN", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
-  { nome: "Lean", categoria: "DROGAS", limpo: 250, sujo: 338, limpoParceiro: 200, sujoParceiro: 270 }
+  { nome: "Five Seven", categoria: "PISTOLAS", imagem: "https://loremflickr.com/640/400/fn-five-seven,pistol?lock=101", limpo: 60000, sujo: 81000, limpoParceiro: 55000, sujoParceiro: 74250 },
+  { nome: "HK", categoria: "PISTOLAS", imagem: "https://loremflickr.com/640/400/hk-pistol?lock=102", limpo: 30000, sujo: 40500, limpoParceiro: 25000, sujoParceiro: 33750 },
+  { nome: "Glock Rajada", categoria: "PISTOLAS", imagem: "https://loremflickr.com/640/400/glock,pistol?lock=103", limpo: 120000, sujo: 162000, limpoParceiro: 100000, sujoParceiro: 135000 },
+  { nome: "G36", categoria: "FUZIS", imagem: "https://loremflickr.com/640/400/g36,rifle?lock=104", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
+  { nome: "AK-74", categoria: "FUZIS", imagem: "https://loremflickr.com/640/400/ak-74,rifle?lock=105", limpo: 260000, sujo: 351000, limpoParceiro: 240000, sujoParceiro: 324000 },
+  { nome: "SCAR L", categoria: "FUZIS", imagem: "https://loremflickr.com/640/400/scar-rifle?lock=106", limpo: 350000, sujo: 472500, limpoParceiro: 300000, sujoParceiro: 405000 },
+  { nome: "AK COMPACT", categoria: "FUZIS", imagem: "https://loremflickr.com/640/400/ak-rifle?lock=107", limpo: 210000, sujo: 283500, limpoParceiro: 190000, sujoParceiro: 256500 },
+  { nome: "MTAR 21", categoria: "SUB METRALHADORAS", imagem: "https://loremflickr.com/640/400/tavor-rifle?lock=108", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
+  { nome: "Tec-9", categoria: "SUB METRALHADORAS", imagem: "https://loremflickr.com/640/400/tec-9,pistol?lock=109", limpo: 110000, sujo: 148500, limpoParceiro: 90000, sujoParceiro: 121500 },
+  { nome: "UZI", categoria: "SUB METRALHADORAS", imagem: "https://loremflickr.com/640/400/uzi,submachine-gun?lock=110", limpo: 140000, sujo: 189000, limpoParceiro: 120000, sujoParceiro: 162000 },
+  { nome: "Thompson", categoria: "SUB METRALHADORAS", imagem: "https://loremflickr.com/640/400/thompson,submachine-gun?lock=111", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
+  { nome: "DOZE", categoria: "SHOTGUN", imagem: "https://loremflickr.com/640/400/shotgun?lock=112", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
+  { nome: "Lean", categoria: "DROGAS", imagem: "https://loremflickr.com/640/400/purple-drink,bottle?lock=113", limpo: 250, sujo: 338, limpoParceiro: 200, sujoParceiro: 270 }
 ];
 const porcentagemVendedor = 0.10;
 const nomesPagamento = { limpo:"Limpo", sujo:"Sujo", limpoParceiro:"Limpo Parceiro", sujoParceiro:"Sujo Parceiro" };
 const SUPABASE_URL = "https://siuwooarjrpbdfuqcwcw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Fe5esrf571UXT5t0lPNyIw_NWaDxubm";
 const SUPABASE_HEADERS = { apikey: SUPABASE_KEY, "Content-Type":"application/json" };
+/* ÁREA DE CONFIGURAÇÃO DE LOGS DISCORD — cole seus webhooks abaixo. */
+const DISCORD_WEBHOOKS = { operacoes:"", aprovadas:"", recusadas:"", estoque:"", entregas:"" };
+async function enviarLogDiscord(tipo,titulo,linhas=[]){const url=DISCORD_WEBHOOKS[tipo];if(!url)return;try{await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:"TARJAS Logs",embeds:[{title,description:linhas.filter(Boolean).join("\n"),color:0xfc6500,timestamp:new Date().toISOString()}]})});}catch(e){console.warn("Discord log",e);}}
+const IMAGENS_PRODUTOS=JSON.parse(localStorage.getItem("tarjas_imagens_produtos")||"{}");
+function produtoImagem(p){return IMAGENS_PRODUTOS[p.nome]||p.imagem;}
 const CHAVE_ESTOQUE = "tarjas_estoque_v2";
 const CHAVE_ENCOMENDAS = "tarjas_encomendas_v2";
 let estoque = {};
@@ -1167,7 +1193,7 @@ let tipoPagamentoSelecionado = "limpo";
 let tipoOperacaoAtual = "venda";
 let calendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let calendarFilter = "all";
-let calendarSelectedDate = hojeISO();
+let calendarSelectedDate = null;
 
 function $(id){ return document.getElementById(id); }
 function formatBrl(value){ return Number(value||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
@@ -1199,30 +1225,110 @@ function encomendaDoBanco(e){ return {
   cadastradaEm:e.cadastrada_em||"",tipo:e.tipo||"encomenda",eventoAt:e.evento_at||null,status:e.status||"pending",createdBy:e.created_by||null,approvedBy:e.approved_by||null,approvedAt:e.approved_at||null,
   rejectedBy:e.rejected_by||null,rejectedAt:e.rejected_at||null,rejectionReason:e.rejection_reason||""
 }; }
-async function atualizarEstoqueNoBanco(){ const rows=produtos.map(p=>({product_name:p.nome,quantity:Math.max(0,Math.floor(Number(estoque[p.nome])||0)),updated_at:new Date().toISOString()})); await supabaseFetch("stock",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)}); }
-async function atualizarEncomendaNoBanco(e){ const {data,error}=await window.supabaseClient.rpc("tarjas_create_order",{p_order:encomendaParaBanco(e)}); if(error)throw error; if(data?.success===false)throw new Error(data.message||"Não foi possível registrar a operação."); return data; }
+async function atualizarEstoqueNoBanco(){
+  if(!window.supabaseClient) throw new Error("Conexão com o Supabase não está pronta.");
+  const rows=produtos.map(p=>({
+    product_name:p.nome,
+    quantity:Math.max(0,Math.floor(Number(estoque[p.nome])||0))
+  }));
+  const {data,error}=await window.supabaseClient.rpc("tarjas_set_stock",{p_items:rows});
+  if(error) throw error;
+  if(data?.success===false) throw new Error(data.message||"Não foi possível salvar o estoque.");
+  return data;
+}
+async function atualizarEncomendaNoBanco(e){
+  const {data,error}=await window.supabaseClient.rpc("tarjas_create_order",{p_order:encomendaParaBanco(e)});
+  if(error)throw error;
+  if(data?.success===false){
+    const itens=Array.isArray(data.items)?data.items:[];
+    if(data.code==="INSUFFICIENT_STOCK" && itens.length){
+      const detalhes=itens.map(x=>`${x.produto}: precisa ${Number(x.necessario)||0}, estoque disponível ${Number(x.disponivel)||0} (faltam ${Number(x.faltam)||0}).`).join("\n");
+      throw new Error(`${data.message||"Não é possível finalizar a operação."}\n\n${detalhes}`);
+    }
+    throw new Error(data.message||"Não foi possível registrar a operação.");
+  }
+  return data;
+}
 async function excluirEncomendaDoBanco(id){ await supabaseFetch(`orders?id=eq.${encodeURIComponent(id)}`,{method:"DELETE"}); }
 async function concluirEntregaNoBanco(id){ return await supabaseFetch("rpc/complete_delivery",{method:"POST",body:JSON.stringify({p_order_id:Number(id)})}); }
+async function carregarEncomendasCalendarioGlobal(){
+  if(!window.supabaseClient) return [];
+  const {data,error}=await window.supabaseClient.rpc("tarjas_public_calendar_orders");
+  if(error) throw error;
+  return Array.isArray(data)?data.map(encomendaDoBanco):[];
+}
 async function recarregarBancoCompartilhado(){
-  const [stockRows,orderRows]=await Promise.all([supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),supabaseFetch("orders?select=*&order=id.asc")]);
+  const [stockRows,orderRows]=await Promise.all([
+    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
+    carregarEncomendasCalendarioGlobal()
+  ]);
   estoque={}; produtos.forEach(p=>estoque[p.nome]=0); (stockRows||[]).forEach(r=>{estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0));});
-  encomendas=(orderRows||[]).map(encomendaDoBanco); localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
+  encomendas=orderRows||[];
+  localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas));
+  bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
 }
 async function carregarBancoCompartilhado(){
-  const [stockRows,orderRows]=await Promise.all([supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),supabaseFetch("orders?select=*&order=id.asc")]);
+  const [stockRows,orderRows]=await Promise.all([
+    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
+    carregarEncomendasCalendarioGlobal()
+  ]);
   if(!stockRows.length){ estoque=carregarEstoque(); await atualizarEstoqueNoBanco(); }
   else { estoque={}; produtos.forEach(p=>estoque[p.nome]=0); stockRows.forEach(r=>estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0))); }
-  encomendas=(orderRows||[]).map(encomendaDoBanco); localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
+  encomendas=orderRows||[];
+  localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas));
+  bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
 }
-function obterItensOperacao(){ return produtos.map((p,i)=>{const input=document.querySelector(`[data-operacao-produto="${i}"]`);const quantidade=Math.max(0,Math.floor(Number(input?.value)||0));const precoUnitario=Number(p[tipoPagamentoSelecionado])||0;return {nome:p.nome,quantidade,precoUnitario,subtotal:precoUnitario*quantidade};}).filter(x=>x.quantidade>0); }
+function obterItensOperacao(){ return produtos.map((p,i)=>{const input=document.querySelector(`[data-operacao-produto="${i}"]`);const quantidade=Math.max(0,Math.floor(Number(input?.value)||0)); if(input&&String(input.value)!==String(quantidade)) input.value=quantidade; const precoUnitario=Number(p[tipoPagamentoSelecionado])||0;return {nome:p.nome,quantidade,precoUnitario,subtotal:precoUnitario*quantidade};}).filter(x=>x.quantidade>0); }
 function calcularOperacao(){ const itens=obterItensOperacao(); const total=itens.reduce((s,i)=>s+i.subtotal,0); const comissao=total*porcentagemVendedor; return {itens,total,comissao,repasse:total-comissao}; }
 function renderizarProdutosOperacao(){
-  const lista=$("operacao-produtos-lista"); let categoria="";
-  lista.innerHTML=produtos.map((p,i)=>{ const cat=p.categoria!==categoria?`<div class="operacao-categoria">${escapeHtml(p.categoria)}</div>`:""; categoria=p.categoria; return `${cat}<div class="operacao-produto"><div><strong>${escapeHtml(p.nome)}</strong><small>${formatBrl(p[tipoPagamentoSelecionado])} un.</small></div><div class="quantidade-controle"><button type="button" onclick="alterarQtdOperacao(${i},-1)">−</button><input type="number" min="0" step="1" value="0" data-operacao-produto="${i}" onchange="atualizarCalculoOperacao()"><button type="button" onclick="alterarQtdOperacao(${i},1)">+</button></div><div class="operacao-subtotal" data-operacao-subtotal="${i}">${formatBrl(0)}</div></div>`;}).join(""); atualizarCalculoOperacao(); }
-function alterarQtdOperacao(index,delta){const input=document.querySelector(`[data-operacao-produto="${index}"]`);if(!input)return;input.value=Math.max(0,Math.floor((Number(input.value)||0)+delta));atualizarCalculoOperacao();}
+  const lista=$("operacao-produtos-lista"); if(!lista) return;
+  let categoria="";
+  lista.innerHTML=produtos.map((p,i)=>{
+    const cat=p.categoria!==categoria?`<div class="operacao-categoria">${escapeHtml(p.categoria)}</div>`:"";
+    categoria=p.categoria;
+    const disponivel=Math.max(0,Math.floor(Number(estoque[p.nome])||0));
+    return `${cat}<div class="operacao-produto" data-produto-index="${i}">
+      <div class="operacao-produto-info"><img class="produto-miniatura" src="${escapeHtml(produtoImagem(p,i))}" alt="Imagem de ${escapeHtml(p.nome)}"><div><strong>${escapeHtml(p.nome)}</strong><small>${formatBrl(p[tipoPagamentoSelecionado])} un. · Estoque: <b style="color:#fc6500" data-operacao-estoque="${i}">${disponivel}</b></small></div></div>
+      <div class="quantidade-controle">
+        <button type="button" class="operacao-qtd-btn" data-quantidade-acao="menos" data-produto-index="${i}">−</button>
+        <input type="number" min="0" step="1" value="0" data-operacao-produto="${i}" aria-label="Quantidade de ${escapeHtml(p.nome)}">
+        <button type="button" class="operacao-qtd-btn" data-quantidade-acao="mais" data-produto-index="${i}">+</button>
+      </div>
+      <div class="operacao-subtotal" data-operacao-subtotal="${i}">${formatBrl(0)}</div>
+    </div>`;
+  }).join("");
+  atualizarEstoqueVisualOperacao();
+  atualizarCalculoOperacao();
+}
+function alterarQtdOperacao(index,delta){
+  const input=document.querySelector(`[data-operacao-produto="${index}"]`);
+  const produto=produtos[index];
+  if(!input||!produto)return;
+  const atual=Math.max(0,Math.floor(Number(input.value)||0));
+  const proximo=Math.max(0,atual+Number(delta||0));
+  input.value=proximo;
+  atualizarCalculoOperacao();
+}
+function atualizarEstoqueVisualOperacao(){
+  produtos.forEach((p,i)=>{
+    const estoqueEl=document.querySelector(`[data-operacao-estoque="${i}"]`);
+    const input=document.querySelector(`[data-operacao-produto="${i}"]`);
+    const disponivel=Math.max(0,Math.floor(Number(estoque[p.nome])||0));
+    if(estoqueEl) estoqueEl.textContent=disponivel;
+    if(input){ input.min="0"; input.step="1"; }
+  });
+}
+function limparTodasQuantidadesOperacao(){
+  produtos.forEach((_,i)=>{const x=document.querySelector(`[data-operacao-produto="${i}"]`);if(x)x.value=0;});
+  atualizarCalculoOperacao();
+}
+function limparOperacao(){
+  $("operacao-cliente").value="";$("operacao-telefone").value="";
+  const now=currentDateTime();$("operacao-data").value=now.date;$("operacao-hora").value=now.time;
+  limparTodasQuantidadesOperacao();
+}
 function atualizarCalculoOperacao(){ const c=calcularOperacao(); produtos.forEach((p,i)=>{const el=document.querySelector(`[data-operacao-subtotal="${i}"]`);const item=c.itens.find(x=>x.nome===p.nome);if(el)el.textContent=formatBrl(item?.subtotal||0);}); $("operacao-calculo").innerHTML=`<div><span>Valor total</span><strong>${formatBrl(c.total)}</strong></div><div><span>Comissão do vendedor (10%)</span><strong>${formatBrl(c.comissao)}</strong></div><div class="destaque"><span>Valor a repassar</span><strong>${formatBrl(c.repasse)}</strong></div>`; }
-function limparOperacao(){ $("operacao-cliente").value="";$("operacao-telefone").value="";$("operacao-data").value="";$("operacao-hora").value="";produtos.forEach((_,i)=>{const x=document.querySelector(`[data-operacao-produto="${i}"]`);if(x)x.value=0;});atualizarCalculoOperacao(); }
-function alternarTipoOperacao(tipo){ tipoOperacaoAtual=tipo; document.querySelectorAll("[data-tipo-operacao]").forEach(b=>b.classList.toggle("active",b.dataset.tipoOperacao===tipo)); $("operacao-agendamento").style.display=tipo==="encomenda"?"grid":"none"; $("finalizar-operacao").textContent=tipo==="encomenda"?"FINALIZAR ENCOMENDA":"FINALIZAR VENDA"; }
+function alternarTipoOperacao(tipo){ tipoOperacaoAtual=tipo; document.querySelectorAll("[data-tipo-operacao]").forEach(b=>b.classList.toggle("active",b.dataset.tipoOperacao===tipo)); $("operacao-agendamento").style.display=tipo==="encomenda"?"grid":"none"; $("finalizar-operacao").textContent=tipo==="encomenda"?"FINALIZAR ENCOMENDA":"FINALIZAR VENDA"; if(tipo==="encomenda"){const now=currentDateTime();$("operacao-data").value=now.date;$("operacao-hora").value=now.time;} }
 function abrirRealizarVenda(){ limparOperacao(); $("operacao-pagamento").value=tipoPagamentoSelecionado; alternarTipoOperacao("venda"); renderizarProdutosOperacao(); $("operacao-modal").style.display="flex"; }
 function fecharRealizarVenda(){ $("operacao-modal").style.display="none"; }
 async function finalizarOperacao(){
@@ -1230,17 +1336,25 @@ async function finalizarOperacao(){
   const cliente=$("operacao-cliente").value.trim(), telefone=$("operacao-telefone").value.trim(), pagamento=$("operacao-pagamento").value, c=calcularOperacao();
   if(!cliente||!telefone){alert("Preencha o nome e o telefone do cliente.");return;}
   if(!c.itens.length){alert("Selecione pelo menos um produto.");return;}
+  const estoqueInsuficiente=c.itens.map(item=>({item,disponivel:Math.max(0,Math.floor(Number(estoque[item.nome])||0))})).filter(x=>x.item.quantidade>x.disponivel);
+  if(estoqueInsuficiente.length){
+    alert("NÃO É POSSÍVEL FINALIZAR.\n\n"+estoqueInsuficiente.map(x=>`${x.item.nome}: precisa ${x.item.quantidade}, estoque disponível ${x.disponivel} (faltam ${x.item.quantidade-x.disponivel}).`).join("\n"));
+    return;
+  }
   let dataEntrega,horaEntrega;
   if(tipoOperacaoAtual==="encomenda"){
     dataEntrega=$("operacao-data").value; horaEntrega=$("operacao-hora").value;
     if(!dataEntrega||!horaEntrega){alert("Informe a data e o horário da entrega.");return;}
   } else { const now=currentDateTime(); dataEntrega=now.date; horaEntrega=now.time; }
+  const descricaoTipo=tipoOperacaoAtual==="encomenda"?"encomenda":"venda";
+  const confirmar=`CONFIRMAR ${descricaoTipo.toUpperCase()}\n\nValor a cobrar do cliente: ${formatBrl(c.total)}\nSua comissão (10%): ${formatBrl(c.comissao)}\nValor a repassar: ${formatBrl(c.repasse)}\n\nEnvie o valor do repasse via PIX para:\n5688 GABRIEL CRUZ\n\nDeseja finalizar o registro?`;
+  if(!confirm(confirmar))return;
   const agora=new Date();
   const pedido={id:Date.now(),cliente,telefone,valor:c.total,comissao:c.comissao,repasse:c.repasse,itensTexto:c.itens.map(i=>`${i.quantidade}x ${i.nome}`).join(", "),itens:c.itens,pagamento,dataEntrega,horaEntrega,vendedor:dadosVendedor.nome,vendedorId:dadosVendedor.id,cadastradaEm:agora.toISOString(),tipo:tipoOperacaoAtual,eventoAt:agora.toISOString(),status:"pending",createdBy:window.authUser?.id||null};
-  try{await atualizarEncomendaNoBanco(pedido);}catch(e){console.error(e);alert("Não foi possível registrar. Verifique a conexão e tente novamente.");return;}
+  try{await atualizarEncomendaNoBanco(pedido);}catch(e){console.error(e);let msg=e?.message||"Não foi possível registrar a operação.";try{const parsed=JSON.parse(msg);if(parsed?.message)msg=parsed.message;}catch(_){}alert(msg);await recarregarBancoCompartilhado().catch(()=>{});return;}
   encomendas.push(pedido); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); renderCalendar(); renderHomeStats(); fecharRealizarVenda(); mostrarResumoOperacao(pedido);
 }
-function mostrarResumoOperacao(pedido){ const tipo=pedido.tipo==="encomenda"?"ENCOMENDA REGISTRADA":"VENDA REGISTRADA"; $("resumo-operacao-conteudo").innerHTML=`<div class="resumo-status"><span>✓</span><div><strong>${tipo}</strong><small>Aguardando aprovação</small></div></div><div class="resumo-grid"><div><span>Cliente</span><strong>${escapeHtml(pedido.cliente)}</strong></div><div><span>Vendedor</span><strong>${escapeHtml(pedido.vendedor||"—")}</strong></div><div><span>Data</span><strong>${formatarDataEntrega(pedido.dataEntrega)}</strong></div><div><span>Horário</span><strong>${escapeHtml(pedido.horaEntrega)}</strong></div></div><div class="resumo-itens"><strong>Itens</strong>${pedido.itens.map(i=>`<div><span>${escapeHtml(i.nome)}</span><b>${i.quantidade}x</b><em>${formatBrl(i.subtotal)}</em></div>`).join("")}</div><div class="resumo-total"><span>Total</span><strong>${formatBrl(pedido.valor)}</strong></div><p class="resumo-aviso">O estoque será baixado somente quando a operação for aprovada.</p>`; $("resumo-operacao-modal").style.display="flex"; }
+function mostrarResumoOperacao(pedido){ const tipo=pedido.tipo==="encomenda"?"ENCOMENDA REGISTRADA":"VENDA REGISTRADA"; $("resumo-operacao-conteudo").innerHTML=`<div class="resumo-status"><span>✓</span><div><strong>${tipo}</strong><small>Aguardando aprovação</small></div></div><div class="resumo-grid"><div><span>Cliente</span><strong>${escapeHtml(pedido.cliente)}</strong></div><div><span>Vendedor</span><strong>${escapeHtml(pedido.vendedor||"—")}</strong></div><div><span>Data</span><strong>${formatarDataEntrega(pedido.dataEntrega)}</strong></div><div><span>Horário</span><strong>${escapeHtml(pedido.horaEntrega)}</strong></div></div><div class="resumo-itens"><strong>Itens</strong>${pedido.itens.map(i=>`<div><span>${escapeHtml(i.nome)}</span><b>${i.quantidade}x</b><em>${formatBrl(i.subtotal)}</em></div>`).join("")}</div><div class="resumo-grid" style="margin-top:10px"><div><span>VALOR A COBRAR</span><strong>${formatBrl(pedido.valor)}</strong></div><div><span>SUA COMISSÃO (10%)</span><strong style="color:#7dff9b">${formatBrl(pedido.comissao)}</strong></div><div style="grid-column:1/-1;border-color:#fc6500"><span>VALOR A REPASSAR VIA PIX</span><strong style="color:#fc6500">${formatBrl(pedido.repasse)}</strong><small style="display:block;color:#aaa;margin-top:5px">Enviar para PIX 5688 GABRIEL CRUZ</small></div></div><p class="resumo-aviso">A operação só pode ser finalizada quando houver estoque suficiente. A baixa acontece no momento da aprovação.</p>`; $("resumo-operacao-modal").style.display="flex"; }
 function fecharResumoOperacao(){ $("resumo-operacao-modal").style.display="none"; }
 function traduzirStatus(status){const m={pending:"PENDENTE",approved:"APROVADO",rejected:"RECUSADO",suspended:"SUSPENSO"};return m[status]||String(status||"").toUpperCase();}
 function statusBadgeHtml(e){const m={pending:["pending","PENDENTE"],approved:["approved","APROVADA"],rejected:["rejected","RECUSADA"]};const x=m[e.status]||m.pending;return `<span class="admin-badge ${x[0]}">${x[1]}</span>`;}
@@ -1251,16 +1365,87 @@ function renderCalendar(){
   const grid=$("calendar-grid"),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate(); let html="";
   for(let i=0;i<first;i++){const d=prevDays-first+i+1;html+=`<button class="calendar-day muted" type="button" disabled><span>${d}</span></button>`;}
   for(let d=1;d<=days;d++){const key=dateKey(y,m,d),events=encomendas.filter(e=>e.dataEntrega===key&&eventoVisivel(e)),isToday=key===hojeISO(),isSelected=key===calendarSelectedDate;const sales=events.filter(e=>e.tipo==="venda").length,orders=events.filter(e=>e.tipo==="encomenda").length;html+=`<button class="calendar-day ${isToday?"today":""} ${isSelected?"selected":""}" type="button" onclick="selecionarDiaCalendario('${key}')"><span>${d}</span>${events.length?`<div class="day-counts">${sales?`<b>${sales}</b>`:""}${orders?`<i>${orders}</i>`:""}</div>`:""}</button>`;}
-  const total=first+days,tail=(7-total%7)%7;for(let d=1;d<=tail;d++)html+=`<button class="calendar-day muted" type="button" disabled><span>${d}</span></button>`; grid.innerHTML=html; renderEventosCalendario(calendarSelectedDate); }
-function selecionarDiaCalendario(key){calendarSelectedDate=key;renderCalendar();}
-function renderEventosCalendario(data){ const list=$("calendar-events"),events=eventosDoDia(data); if(!events.length){list.innerHTML=`<div class="calendar-events-head"><strong>${formatarDataEntrega(data)}</strong><span>Nenhuma movimentação</span></div>`;return;} list.innerHTML=`<div class="calendar-events-head"><strong>${formatarDataEntrega(data)}</strong><span>${events.length} registro(s)</span></div>${events.map(e=>`<div class="calendar-event"><div class="event-time">${escapeHtml(e.horaEntrega||"—")}</div><div class="event-main"><div><strong>${e.tipo==="venda"?"VENDA":"ENCOMENDA"}</strong> ${statusBadgeHtml(e)}</div><p>${escapeHtml(e.cliente)} · ${escapeHtml(e.itensTexto)}</p><small>${formatBrl(e.valor)} · Vendedor: ${escapeHtml(e.vendedor||"—")}</small></div></div>`).join("")}`; }
-function renderHomeStats(){ const y=calendarDate.getFullYear(),m=calendarDate.getMonth(),prefix=`${y}-${pad2(m+1)}`;const month=encomendas.filter(e=>String(e.dataEntrega||"").startsWith(prefix));$("home-stat-orders").textContent=month.filter(e=>e.tipo==="encomenda").length;$("home-stat-sales").textContent=month.filter(e=>e.tipo==="venda").length;$("home-stat-pending").textContent=encomendas.filter(e=>e.status==="pending").length;$("home-stat-approved").textContent=encomendas.filter(e=>e.status==="approved").length; }
-function mudarMes(delta){calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+delta,1);calendarSelectedDate=`${calendarDate.getFullYear()}-${pad2(calendarDate.getMonth()+1)}-01`;renderCalendar();renderHomeStats();}
+  const total=first+days,tail=(7-total%7)%7;for(let d=1;d<=tail;d++)html+=`<button class="calendar-day muted" type="button" disabled><span>${d}</span></button>`; grid.innerHTML=html; }
+function selecionarDiaCalendario(key){calendarSelectedDate=key;renderCalendar();abrirDiaCalendario(key);}
+function abrirDiaCalendario(data){const modal=$("calendar-day-modal"),content=$("calendar-day-modal-content"),title=$("calendar-day-modal-title");const events=eventosDoDia(data);title.textContent=`Movimentações — ${formatarDataEntrega(data)}`;content.innerHTML=events.length?`<div class="calendar-events-head"><strong>${events.length} registro(s)</strong><span>Selecione outro dia para trocar a lista</span></div>${events.map(e=>`<div class="calendar-event"><div class="event-time">${escapeHtml(e.horaEntrega||"—")}</div><div class="event-main"><div><strong>${e.tipo==="venda"?"VENDA":"ENCOMENDA"}</strong> ${statusBadgeHtml(e)}</div><p>${escapeHtml(e.cliente)} · ${escapeHtml(e.itensTexto)}</p><small>${formatBrl(e.valor)} · Vendedor: ${escapeHtml(e.vendedor||"—")}</small></div></div>`).join("")}`:`<div class="calendar-empty">Nenhuma movimentação para este dia.</div>`;modal.style.display="flex";modal.setAttribute("aria-hidden","false");$("calendar-day-modal-close").focus();}
+function fecharDiaCalendario(){const modal=$("calendar-day-modal");modal.style.display="none";modal.setAttribute("aria-hidden","true");}
+function renderHomeStats(){ const y=calendarDate.getFullYear(),m=calendarDate.getMonth(),prefix=`${y}-${pad2(m+1)}`;const month=encomendas.filter(e=>String(e.dataEntrega||"").startsWith(prefix));$("home-stat-orders").textContent=month.filter(e=>e.tipo==="encomenda").length;$("home-stat-sales").textContent=month.filter(e=>e.tipo==="venda").length; }
+function mudarMes(delta){calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+delta,1);calendarSelectedDate=null;renderCalendar();renderHomeStats();}
 
-function renderizarEstoque(){const lista=$("estoque-lista");lista.innerHTML=`<div class="estoque-cab">Produto</div><div class="estoque-cab">Quantidade</div>${produtos.map(p=>`<div>${escapeHtml(p.nome)}</div><div><input class="estoque-input" type="number" min="0" data-estoque-produto="${escapeHtml(p.nome)}" value="${estoque[p.nome]||0}"></div>`).join("")}`;}
+function renderizarEstoque(){const lista=$("estoque-lista"),podeAlterarImagem=["owner","admin"].includes(window.currentProfile?.roles?.slug);lista.style.gridTemplateColumns=podeAlterarImagem?"1fr 130px minmax(220px,1fr)":"1fr 150px";lista.innerHTML=`<div class="estoque-cab">Produto</div><div class="estoque-cab">Quantidade</div>${podeAlterarImagem?'<div class="estoque-cab">Imagem do produto</div>':''}${produtos.map(p=>`<div>${escapeHtml(p.nome)}</div><div><input class="estoque-input" type="number" min="0" data-estoque-produto="${escapeHtml(p.nome)}" value="${estoque[p.nome]||0}"></div>${podeAlterarImagem?`<div><input class="estoque-input" type="url" data-estoque-imagem="${escapeHtml(p.nome)}" value="${escapeHtml(produtoImagem(p))}" placeholder="URL da imagem"><input type="file" accept="image/png,image/jpeg,image/webp" data-estoque-arquivo="${escapeHtml(p.nome)}" style="margin-top:6px;max-width:100%"></div>`:''}`).join("")}`;}
 function abrirEstoque(){renderizarEstoque();$("estoque-modal").style.display="flex";}
 function fecharEstoque(){$("estoque-modal").style.display="none";}
-async function salvarEstoqueFormulario(){const anterior={...estoque};document.querySelectorAll("[data-estoque-produto]").forEach(i=>estoque[i.dataset.estoqueProduto]=Math.max(0,Math.floor(Number(i.value)||0)));try{await atualizarEstoqueNoBanco();localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque));fecharEstoque();alert("Estoque salvo com sucesso.");}catch(e){estoque=anterior;alert("Não foi possível salvar o estoque.");}}
+async function salvarEstoqueFormulario(){
+  const anterior={...estoque};
+  document.querySelectorAll("[data-estoque-produto]").forEach(i=>{
+    estoque[i.dataset.estoqueProduto]=Math.max(0,Math.floor(Number(i.value)||0));
+  });
+  try{
+    const imagens={},podeAlterarImagem=["owner","admin"].includes(window.currentProfile?.roles?.slug);
+    if(podeAlterarImagem){
+      document.querySelectorAll("[data-estoque-imagem]").forEach(i=>{const url=i.value.trim();if(url)imagens[i.dataset.estoqueImagem]=url;});
+      for(const input of document.querySelectorAll("[data-estoque-arquivo]")){
+        const arquivo=input.files?.[0];if(!arquivo)continue;
+        if(!arquivo.type.startsWith("image/")||arquivo.size>5*1024*1024)throw new Error("Cada imagem deve ser PNG, JPG ou WEBP e ter no máximo 5 MB.");
+        const extensao=(arquivo.name.split(".").pop()||"png").toLowerCase(),caminho=`${nomeArquivoProduto(input.dataset.estoqueArquivo)}/${Date.now()}.${extensao}`;
+        const {error:uploadError}=await window.supabaseClient.storage.from("product-images").upload(caminho,arquivo,{upsert:true,contentType:arquivo.type});if(uploadError)throw uploadError;
+        const {data:urlData}=window.supabaseClient.storage.from("product-images").getPublicUrl(caminho);imagens[input.dataset.estoqueArquivo]=urlData.publicUrl;
+      }
+      const {error:imageError}=await window.supabaseClient.rpc("tarjas_admin_save_product_images",{p_images:imagens});if(imageError)throw imageError;
+      Object.assign(IMAGENS_PRODUTOS,imagens);localStorage.setItem("tarjas_imagens_produtos",JSON.stringify(IMAGENS_PRODUTOS));
+    }
+    await atualizarEstoqueNoBanco();
+    localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque));
+    renderizarProdutosOperacao();fecharEstoque();
+    alert("Estoque salvo com sucesso.");
+  }catch(e){
+    console.error("TARJAS ESTOQUE",e);
+    estoque=anterior;
+    alert("Não foi possível salvar o estoque.\n\n"+(e?.message||"Erro desconhecido."));
+  }
+}
+
+async function carregarImagensProdutos(){
+  if(!window.supabaseClient)return;
+  const {data,error}=await window.supabaseClient.rpc("tarjas_public_product_images");
+  if(error) throw error;
+  (data||[]).forEach(item=>{if(item.product_name&&item.image_url)IMAGENS_PRODUTOS[item.product_name]=item.image_url;});
+  localStorage.setItem("tarjas_imagens_produtos",JSON.stringify(IMAGENS_PRODUTOS));
+}
+function nomeArquivoProduto(nome){return String(nome).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
+
+window.carregarEstoqueAdmin=async function(){
+  const target=$("admin-stock-list");
+  if(!target)return;
+  target.innerHTML='<div class="admin-card">Carregando estoque...</div>';
+  try{
+    const rows=await supabaseFetch("stock?select=product_name,quantity&order=product_name.asc");
+    const mapa={};
+    (rows||[]).forEach(r=>mapa[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0)));
+    target.innerHTML=produtos.map(p=>`<div class="admin-form-field"><label>${escapeHtml(p.nome)} — Quantidade</label><input class="admin-estoque-input" type="number" min="0" step="1" data-admin-estoque-produto="${escapeHtml(p.nome)}" value="${mapa[p.nome]??0}"></div>`).join('');
+  }catch(e){
+    console.error("TARJAS ADMIN ESTOQUE",e);
+    target.innerHTML=`<div class="admin-card">Erro ao carregar estoque: ${escapeHtml(e.message||"Erro desconhecido")}</div>`;
+  }
+};
+
+window.salvarEstoqueAdmin=async function(){
+  const anterior={...estoque};
+  document.querySelectorAll("[data-admin-estoque-produto]").forEach(i=>{
+    estoque[i.dataset.adminEstoqueProduto]=Math.max(0,Math.floor(Number(i.value)||0));
+  });
+  try{
+    await atualizarEstoqueNoBanco();
+    localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque));
+    await carregarEstoqueAdmin();
+    await recarregarBancoCompartilhado();
+    alert("Estoque salvo com sucesso.");
+  }catch(e){
+    console.error("TARJAS ADMIN ESTOQUE SAVE",e);
+    estoque=anterior;
+    alert("Não foi possível salvar o estoque.\n\n"+(e?.message||"Erro desconhecido."));
+  }
+};
 function renderizarEntregasHoje(){const data=$("entregas-data-busca").value||hojeISO();const events=encomendas.filter(e=>e.dataEntrega===data&&e.tipo==="encomenda").sort((a,b)=>String(a.horaEntrega).localeCompare(String(b.horaEntrega)));$("titulo-entregas-data").textContent=data===hojeISO()?"ENTREGAS DE HOJE":`ENTREGAS DE ${formatarDataEntrega(data)}`;$("entregas-hoje-lista").innerHTML=events.length?events.map(e=>`<div class="entrega-card"><div class="entrega-horario">${escapeHtml(e.horaEntrega)}</div><div><strong>Cliente:</strong> ${escapeHtml(e.cliente)}</div><div><strong>Telefone:</strong> ${escapeHtml(e.telefone)}</div><div><strong>Itens:</strong> ${escapeHtml(e.itensTexto)}</div><div><strong>Valor:</strong> ${formatBrl(e.valor)}</div><div><strong>Vendedor:</strong> ${escapeHtml(e.vendedor)} — ${escapeHtml(e.vendedorId)}</div><div><strong>Status:</strong> ${statusBadgeHtml(e)}</div>${e.status==="approved"?`<div class="encomenda-acoes"><button class="encomenda-acao concluir" onclick="concluirEntrega(${e.id})">Concluir / Arquivar</button></div>`:""}</div>`).join(""):`<div class="entrega-vazia">Nenhuma encomenda para esta data.</div>`;}
 function abrirEntregasHoje(){$("entregas-data-busca").value=hojeISO();renderizarEntregasHoje();$("entregas-hoje-modal").style.display="flex";}
 function fecharEntregasHoje(){$("entregas-hoje-modal").style.display="none";}
@@ -1269,17 +1454,37 @@ async function concluirEntrega(id){const e=encomendas.find(x=>x.id===id);if(!e)r
 $("abrir-realizar-venda").onclick=abrirRealizarVenda;
 $("abrir-estoque").onclick=abrirEstoque;
 $("abrir-entregas-hoje").onclick=abrirEntregasHoje;
-$("calendar-prev").onclick=()=>mudarMes(-1);$("calendar-next").onclick=()=>mudarMes(1);$("calendar-today").onclick=()=>{const d=new Date();calendarDate=new Date(d.getFullYear(),d.getMonth(),1);calendarSelectedDate=hojeISO();renderCalendar();renderHomeStats();};
+$("calendar-prev").onclick=()=>mudarMes(-1);$("calendar-next").onclick=()=>mudarMes(1);$("calendar-today").onclick=()=>{const d=new Date();calendarDate=new Date(d.getFullYear(),d.getMonth(),1);calendarSelectedDate=hojeISO();renderCalendar();renderHomeStats();abrirDiaCalendario(calendarSelectedDate);};
+$("calendar-day-modal-close").onclick=fecharDiaCalendario;$("calendar-day-modal").onclick=e=>{if(e.target===$("calendar-day-modal"))fecharDiaCalendario();};document.addEventListener("keydown",e=>{if(e.key==="Escape")fecharDiaCalendario();});
 document.querySelectorAll(".calendar-filter[data-calendar-filter]").forEach(b=>b.onclick=()=>{calendarFilter=b.dataset.calendarFilter;document.querySelectorAll(".calendar-filter[data-calendar-filter]").forEach(x=>x.classList.toggle("active",x===b));renderCalendar();});
 
-window.iniciarBancoDepoisDoLogin=async function(){try{await carregarBancoCompartilhado();}catch(e){console.error(e);alert("Não foi possível conectar ao banco compartilhado.\n\n"+(e?.message||"Erro desconhecido"));}};
+window.iniciarBancoDepoisDoLogin=async function(){try{await Promise.all([carregarBancoCompartilhado(),carregarImagensProdutos()]);renderizarProdutosOperacao();}catch(e){console.error(e);alert("Não foi possível conectar ao banco compartilhado.\n\n"+(e?.message||"Erro desconhecido"));}};
 
 document.addEventListener("DOMContentLoaded",()=>{
-  /* Modais operacionais — ligados somente depois que todos os elementos existem */
-  $("operacao-modal").addEventListener("click",e=>{if(e.target.id==="operacao-modal")fecharRealizarVenda();});
-  $("resumo-operacao-modal").addEventListener("click",e=>{if(e.target.id==="resumo-operacao-modal")fecharResumoOperacao();});
-  $("estoque-modal").addEventListener("click",e=>{if(e.target.id==="estoque-modal")fecharEstoque();});
-  $("entregas-hoje-modal").addEventListener("click",e=>{if(e.target.id==="entregas-hoje-modal")fecharEntregasHoje();});
+  /* Modais operacionais — cada ligação é protegida contra elemento inexistente. */
+  $("operacao-modal")?.addEventListener("click",e=>{if(e.target.id==="operacao-modal")fecharRealizarVenda();});
+  $("resumo-operacao-modal")?.addEventListener("click",e=>{if(e.target.id==="resumo-operacao-modal")fecharResumoOperacao();});
+  $("estoque-modal")?.addEventListener("click",e=>{if(e.target.id==="estoque-modal")fecharEstoque();});
+  $("entregas-hoje-modal")?.addEventListener("click",e=>{if(e.target.id==="entregas-hoje-modal")fecharEntregasHoje();});
+  $("limpar-quantidades-operacao")?.addEventListener("click",()=>{
+    limparTodasQuantidadesOperacao();
+  });
+  $("operacao-produtos-lista")?.addEventListener("click",e=>{
+    const btn=e.target.closest("[data-quantidade-acao]");
+    if(!btn) return;
+    e.preventDefault();
+    const index=Number(btn.dataset.produtoIndex);
+    const delta=btn.dataset.quantidadeAcao==="mais" ? 1 : -1;
+    alterarQtdOperacao(index,delta);
+  });
+  $("operacao-produtos-lista")?.addEventListener("input",e=>{
+    const input=e.target.closest("[data-operacao-produto]");
+    if(!input)return;
+    const index=Number(input.dataset.operacaoProduto), produto=produtos[index];
+    if(!produto)return;
+    input.value=Math.max(0,Math.floor(Number(input.value)||0));
+    atualizarCalculoOperacao();
+  });
 
   document.querySelectorAll("[data-tipo-operacao]").forEach(b=>{
     b.addEventListener("click",()=>alternarTipoOperacao(b.dataset.tipoOperacao));
@@ -1305,7 +1510,7 @@ setInterval(async()=>{
 </script>
 
 <style>
-.home-subtitle{color:#aaa!important;margin:6px 0 0!important;font-size:14px}.home-hero{width:calc(100% - 40px);max-width:1200px;margin:22px auto 14px;padding:28px;border:1px solid #272727;border-radius:18px;background:linear-gradient(135deg,#111 0%,#0a0a0a 70%);display:flex;justify-content:space-between;align-items:center;gap:24px;box-sizing:border-box;box-shadow:0 12px 45px rgba(0,0,0,.35)}.hero-copy{max-width:650px}.hero-kicker,.calendar-label{font-size:11px;letter-spacing:1.6px;color:#fc6500;font-weight:900}.hero-copy h2{margin:8px 0;color:#fff;font-size:30px}.hero-copy p{margin:0;color:#9d9d9d;line-height:1.6}.hero-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}.hero-primary,.hero-secondary{border-radius:10px;padding:12px 16px;font-weight:900;cursor:pointer}.hero-primary{border:2px solid #fc6500;background:#fc6500;color:#000;min-width:180px}.hero-secondary{border:1px solid #fc6500;background:#111;color:#fc6500}.hero-secondary:hover{background:#fc6500;color:#000}.home-stats{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.home-stat{padding:14px 16px;background:#0d0d0d;border:1px solid #242424;border-radius:12px}.home-stat span{display:block;color:#777;font-size:11px;font-weight:bold}.home-stat strong{display:block;color:#fc6500;font-size:25px;margin-top:5px}.home-finance-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;padding:18px;background:linear-gradient(135deg,#111 0%,#090909 72%);border:1px solid #272727;border-radius:16px;box-sizing:border-box}.home-finance-head{display:flex;justify-content:space-between;align-items:center;gap:14px}.home-finance-head h2{margin:5px 0 4px;color:#fff;font-size:21px}.home-finance-head p{margin:0;color:#777;font-size:12px;line-height:1.5}.home-finance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}.home-finance-item{padding:13px;border:1px solid #242424;border-radius:11px;background:#0d0d0d}.home-finance-item span{display:block;color:#777;font-size:10px;font-weight:900}.home-finance-item strong{display:block;color:#fff;font-size:22px;margin-top:6px}.home-finance-item small{display:block;color:#666;font-size:10px;margin-top:4px}.home-finance-item.highlight{border-color:#fc6500;background:#120d08}.home-finance-item.highlight strong{color:#fc6500;font-size:27px}.home-team-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;background:linear-gradient(135deg,#0f0f0f,#090909);border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 10px 35px rgba(0,0,0,.22)}.home-team-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:16px}.home-team-head h2{margin:6px 0 5px;color:#fff;font-size:24px}.home-team-head p{margin:0;color:#888;line-height:1.5}.home-team-refresh{border:1px solid #fc6500;background:#111;color:#fc6500;padding:9px 13px;border-radius:9px;font-weight:900;cursor:pointer;white-space:nowrap}.home-team-refresh:hover{background:#fc6500;color:#000}.home-member-directory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.home-member-card{background:#111;border:1px solid #242424;border-radius:14px;padding:13px;min-width:0}.home-member-top{display:flex;align-items:center;gap:10px}.home-member-avatar{width:44px;height:44px;border-radius:12px;background:#1a120d;border:1px solid #fc6500;color:#fc6500;display:grid;place-items:center;font-weight:900;font-size:15px;flex:none}.home-member-name{color:#fff;font-weight:900;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-member-meta{display:flex;align-items:center;gap:7px;color:#888;font-size:11px;margin-top:3px}.home-member-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block}.home-member-dot.online{background:#57d57a;box-shadow:0 0 8px rgba(87,213,122,.55)}.home-member-role{margin-top:10px;display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#181818;border:1px solid #333;color:#fc6500;font-size:10px;font-weight:900}.home-member-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.home-member-metric{background:#0b0b0b;border:1px solid #222;border-radius:9px;padding:7px 5px;text-align:center}.home-member-metric b{display:block;color:#fff;font-size:15px}.home-member-metric span{display:block;color:#666;font-size:9px;margin-top:2px}.home-member-loading,.home-member-empty{padding:24px;text-align:center;border:1px dashed #333;border-radius:12px;color:#777;grid-column:1/-1}.home-member-status-online{color:#7dff9b}.home-member-status-offline{color:#777}@media(max-width:1050px){.home-member-directory{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.home-team-head{align-items:flex-start;flex-direction:column}.home-member-directory{grid-template-columns:1fr}.home-member-metrics{grid-template-columns:repeat(2,1fr)}}.calendar-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 30px;background:#0c0c0c;border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box}.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;text-align:center}.calendar-toolbar h2{margin:3px 0 0;color:#fff;text-transform:capitalize}.calendar-nav{width:42px;height:42px;border-radius:10px;border:1px solid #333;background:#111;color:#fc6500;font-size:30px;cursor:pointer}.calendar-nav:hover{background:#fc6500;color:#000}.calendar-filters{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:18px 0}.calendar-filter{border:1px solid #333;background:#111;color:#aaa;border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:bold}.calendar-filter.active{border-color:#fc6500;background:#fc6500;color:#000}.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.calendar-weekdays{margin-bottom:6px}.calendar-weekdays span{text-align:center;color:#666;font-size:10px;font-weight:bold;padding:6px}.calendar-day{min-height:78px;border:1px solid #222;border-radius:10px;background:#111;color:#fff;text-align:left;padding:8px;cursor:pointer;position:relative}.calendar-day:hover{border-color:#fc6500}.calendar-day.muted{opacity:.25;cursor:default}.calendar-day.today{box-shadow:inset 0 0 0 1px #fc6500}.calendar-day.selected{background:#18110b;border-color:#fc6500}.calendar-day>span{font-weight:bold}.day-counts{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}.day-counts b,.day-counts i{font-style:normal;font-size:10px;min-width:22px;text-align:center;padding:3px 5px;border-radius:999px}.day-counts b{background:#fc6500;color:#000}.day-counts i{background:#222;color:#fc6500;border:1px solid #fc6500}.calendar-events{margin-top:15px;border-top:1px solid #222;padding-top:13px}.calendar-events-head{display:flex;justify-content:space-between;color:#aaa;margin-bottom:9px}.calendar-events-head strong{color:#fc6500}.calendar-event{display:grid;grid-template-columns:75px 1fr;gap:12px;padding:11px;border:1px solid #252525;border-radius:10px;background:#101010;margin-top:7px}.event-time{color:#fc6500;font-weight:900;font-size:17px}.event-main strong{color:#fff;font-size:12px}.event-main p{margin:4px 0;color:#ddd}.event-main small{color:#777}.calendar-empty{padding:18px;text-align:center;color:#777}.operacao-modal,.resumo-operacao-modal{display:none;position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.operacao-box,.resumo-box{width:min(900px,96vw);max-height:92vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 20px 70px rgba(0,0,0,.6)}.operacao-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.operacao-head h2,.resumo-box h2{margin:0;color:#fc6500}.operacao-close{border:1px solid #444;background:#111;color:#aaa;border-radius:8px;padding:7px 10px;cursor:pointer}.operacao-type{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}.operacao-type button{border:1px solid #333;background:#111;color:#aaa;padding:11px;border-radius:9px;font-weight:900;cursor:pointer}.operacao-type button.active{border-color:#fc6500;background:#fc6500;color:#000}.operacao-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-field label{display:block;color:#fc6500;font-size:12px;font-weight:bold;margin-bottom:5px}.operacao-field input,.operacao-field select{width:100%;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;padding:10px}.operacao-products{border:1px solid #252525;border-radius:12px;overflow:hidden;margin:15px 0}.operacao-categoria{padding:8px 10px;background:#171717;border-top:1px solid #fc6500;border-bottom:1px solid #fc6500;color:#fc6500;font-weight:900}.operacao-produto{display:grid;grid-template-columns:1fr 190px 120px;align-items:center;gap:8px;padding:9px 10px;border-top:1px solid #222;color:#fff}.operacao-produto small{display:block;color:#777;margin-top:3px}.operacao-produto .quantidade-controle{justify-content:center}.operacao-subtotal{text-align:right;color:#fc6500;font-weight:bold}.operacao-calculo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.operacao-calculo>div{padding:12px;border:1px solid #242424;border-radius:10px;background:#101010}.operacao-calculo span{display:block;color:#777;font-size:11px}.operacao-calculo strong{display:block;color:#fff;margin-top:5px}.operacao-calculo .destaque{border-color:#fc6500}.operacao-calculo .destaque strong{color:#fc6500}.operacao-agendamento{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-finalizar{width:100%;margin-top:14px;padding:13px;border:2px solid #fc6500;background:#fc6500;color:#000;border-radius:10px;font-weight:900;cursor:pointer}.resumo-box{width:min(600px,95vw)}.resumo-status{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #254d31;background:#0e1711;border-radius:11px;margin:15px 0}.resumo-status>span{width:30px;height:30px;border-radius:50%;background:#2d7b42;color:#fff;display:grid;place-items:center;font-weight:bold}.resumo-status strong{display:block;color:#7dff9b}.resumo-status small{color:#aaa}.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.resumo-grid>div{background:#111;border:1px solid #222;border-radius:9px;padding:10px}.resumo-grid span{display:block;color:#777;font-size:11px}.resumo-grid strong{display:block;color:#fff;margin-top:4px}.resumo-itens{margin-top:10px;border:1px solid #222;border-radius:10px;padding:10px}.resumo-itens>strong{color:#fc6500}.resumo-itens>div{display:grid;grid-template-columns:1fr 45px 100px;gap:8px;padding:7px 0;border-bottom:1px solid #222;color:#ddd}.resumo-itens b{color:#fc6500}.resumo-itens em{font-style:normal;text-align:right}.resumo-total{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;font-size:18px;color:#aaa}.resumo-total strong{color:#fc6500;font-size:25px}.resumo-aviso{color:#777;font-size:12px;text-align:center}.resumo-close{width:100%;border:1px solid #fc6500;background:#111;color:#fc6500;padding:11px;border-radius:9px;font-weight:bold;cursor:pointer}.resumo-close:hover{background:#fc6500;color:#000}.gestao-modal{display:none;position:fixed;inset:0;z-index:21000;background:rgba(0,0,0,.88);justify-content:center;align-items:center;padding:20px;box-sizing:border-box}.gestao-caixa{width:min(760px,95vw);max-height:90vh;overflow:auto;background:#111;border:2px solid #fc6500;border-radius:14px;padding:22px;box-sizing:border-box}.gestao-caixa h2{color:#fc6500;text-align:center;margin:0 0 16px}.gestao-topo{display:flex;justify-content:flex-end;margin-bottom:8px}.gestao-fechar{border:1px solid #fc6500;background:#000;color:#fc6500;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:bold}.estoque-lista{display:grid;grid-template-columns:1fr 150px;border:1px solid #333;border-radius:10px;overflow:hidden}.estoque-lista>div{padding:8px 10px;border-bottom:1px solid #333}.estoque-lista .estoque-cab{color:#fc6500;font-weight:bold;background:#181818}.estoque-input{width:100%;box-sizing:border-box;padding:7px;text-align:center;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff}.gestao-salvar{width:100%;margin-top:14px;border:2px solid #fc6500;background:#fc6500;color:#000;font-weight:bold;padding:10px;border-radius:9px;cursor:pointer}.encomenda-acoes{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}.encomenda-acao{border:1px solid #fc6500;background:#111;color:#fc6500;border-radius:8px;padding:8px 13px;cursor:pointer;font-weight:bold}.encomenda-acao.concluir{background:#fc6500;color:#000}.entrega-card{border:1px solid #333;border-radius:10px;padding:12px;margin-top:10px;background:#090909;color:#fff;line-height:1.5}.entrega-card strong{color:#fc6500}.entrega-horario{color:#fc6500;font-weight:bold;font-size:16px}.entrega-vazia{text-align:center;color:#aaa;padding:12px}.estoque-aviso{color:#aaa;font-size:13px;text-align:center;margin:8px 0 14px}
+.home-subtitle{color:#aaa!important;margin:6px 0 0!important;font-size:14px}.home-hero{width:calc(100% - 40px);max-width:1200px;margin:22px auto 14px;padding:28px;border:1px solid #272727;border-radius:18px;background:linear-gradient(135deg,#111 0%,#0a0a0a 70%);display:flex;justify-content:space-between;align-items:center;gap:24px;box-sizing:border-box;box-shadow:0 12px 45px rgba(0,0,0,.35)}.hero-copy{max-width:650px}.hero-kicker,.calendar-label{font-size:11px;letter-spacing:1.6px;color:#fc6500;font-weight:900}.hero-copy h2{margin:8px 0;color:#fff;font-size:30px}.hero-copy p{margin:0;color:#9d9d9d;line-height:1.6}.hero-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}.hero-primary,.hero-secondary{border-radius:10px;padding:12px 16px;font-weight:900;cursor:pointer}.hero-primary{border:2px solid #fc6500;background:#fc6500;color:#000;min-width:180px}.hero-secondary{border:1px solid #fc6500;background:#111;color:#fc6500}.hero-secondary:hover{background:#fc6500;color:#000}.home-stats{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.home-stat{padding:14px 16px;background:#0d0d0d;border:1px solid #242424;border-radius:12px}.home-stat span{display:block;color:#777;font-size:11px;font-weight:bold}.home-stat strong{display:block;color:#fc6500;font-size:25px;margin-top:5px}.home-finance-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;padding:18px;background:linear-gradient(135deg,#111 0%,#090909 72%);border:1px solid #272727;border-radius:16px;box-sizing:border-box}.home-finance-head{display:flex;justify-content:space-between;align-items:center;gap:14px}.home-finance-head h2{margin:5px 0 4px;color:#fff;font-size:21px}.home-finance-head p{margin:0;color:#777;font-size:12px;line-height:1.5}.home-finance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}.home-finance-item{padding:13px;border:1px solid #242424;border-radius:11px;background:#0d0d0d}.home-finance-item span{display:block;color:#777;font-size:10px;font-weight:900}.home-finance-item strong{display:block;color:#fff;font-size:22px;margin-top:6px}.home-finance-item small{display:block;color:#666;font-size:10px;margin-top:4px}.home-finance-item.highlight{border-color:#fc6500;background:#120d08}.home-finance-item.highlight strong{color:#fc6500;font-size:27px}.home-team-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;background:linear-gradient(135deg,#0f0f0f,#090909);border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 10px 35px rgba(0,0,0,.22)}.home-team-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:16px}.home-team-head h2{margin:6px 0 5px;color:#fff;font-size:24px}.home-team-head p{margin:0;color:#888;line-height:1.5}.home-team-refresh{border:1px solid #fc6500;background:#111;color:#fc6500;padding:9px 13px;border-radius:9px;font-weight:900;cursor:pointer;white-space:nowrap}.home-team-refresh:hover{background:#fc6500;color:#000}.home-member-directory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.home-member-card{background:#111;border:1px solid #242424;border-radius:14px;padding:13px;min-width:0}.home-member-top{display:flex;align-items:center;gap:10px}.home-member-avatar{width:44px;height:44px;border-radius:12px;background:#1a120d;border:1px solid #fc6500;color:#fc6500;display:grid;place-items:center;font-weight:900;font-size:15px;flex:none}.home-member-name{color:#fff;font-weight:900;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-member-meta{display:flex;align-items:center;gap:7px;color:#888;font-size:11px;margin-top:3px}.home-member-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block}.home-member-dot.online{background:#57d57a;box-shadow:0 0 8px rgba(87,213,122,.55)}.home-member-role{margin-top:10px;display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#181818;border:1px solid #333;color:#fc6500;font-size:10px;font-weight:900}.home-member-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.home-member-metric{background:#0b0b0b;border:1px solid #222;border-radius:9px;padding:7px 5px;text-align:center}.home-member-metric b{display:block;color:#fff;font-size:15px}.home-member-metric span{display:block;color:#666;font-size:9px;margin-top:2px}.home-member-loading,.home-member-empty{padding:24px;text-align:center;border:1px dashed #333;border-radius:12px;color:#777;grid-column:1/-1}.home-member-status-online{color:#7dff9b}.home-member-status-offline{color:#777}@media(max-width:1050px){.home-member-directory{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.home-team-head{align-items:flex-start;flex-direction:column}.home-member-directory{grid-template-columns:1fr}.home-member-metrics{grid-template-columns:repeat(2,1fr)}}.calendar-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 30px;background:#0c0c0c;border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box}.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;text-align:center}.calendar-toolbar h2{margin:3px 0 0;color:#fff;text-transform:capitalize}.calendar-nav{width:42px;height:42px;border-radius:10px;border:1px solid #333;background:#111;color:#fc6500;font-size:30px;cursor:pointer}.calendar-nav:hover{background:#fc6500;color:#000}.calendar-filters{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:18px 0}.calendar-filter{border:1px solid #333;background:#111;color:#aaa;border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:bold}.calendar-filter.active{border-color:#fc6500;background:#fc6500;color:#000}.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.calendar-weekdays{margin-bottom:6px}.calendar-weekdays span{text-align:center;color:#666;font-size:10px;font-weight:bold;padding:6px}.calendar-day{min-height:78px;border:1px solid #222;border-radius:10px;background:#111;color:#fff;text-align:left;padding:8px;cursor:pointer;position:relative}.calendar-day:hover{border-color:#fc6500}.calendar-day.muted{opacity:.25;cursor:default}.calendar-day.today{box-shadow:inset 0 0 0 1px #fc6500}.calendar-day.selected{background:#18110b;border-color:#fc6500}.calendar-day>span{font-weight:bold}.day-counts{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}.day-counts b,.day-counts i{font-style:normal;font-size:10px;min-width:22px;text-align:center;padding:3px 5px;border-radius:999px}.day-counts b{background:#fc6500;color:#000}.day-counts i{background:#222;color:#fc6500;border:1px solid #fc6500}.calendar-events{margin-top:15px;border-top:1px solid #222;padding-top:13px}.calendar-events-head{display:flex;justify-content:space-between;color:#aaa;margin-bottom:9px}.calendar-events-head strong{color:#fc6500}.calendar-event{display:grid;grid-template-columns:75px 1fr;gap:12px;padding:11px;border:1px solid #252525;border-radius:10px;background:#101010;margin-top:7px}.event-time{color:#fc6500;font-weight:900;font-size:17px}.event-main strong{color:#fff;font-size:12px}.event-main p{margin:4px 0;color:#ddd}.event-main small{color:#777}.calendar-empty{padding:18px;text-align:center;color:#777}.operacao-modal,.resumo-operacao-modal{display:none;position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.operacao-box,.resumo-box{width:min(900px,96vw);max-height:92vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 20px 70px rgba(0,0,0,.6)}.operacao-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.operacao-head h2,.resumo-box h2{margin:0;color:#fc6500}.operacao-close{border:1px solid #444;background:#111;color:#aaa;border-radius:8px;padding:7px 10px;cursor:pointer}.operacao-type{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}.operacao-type button{border:1px solid #333;background:#111;color:#aaa;padding:11px;border-radius:9px;font-weight:900;cursor:pointer}.operacao-type button.active{border-color:#fc6500;background:#fc6500;color:#000}.operacao-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-field label{display:block;color:#fc6500;font-size:12px;font-weight:bold;margin-bottom:5px}.operacao-field input,.operacao-field select{width:100%;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;padding:10px}.operacao-products{border:1px solid #252525;border-radius:12px;overflow:hidden;margin:15px 0}.operacao-categoria{padding:8px 10px;background:#171717;border-top:1px solid #fc6500;border-bottom:1px solid #fc6500;color:#fc6500;font-weight:900}.operacao-produto{display:grid;grid-template-columns:1fr 190px 120px;align-items:center;gap:8px;padding:9px 10px;border-top:1px solid #222;color:#fff}.operacao-produto small{display:block;color:#777;margin-top:3px}.operacao-produto .quantidade-controle{justify-content:center}.operacao-subtotal{text-align:right;color:#fc6500;font-weight:bold}.operacao-calculo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.operacao-calculo>div{padding:12px;border:1px solid #242424;border-radius:10px;background:#101010}.operacao-calculo span{display:block;color:#777;font-size:11px}.operacao-calculo strong{display:block;color:#fff;margin-top:5px}.operacao-calculo .destaque{border-color:#fc6500}.operacao-calculo .destaque strong{color:#fc6500}.operacao-agendamento{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-qtd-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;border:1px solid #fc6500!important;border-radius:7px!important;background:#111!important;color:#fc6500!important;font-weight:900!important;font-size:16px!important;cursor:pointer!important;pointer-events:auto!important;user-select:none!important}.operacao-qtd-btn:hover{background:#fc6500!important;color:#000!important}.operacao-qtd-btn:active{transform:scale(.96)}.operacao-clear{width:100%;margin-top:8px;padding:10px;border:1px solid #fc6500;background:#111;color:#fc6500;border-radius:9px;font-weight:900;cursor:pointer}.operacao-clear:hover{background:#fc6500;color:#000}.operacao-finalizar{width:100%;margin-top:14px;padding:13px;border:2px solid #fc6500;background:#fc6500;color:#000;border-radius:10px;font-weight:900;cursor:pointer}.resumo-box{width:min(600px,95vw)}.resumo-status{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #254d31;background:#0e1711;border-radius:11px;margin:15px 0}.resumo-status>span{width:30px;height:30px;border-radius:50%;background:#2d7b42;color:#fff;display:grid;place-items:center;font-weight:bold}.resumo-status strong{display:block;color:#7dff9b}.resumo-status small{color:#aaa}.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.resumo-grid>div{background:#111;border:1px solid #222;border-radius:9px;padding:10px}.resumo-grid span{display:block;color:#777;font-size:11px}.resumo-grid strong{display:block;color:#fff;margin-top:4px}.resumo-itens{margin-top:10px;border:1px solid #222;border-radius:10px;padding:10px}.resumo-itens>strong{color:#fc6500}.resumo-itens>div{display:grid;grid-template-columns:1fr 45px 100px;gap:8px;padding:7px 0;border-bottom:1px solid #222;color:#ddd}.resumo-itens b{color:#fc6500}.resumo-itens em{font-style:normal;text-align:right}.resumo-total{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;font-size:18px;color:#aaa}.resumo-total strong{color:#fc6500;font-size:25px}.resumo-aviso{color:#777;font-size:12px;text-align:center}.resumo-close{width:100%;border:1px solid #fc6500;background:#111;color:#fc6500;padding:11px;border-radius:9px;font-weight:bold;cursor:pointer}.resumo-close:hover{background:#fc6500;color:#000}.gestao-modal{display:none;position:fixed;inset:0;z-index:21000;background:rgba(0,0,0,.88);justify-content:center;align-items:center;padding:20px;box-sizing:border-box}.gestao-caixa{width:min(760px,95vw);max-height:90vh;overflow:auto;background:#111;border:2px solid #fc6500;border-radius:14px;padding:22px;box-sizing:border-box}.gestao-caixa h2{color:#fc6500;text-align:center;margin:0 0 16px}.gestao-topo{display:flex;justify-content:flex-end;margin-bottom:8px}.gestao-fechar{border:1px solid #fc6500;background:#000;color:#fc6500;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:bold}.estoque-lista{display:grid;grid-template-columns:1fr 150px;border:1px solid #333;border-radius:10px;overflow:hidden}.estoque-lista>div{padding:8px 10px;border-bottom:1px solid #333}.estoque-lista .estoque-cab{color:#fc6500;font-weight:bold;background:#181818}.estoque-input{width:100%;box-sizing:border-box;padding:7px;text-align:center;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff}.gestao-salvar{width:100%;margin-top:14px;border:2px solid #fc6500;background:#fc6500;color:#000;font-weight:bold;padding:10px;border-radius:9px;cursor:pointer}.encomenda-acoes{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}.encomenda-acao{border:1px solid #fc6500;background:#111;color:#fc6500;border-radius:8px;padding:8px 13px;cursor:pointer;font-weight:bold}.encomenda-acao.concluir{background:#fc6500;color:#000}.entrega-card{border:1px solid #333;border-radius:10px;padding:12px;margin-top:10px;background:#090909;color:#fff;line-height:1.5}.entrega-card strong{color:#fc6500}.entrega-horario{color:#fc6500;font-weight:bold;font-size:16px}.entrega-vazia{text-align:center;color:#aaa;padding:12px}.estoque-aviso{color:#aaa;font-size:13px;text-align:center;margin:8px 0 14px}
 @media(max-width:800px){.home-hero{flex-direction:column;align-items:flex-start}.hero-actions{justify-content:flex-start}.home-stats{grid-template-columns:1fr 1fr}.home-finance-grid{grid-template-columns:1fr 1fr}.home-finance-head{align-items:flex-start;flex-direction:column}.operacao-produto{grid-template-columns:1fr 150px 90px}.operacao-calculo{grid-template-columns:1fr}.calendar-day{min-height:65px}}
 @media(max-width:600px){.home-hero,.calendar-card,.home-stats{width:calc(100% - 20px)}.home-stats{grid-template-columns:1fr 1fr}.hero-copy h2{font-size:24px}.operacao-fields,.operacao-agendamento,.resumo-grid{grid-template-columns:1fr}.operacao-produto{grid-template-columns:1fr 125px 80px;font-size:13px}.calendar-weekdays span{font-size:8px}.calendar-day{padding:6px;min-height:58px}.day-counts{left:5px;bottom:5px}.calendar-event{grid-template-columns:55px 1fr}.resumo-itens>div{grid-template-columns:1fr 35px 80px}}
 
@@ -1350,7 +1555,13 @@ main{margin-left:294px}
 @media(max-width:800px){main{margin-left:0}.home-player-sidebar{position:relative;left:auto;top:auto;width:calc(100% - 20px);height:330px;margin:14px auto;}.mission-admin-grid{grid-template-columns:1fr}.member-detail-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.member-detail-grid{grid-template-columns:1fr 1fr}.feature-box{padding:15px}.home-layout{width:calc(100% - 20px)}.home-player-sidebar{height:300px}}
 </style>
+<style>
+.hero-actions-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:10px}.home-categories{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.home-categories span{color:#777;font-size:10px;font-weight:900;letter-spacing:1.3px;margin-right:3px}.home-categories a{color:#fc6500;border:1px solid #4a2a14;background:#0d0d0d;border-radius:999px;padding:6px 10px;text-decoration:none;font-size:10px;font-weight:900}.home-categories a:hover{background:#fc6500;color:#000}.chat-fab{position:fixed;right:24px;bottom:24px;z-index:32000;width:58px;height:58px;border:2px solid #fc6500;border-radius:50%;background:#fc6500;color:#000;font-size:25px;font-weight:900;cursor:pointer;box-shadow:0 12px 30px rgba(252,101,0,.35)}.chat-panel{position:fixed;right:24px;bottom:92px;z-index:32000;width:min(385px,calc(100vw - 32px));height:min(560px,calc(100vh - 120px));display:none;flex-direction:column;background:#0d0d0d;border:1px solid #fc6500;border-radius:16px;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.65)}.chat-panel.open{display:flex}.chat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px;border-bottom:1px solid #302015}.chat-head strong{color:#fc6500}.chat-close,.chat-mode{border:1px solid #444;background:#111;color:#ddd;border-radius:7px;padding:7px 9px;cursor:pointer}.chat-mode.active{border-color:#fc6500;color:#fc6500}.chat-people{max-height:155px;overflow:auto;padding:8px;border-bottom:1px solid #272727}.chat-person{width:100%;text-align:left;background:#111;border:1px solid #292929;color:#fff;border-radius:9px;padding:9px;margin:4px 0;cursor:pointer}.chat-person.active{border-color:#fc6500;background:#19110b}.chat-person small{display:block;color:#aaa;margin-top:3px}.chat-messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.chat-message{max-width:82%;background:#191919;color:#eee;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.35}.chat-message.mine{align-self:flex-end;background:#fc6500;color:#000}.chat-message small{display:block;font-size:10px;opacity:.7;margin-bottom:3px}.chat-compose{display:flex;gap:7px;padding:10px;border-top:1px solid #272727}.chat-compose input{min-width:0;flex:1;background:#050505;color:#fff;border:1px solid #444;border-radius:8px;padding:10px}.chat-compose button{border:1px solid #fc6500;background:#fc6500;color:#000;border-radius:8px;padding:8px 11px;font-weight:900;cursor:pointer}@media(max-width:700px){.home-hero{align-items:flex-start;flex-direction:column}.hero-actions-wrap{width:100%;align-items:stretch}.home-categories{justify-content:flex-start}.hero-actions{justify-content:flex-start}.chat-fab{right:16px;bottom:16px}.chat-panel{right:16px;bottom:82px}}
+</style>
 
+<style>
+.hero-actions-wrap{width:100%;align-items:center}.hero-actions{justify-content:center}.operacao-produto-info{display:flex;align-items:center;gap:9px}.produto-miniatura{width:46px;height:34px;object-fit:cover;border:1px solid #fc6500;border-radius:6px;background:#171717;flex:none}
+</style>
 <!-- Realizar venda / encomenda -->
 <div id="operacao-modal" class="operacao-modal">
   <div class="operacao-box">
@@ -1365,9 +1576,9 @@ main{margin-left:294px}
       <div class="operacao-field"><label>DATA DE ENTREGA</label><input id="operacao-data" type="date"></div>
       <div class="operacao-field"><label>HORÁRIO DE ENTREGA</label><input id="operacao-hora" type="time"></div>
     </div>
-    <div class="operacao-products"><div class="operacao-produto" style="background:#181818;color:#fc6500;font-weight:bold;"><div>PRODUTO</div><div style="text-align:center">QUANTIDADE</div><div style="text-align:right">SUBTOTAL</div></div><div id="operacao-produtos-lista"></div></div>
+    <div class="operacao-products"><div class="operacao-produto" style="background:#181818;color:#fc6500;font-weight:bold;"><div>PRODUTO</div><div style="text-align:center">QUANTIDADE</div><div style="text-align:right">SUBTOTAL</div></div><div id="operacao-produtos-lista"></div></div><button id="limpar-quantidades-operacao" class="operacao-clear" type="button">LIMPAR TODAS AS QUANTIDADES</button>
     <div id="operacao-calculo" class="operacao-calculo"></div>
-    <div style="color:#777;font-size:12px;text-align:center;">A operação ficará pendente até a aprovação do administrador. O estoque não é alterado nesta etapa.</div>
+    <div style="color:#777;font-size:12px;text-align:center;">O sistema só permite finalizar quando houver estoque suficiente. A baixa do estoque acontece na aprovação administrativa.</div>
     <button id="finalizar-operacao" class="operacao-finalizar" type="button">FINALIZAR VENDA</button>
   </div>
 </div>
@@ -1378,7 +1589,7 @@ main{margin-left:294px}
 
 <div id="estoque-modal" class="gestao-modal"><div class="gestao-caixa"><div class="gestao-topo"><button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button></div><h2>Estoque</h2><p class="estoque-aviso">O estoque pode ser consultado e alterado pelos administradores com permissão de estoque.</p><div id="estoque-lista" class="estoque-lista"></div><button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button></div></div>
 
-<div id="entregas-hoje-modal" class="gestao-modal"><div class="gestao-caixa"><div class="gestao-topo" style="align-items:center;justify-content:space-between;gap:10px;"><div><label for="entregas-data-busca" style="color:#fc6500;font-weight:bold;font-size:14px;">Buscar dia</label><input id="entregas-data-busca" type="date" style="margin-left:8px;padding:7px 9px;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff;"></div><button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button></div><h2 id="titulo-entregas-data">ENTREGAS DE HOJE</h2><p class="estoque-aviso">Encomendas aprovadas podem ser arquivadas quando forem entregues.</p><div id="entregas-hoje-lista"></div></div></div>
+<div id="entregas-hoje-modal" class="gestao-modal"><div class="gestao-caixa"><div class="gestao-topo" style="align-items:center;justify-content:space-between;gap:10px;"><div><label for="entregas-data-busca" style="color:#fc6500;font-weight:bold;font-size:14px;">Buscar dia</label><input id="entregas-data-busca" type="date" style="margin-left:8px;padding:7px 9px;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff;"></div><button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button></div><h2 id="titulo-entregas-data">ENTREGAS DE HOJE</h2><p class="estoque-aviso">Encomendas disponíveis para entrega podem ser arquivadas quando forem entregues.</p><div id="entregas-hoje-lista"></div></div></div>
 
 <script>
 $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
@@ -1559,11 +1770,13 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
 
     const admin=profile.roles?.slug==="owner"||
       profile.roles?.slug==="admin"||
-      ["manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries"].some(has);
+      ["manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries","manage_missions","manage_rewards"].some(has);
 
     $("abrir-admin").style.display=admin?"inline-block":"none";
     $("abrir-admin-main").style.display=admin?"inline-block":"none";
     $("abrir-estoque").style.display=has("manage_stock")?"inline-block":"none";
+    $("admin-settings-tab").style.display=["owner","admin"].includes(profile.roles?.slug)?"inline-block":"none";
+    if(["owner","admin"].includes(profile.roles?.slug)) carregarWebhooksConfigurados();
 
     if(window.iniciarBancoDepoisDoLogin) window.iniciarBancoDepoisDoLogin();
   }
@@ -1647,7 +1860,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
           <div class="member-name-row"><div class="member-name">${escapeHtml(r.name||"Sem nome")}</div><div class="member-status"><i class="member-dot ${online?"online":""}"></i>${online?"Online":"Offline"}</div></div>
           <div class="member-passport">Passaporte ${escapeHtml(r.passport||"—")}</div>
           <div class="member-role">${escapeHtml(r.role_name||"Sem cargo")}</div>
-          <div class="member-metrics">${memberMetric(r.sales_count,"Vendas")}${memberMetric(r.order_count,"Encom.")}${memberMetric(r.approved_count,"Aprov.")}${memberMetric(r.pending_count,"Pend.")}</div>
+          <div class="member-metrics">${memberMetric(r.sales_count,"Vendas")}${memberMetric(r.order_count,"Encom.")}${memberMetric(r.mission_count,"Missões")}${memberMetric(r.completed_missions,"Concluídas")}</div>
         </div>
       </div>`;
     }).join("");
@@ -1670,7 +1883,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     target.innerHTML=sorted.map(r=>{
       const online=!!r.online;
       const initials=String(r.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
-      return `<div class="home-member-card"><div class="home-member-top"><div class="home-member-avatar">${escapeHtml(initials)}</div><div style="min-width:0;flex:1"><div class="home-member-name">${escapeHtml(r.name||'Sem nome')}</div><div class="home-member-meta"><span class="home-member-dot ${online?'online':''}"></span><span class="${online?'home-member-status-online':'home-member-status-offline'}">${online?'Online':'Offline'}</span><span>•</span><span>Passaporte ${escapeHtml(r.passport||'—')}</span></div></div></div><div class="home-member-role">${escapeHtml(r.role_name||'Sem cargo')}</div><div class="home-member-metrics"><div class="home-member-metric"><b>${Number(r.sales_count||0)}</b><span>VENDAS</span></div><div class="home-member-metric"><b>${Number(r.order_count||0)}</b><span>ENCOM.</span></div><div class="home-member-metric"><b>${Number(r.approved_count||0)}</b><span>APROV.</span></div><div class="home-member-metric"><b>${Number(r.pending_count||0)}</b><span>PEND.</span></div></div></div>`;
+      return `<div class="home-member-card"><div class="home-member-top"><div class="home-member-avatar">${escapeHtml(initials)}</div><div style="min-width:0;flex:1"><div class="home-member-name">${escapeHtml(r.name||'Sem nome')}</div><div class="home-member-meta"><span class="home-member-dot ${online?'online':''}"></span><span class="${online?'home-member-status-online':'home-member-status-offline'}">${online?'Online':'Offline'}</span><span>•</span><span>Passaporte ${escapeHtml(r.passport||'—')}</span></div></div></div><div class="home-member-role">${escapeHtml(r.role_name||'Sem cargo')}</div><div class="home-member-metrics"><div class="home-member-metric"><b>${Number(r.sales_count||0)}</b><span>VENDAS</span></div><div class="home-member-metric"><b>${Number(r.order_count||0)}</b><span>ENCOM.</span></div><div class="home-member-metric"><b>${Number(r.mission_count||0)}</b><span>MISSÕES</span></div><div class="home-member-metric"><b>${Number(r.completed_missions||0)}</b><span>CONCLUÍDAS</span></div></div></div>`;
     }).join('');
   }
 
@@ -1729,7 +1942,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
       target.innerHTML=rows.length?rows.map(r=>{
         const options=roles.map(role=>`<option value="${escapeHtml(role.id)}" ${Number(role.id)===Number(r.role_id)?"selected":""}>${escapeHtml(role.name)}</option>`).join("");
         const online=r.online;
-        return `<div class="admin-card" id="member-card-${r.id}"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div><strong>${escapeHtml(r.name||"Sem nome")}</strong> <span class="member-status" style="display:inline-flex;margin-left:8px"><i class="member-dot ${online?"online":""}"></i>${online?"Online":"Offline"}</span></div><div style="color:#aaa;margin-top:5px">Passaporte: ${escapeHtml(r.passport||"—")} · Idade: ${escapeHtml(r.age??"—")} · Telefone: ${escapeHtml(r.game_phone||"—")}</div><div style="color:#777;margin-top:4px">Cadastro: ${escapeHtml(r.created_at?new Date(r.created_at).toLocaleString("pt-BR"):"—")}</div></div><div style="text-align:right;color:#fc6500;font-weight:900">${escapeHtml(r.role_name||"Sem cargo")}</div></div><div class="admin-profile-strip" style="margin-top:12px"><div class="admin-profile-stat"><b>${r.sales_count||0}</b><span>VENDAS</span></div><div class="admin-profile-stat"><b>${r.order_count||0}</b><span>ENCOMENDAS</span></div><div class="admin-profile-stat"><b>${r.approved_count||0}</b><span>APROVADAS</span></div><div class="admin-profile-stat"><b>${r.pending_count||0}</b><span>PENDENTES</span></div></div><div style="color:#777;font-size:11px;margin-bottom:8px">Recusadas: <strong style="color:#ff7777">${r.rejected_count||0}</strong> · Total de operações: <strong style="color:#fff">${r.order_count||0}</strong></div><div class="admin-actions"><select id="member-role-${r.id}" style="padding:9px;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;min-width:190px">${options}</select><button class="admin-btn orange" onclick="salvarCargoMembro('${r.id}')">Salvar cargo</button></div></div>`;
+        return `<div class="admin-card" id="member-card-${r.id}"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div><strong>${escapeHtml(r.name||"Sem nome")}</strong> <span class="member-status" style="display:inline-flex;margin-left:8px"><i class="member-dot ${online?"online":""}"></i>${online?"Online":"Offline"}</span></div><div style="color:#aaa;margin-top:5px">Passaporte: ${escapeHtml(r.passport||"—")} · Idade: ${escapeHtml(r.age??"—")} · Telefone: ${escapeHtml(r.game_phone||"—")}</div><div style="color:#777;margin-top:4px">Cadastro: ${escapeHtml(r.created_at?new Date(r.created_at).toLocaleString("pt-BR"):"—")}</div></div><div style="text-align:right;color:#fc6500;font-weight:900">${escapeHtml(r.role_name||"Sem cargo")}</div></div><div class="admin-profile-strip" style="margin-top:12px"><div class="admin-profile-stat"><b>${r.sales_count||0}</b><span>VENDAS</span></div><div class="admin-profile-stat"><b>${r.order_count||0}</b><span>ENCOMENDAS</span></div><div class="admin-profile-stat"><b>${r.mission_count||0}</b><span>MISSÕES</span></div><div class="admin-profile-stat"><b>${r.completed_missions||0}</b><span>CONCLUÍDAS</span></div></div><div style="color:#777;font-size:11px;margin-bottom:8px">Missões concluídas: <strong style="color:#7dff9b">${r.completed_missions||0}</strong> · Total de operações: <strong style="color:#fff">${Number(r.order_count||0)+Number(r.sales_count||0)}</strong></div><div class="admin-actions"><select id="member-role-${r.id}" style="padding:9px;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;min-width:190px">${options}</select><button class="admin-btn orange" onclick="salvarCargoMembro('${r.id}')">Salvar cargo</button></div></div>`;
       }).join(""):"<div class='admin-card'>Nenhum membro encontrado.</div>";
     }catch(e){target.innerHTML=`<div class='admin-card'>Erro ao carregar membros: ${escapeHtml(e.message)}</div>`;}
   };
@@ -1786,10 +1999,12 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     try{const rows=await adminRpc("tarjas_admin_list_orders",{p_status:"pending"});target.innerHTML=rows.length?rows.map(r=>`<div class="admin-card"><div><strong>${escapeHtml(r.tipo||"OPERAÇÃO").toUpperCase()}</strong> · ${escapeHtml(r.cliente||"Sem cliente")} ${r.vendedor?`· Vendedor: ${escapeHtml(r.vendedor)} (${escapeHtml(r.vendedor_id||"")})`:""}</div><div style="color:#aaa;margin-top:5px">Telefone: ${escapeHtml(r.telefone||"—")} · Data: ${escapeHtml(r.data_entrega||"—")} · Hora: ${escapeHtml(r.hora_entrega||"—")}</div><div style="color:#aaa;margin-top:5px">Itens: ${escapeHtml(r.itens_texto||"—")}</div><div style="margin-top:6px;color:#fff">Total: <strong style="color:#fc6500">${formatBrl(r.valor)}</strong> · Comissão: ${formatBrl(r.comissao)} · Repasse: ${formatBrl(r.repasse)}</div><div class="admin-actions"><button class="admin-btn ok" onclick="aprovarOperacaoAdmin(${r.id})">Aprovar</button><button class="admin-btn danger" onclick="recusarOperacaoAdmin(${r.id})">Recusar</button></div></div>`).join(""):"<div class='admin-card'>Nenhuma operação pendente.</div>";}catch(e){target.innerHTML=`<div class='admin-card'>Erro ao carregar operações: ${escapeHtml(e.message)}</div>`;}
   };
 
-  window.aprovarOperacaoAdmin=async(id)=>{if(!confirm("Confirmar aprovação desta operação?"))return;try{await adminRpc("tarjas_admin_approve_order",{p_order_id:Number(id)});await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();await carregarResumoFinanceiroHome();alert("Operação aprovada e estoque baixado.");}catch(e){alert("Erro ao aprovar operação: "+e.message);}};
-  window.recusarOperacaoAdmin=async(id)=>{const reason=prompt("Motivo da recusa (opcional):","");if(reason===null)return;try{await adminRpc("tarjas_admin_reject_order",{p_order_id:Number(id),p_reason:reason});await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();alert("Operação recusada.");}catch(e){alert("Erro ao recusar operação: "+e.message);}};
+  window.aprovarOperacaoAdmin=async(id)=>{if(!confirm("Confirmar aprovação desta operação?"))return;try{await adminRpc("tarjas_admin_approve_order",{p_order_id:Number(id)});await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();await carregarResumoFinanceiroHome();alert("Operação aprovada. O estoque foi baixado e a operação foi para Entregas aprovadas.");}catch(e){alert("Erro ao aprovar operação: "+e.message);}};
+  function solicitarMotivoRecusa(){return new Promise(resolve=>{let modal=$('recusa-operacao-modal');if(!modal){document.body.insertAdjacentHTML('beforeend','<div id="recusa-operacao-modal" class="resumo-operacao-modal" style="z-index:60000"><div class="resumo-box"><h2>RECUSAR OPERAÇÃO</h2><p style="color:#aaa;line-height:1.5">Informe o motivo que será salvo e enviado ao Discord.</p><textarea id="recusa-operacao-motivo" maxlength="800" placeholder="Motivo da recusa" style="width:100%;min-height:110px;box-sizing:border-box;background:#050505;color:#fff;border:1px solid #fc6500;border-radius:9px;padding:10px;font:inherit"></textarea><div class="admin-actions" style="margin-top:12px"><button id="recusa-operacao-cancelar" class="admin-btn" type="button">Cancelar</button><button id="recusa-operacao-confirmar" class="admin-btn danger" type="button">Recusar operação</button></div></div></div>');modal=$('recusa-operacao-modal');}const input=$('recusa-operacao-motivo');input.value='';modal.style.display='flex';setTimeout(()=>input.focus(),0);const fechar=v=>{modal.style.display='none';resolve(v);};$('recusa-operacao-cancelar').onclick=()=>fechar(null);$('recusa-operacao-confirmar').onclick=()=>{const motivo=input.value.trim();if(!motivo){alert('Informe o motivo da recusa.');input.focus();return;}fechar(motivo);};modal.onclick=e=>{if(e.target===modal)fechar(null);};});}
+  window.recusarOperacaoAdmin=async(id)=>{const reason=await solicitarMotivoRecusa();if(reason===null)return;try{const result=await adminRpc("tarjas_admin_reject_order",{p_order_id:Number(id),p_reason:reason});if(result?.success===false)throw new Error(result.message||'Não foi possível recusar a operação.');await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();alert("Operação recusada. O motivo foi registrado e enviado ao Discord.");}catch(e){alert("Erro ao recusar operação: "+e.message);}};
 
   window.carregarEntregasAdmin=async()=>{try{const rows=await adminRpc("tarjas_admin_list_deliveries");$("admin-deliveries-list").innerHTML=rows.length?rows.map(r=>`<div class="admin-card"><strong>${escapeHtml(r.cliente||"—")}</strong> · ${escapeHtml(r.tipo||"—")} · ${formatBrl(r.valor||0)}<div style="color:#aaa">${escapeHtml(r.itens_texto||"")} · ${escapeHtml(r.approved_at?new Date(r.approved_at).toLocaleString("pt-BR"):"")}</div></div>`).join(""):"<div class='admin-card'>Nenhuma entrega finalizada.</div>";}catch(e){$("admin-deliveries-list").innerHTML=`<div class='admin-card'>Erro: ${escapeHtml(e.message)}</div>`;}};
+  window.carregarEntregasRecusadasAdmin=async()=>{try{const rows=await adminRpc("tarjas_admin_list_cancelled");$("admin-cancelled-list").innerHTML=rows.length?rows.map(r=>`<div class="admin-card"><div><strong>${escapeHtml(r.tipo||"OPERAÇÃO").toUpperCase()}</strong> · ${escapeHtml(r.cliente||"—")}</div><div style="color:#aaa;margin-top:5px">${escapeHtml(r.itens_texto||"")} · ${escapeHtml(r.rejected_at?new Date(r.rejected_at).toLocaleString("pt-BR"):"")}</div><div style="color:#ff7777;margin-top:7px"><strong>Motivo da recusa:</strong> ${escapeHtml(r.rejection_reason||"Não informado")}</div></div>`).join(""):"<div class='admin-card'>Nenhuma operação recusada.</div>";}catch(e){$("admin-cancelled-list").innerHTML=`<div class='admin-card'>Erro: ${escapeHtml(e.message)}</div>`;}};
 
   document.querySelectorAll(".admin-tab").forEach(b=>b.addEventListener("click",async()=>{
     const tab=b.dataset.adminTab;showAdminSection(tab);
@@ -1799,21 +2014,56 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     else if(tab==="stock")await carregarEstoqueAdmin();
     else if(tab==="roles")await carregarCargosAdmin();
     else if(tab==="deliveries")await carregarEntregasAdmin();
+    else if(tab==="cancelled")await carregarEntregasRecusadasAdmin();
   }));
 
   $("abrir-admin").addEventListener("click",abrirAdmin);
   $("abrir-admin-main").addEventListener("click",abrirAdmin);
   $("admin-modal").addEventListener("click",e=>{if(e.target.id==="admin-modal")fecharAdmin();});
   carregarMembrosSidebar();
+  async function atualizarTelaInicialCompleta(){
+    try{
+      await Promise.all([recarregarBancoCompartilhado(), carregarEquipePaginaInicial(), carregarResumoFinanceiroHome()]);
+      renderCalendar();
+      renderHomeStats();
+      if(window.authUser?.id){
+        try{
+          const detalhe=await adminRpc("tarjas_public_member_detail",{p_user_id:window.authUser.id});
+          $("home-stat-missions").textContent=Number(detalhe?.mission_count||0);
+          $("home-stat-completed").textContent=Number(detalhe?.completed_missions||0);
+        }catch(_){}
+      }
+    }catch(e){ console.error("TARJAS ATUALIZAR",e); alert("Não foi possível atualizar todos os dados: "+(e?.message||"erro desconhecido")); }
+  }
+  window.atualizarTelaInicialCompleta=atualizarTelaInicialCompleta;
   carregarEquipePaginaInicial();
+  /* Imagens ficam exclusivamente no botão Estoque; esta aba guarda só automações e níveis. */
+  window.carregarConfiguracoesAdmin=async function(){
+    if(!['owner','admin'].includes(window.currentProfile?.roles?.slug)){alert('Somente Dono e Administradores podem abrir as configurações.');return;}
+    const target=$('admin-settings-content');target.innerHTML='<div class="mission-empty">Carregando configurações...</div>';
+    try{
+      const data=await adminRpc('tarjas_admin_get_settings'),webhooks=data.webhooks||{},xp=data.xp||{},levels=data.level_rules||{};Object.assign(DISCORD_WEBHOOKS,webhooks);
+      const hooks=[['vendas','Registro de vendas'],['encomendas','Registro de encomendas'],['aprovadas','Operações aprovadas'],['recusadas','Operações recusadas'],['estoque','Alterações de estoque'],['entregas','Entregas']];
+      target.innerHTML=`<div class="settings-title">WEBHOOKS DO DISCORD</div><p class="settings-help">Cada registro é enviado pelo Supabase com embed colorido, campos organizados e horário do evento.</p><div class="settings-grid">${hooks.map(([key,label])=>`<div class="admin-form-field"><label>${label}</label><input id="cfg-hook-${key}" type="url" value="${escapeHtml(webhooks[key]||'')}" placeholder="https://discord.com/api/webhooks/..."></div>`).join('')}</div><div class="settings-title">XP E NÍVEIS</div><p class="settings-help">Exemplo: com 100 XP por nível e bônus a cada 10 níveis, o player recebe estrelas no nível 10, 20, 30…</p><div class="settings-grid"><div class="admin-form-field"><label>XP por venda aprovada</label><input id="cfg-xp-venda" type="number" min="0" value="${Number(xp.venda_aprovada||0)}"></div><div class="admin-form-field"><label>XP por encomenda aprovada</label><input id="cfg-xp-encomenda" type="number" min="0" value="${Number(xp.encomenda_aprovada||0)}"></div><div class="admin-form-field"><label>XP por missão concluída</label><input id="cfg-xp-missao" type="number" min="0" value="${Number(xp.missao_concluida||0)}"></div><div class="admin-form-field"><label>XP necessário por nível</label><input id="cfg-level-xp" type="number" min="1" value="${Number(levels.xp_per_level||100)}"></div><div class="admin-form-field"><label>Estrelas a cada níveis</label><input id="cfg-level-every" type="number" min="1" value="${Number(levels.reward_every_levels||10)}"></div><div class="admin-form-field"><label>Quantidade de estrelas</label><input id="cfg-level-stars" type="number" min="1" value="${Number(levels.stars_per_reward||5)}"></div></div><div class="admin-actions settings-save"><button class="admin-btn orange" onclick="salvarConfiguracoesAdmin()">Salvar configurações</button></div>`;
+    }catch(e){target.innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message||'Erro desconhecido')}</div>`;}
+  };
+  window.salvarConfiguracoesAdmin=async function(){
+    try{
+      const webhooks={vendas:$('cfg-hook-vendas').value.trim(),encomendas:$('cfg-hook-encomendas').value.trim(),aprovadas:$('cfg-hook-aprovadas').value.trim(),recusadas:$('cfg-hook-recusadas').value.trim(),estoque:$('cfg-hook-estoque').value.trim(),entregas:$('cfg-hook-entregas').value.trim()};
+      const xp={venda_aprovada:Math.max(0,Math.floor(Number($('cfg-xp-venda').value)||0)),encomenda_aprovada:Math.max(0,Math.floor(Number($('cfg-xp-encomenda').value)||0)),missao_concluida:Math.max(0,Math.floor(Number($('cfg-xp-missao').value)||0))};
+      const levelRules={xp_per_level:Math.max(1,Math.floor(Number($('cfg-level-xp').value)||0)),reward_every_levels:Math.max(1,Math.floor(Number($('cfg-level-every').value)||0)),stars_per_reward:Math.max(1,Math.floor(Number($('cfg-level-stars').value)||0))};
+      await adminRpc('tarjas_admin_save_settings',{p_webhooks:webhooks,p_xp:xp,p_level_rules:levelRules});Object.assign(DISCORD_WEBHOOKS,webhooks);alert('Configurações salvas com sucesso.');
+    }catch(e){alert('Não foi possível salvar: '+e.message);}
+  };
   carregarResumoFinanceiroHome();
-  $("home-team-refresh")?.addEventListener("click",carregarEquipePaginaInicial);
-  $("home-finance-refresh")?.addEventListener("click",carregarResumoFinanceiroHome);
+  $("home-team-refresh")?.addEventListener("click",atualizarTelaInicialCompleta);
+  $("home-finance-refresh")?.addEventListener("click",atualizarTelaInicialCompleta);
   setInterval(()=>{if(window.authUser&&document.visibilityState==="visible"){touchPresence();carregarEquipePaginaInicial();carregarResumoFinanceiroHome();if($("admin-modal")?.style.display==="flex")carregarMembrosSidebar();}},30000);
 
   $("abrir-perfil").onclick=async()=>{
     const p=window.currentProfile;
-    $("profile-content").innerHTML=`<div class="admin-card"><div class="admin-form-grid"><div class="admin-form-field"><label>Nome</label><input id="pf-name" value="${escapeHtml(p.name||"")}"></div><div class="admin-form-field"><label>Idade</label><input id="pf-age" type="number" value="${p.age||""}"></div><div class="admin-form-field"><label>Telefone no jogo</label><input id="pf-phone" value="${escapeHtml(p.game_phone||"")}"></div><div class="admin-form-field"><label>Passaporte</label><input id="pf-passport" value="${escapeHtml(p.passport||"")}" readonly title="O passaporte é usado para o login e não pode ser alterado aqui."></div></div><p style="color:#aaa">E-mail: ${escapeHtml(p.email||window.authUser.email)}</p><p style="color:#aaa">Cargo: <strong style="color:#fc6500">${escapeHtml(p.roles?.name||"Sem cargo")}</strong></p><div class="admin-actions"><button class="admin-btn orange" onclick="salvarMeuPerfil()">Salvar</button></div></div>`;
+    let progresso={level:1,xp:0,xp_for_next_level:100};try{progresso=await adminRpc('tarjas_player_progress',{p_user_id:window.authUser.id});}catch(_){}
+    $("profile-content").innerHTML=`<div class="admin-card"><div style="margin-bottom:12px"><span class="level-badge">NÍVEL ${Number(progresso.level||1)} · ${Number(progresso.xp||0)} XP</span><div class="settings-help" style="margin-top:6px">Próximo nível em ${Number(progresso.xp_for_next_level||100)} XP.</div></div><div class="admin-form-grid"><div class="admin-form-field"><label>Nome</label><input id="pf-name" value="${escapeHtml(p.name||"")}"></div><div class="admin-form-field"><label>Idade</label><input id="pf-age" type="number" value="${p.age||""}"></div><div class="admin-form-field"><label>Telefone no jogo</label><input id="pf-phone" value="${escapeHtml(p.game_phone||"")}"></div><div class="admin-form-field"><label>Passaporte</label><input id="pf-passport" value="${escapeHtml(p.passport||"")}" readonly title="O passaporte é usado para o login e não pode ser alterado aqui."></div></div><p style="color:#aaa">E-mail: ${escapeHtml(p.email||window.authUser.email)}</p><p style="color:#aaa">Cargo: <strong style="color:#fc6500">${escapeHtml(p.roles?.name||"Sem cargo")}</strong></p><div class="admin-actions"><button class="admin-btn orange" onclick="salvarMeuPerfil()">Salvar</button></div></div>`;
     $("profile-modal").style.display="flex";
   };
 
@@ -1839,23 +2089,19 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     const modal=$('member-detail-modal'); if(!modal)return;
     modal.style.display='flex'; $('member-detail-title').textContent='Carregando...'; $('member-detail-content').innerHTML='<div class="mission-empty">Carregando informações...</div>';
     try{
-      const data=await adminRpc('tarjas_public_member_detail',{p_user_id:userId});
+      const [data,progresso]=await Promise.all([adminRpc('tarjas_public_member_detail',{p_user_id:userId}),adminRpc('tarjas_player_progress',{p_user_id:userId})]);
       if(!data || data.success===false) throw new Error(data?.message||'Não foi possível carregar o perfil.');
       $('member-detail-title').textContent=data.name||'Perfil do player';
       const initials=String(data.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
       $('member-detail-content').innerHTML=`
-        <div class="member-detail-hero"><div class="member-detail-avatar">${escapeHtml(initials)}</div><div><div class="member-detail-name">${escapeHtml(data.name||'Sem nome')}</div><div class="member-detail-sub">Passaporte ${escapeHtml(data.passport||'—')} · ${escapeHtml(data.role_name||'Sem cargo')} · <span style="color:${data.online?'#63e38a':'#777'}">${data.online?'Online':'Offline'}</span></div></div></div>
+        <div class="member-detail-hero"><div class="member-detail-avatar">${escapeHtml(initials)}</div><div><div class="member-detail-name">${escapeHtml(data.name||'Sem nome')}</div><div class="member-detail-sub">Passaporte ${escapeHtml(data.passport||'—')} · ${escapeHtml(data.role_name||'Sem cargo')} · <span style="color:${data.online?'#63e38a':'#777'}">${data.online?'Online':'Offline'}</span></div><div style="margin-top:7px"><span class="level-badge">NÍVEL ${Number(progresso.level||1)} · ${Number(progresso.xp||0)} XP</span></div></div></div>
         <div class="member-detail-grid">
           <div class="member-detail-stat"><b>${Number(data.sales_count||0)}</b><span>VENDAS</span></div>
           <div class="member-detail-stat"><b>${Number(data.order_count||0)}</b><span>ENCOMENDAS</span></div>
-          <div class="member-detail-stat"><b>${Number(data.approved_count||0)}</b><span>APROVADAS</span></div>
-          <div class="member-detail-stat"><b>${Number(data.pending_count||0)}</b><span>PENDENTES</span></div>
-          <div class="member-detail-stat"><b>${Number(data.rejected_count||0)}</b><span>RECUSADAS</span></div>
-          <div class="member-detail-stat"><b>${formatBrl(data.approved_sales_value||0)}</b><span>VENDAS APROVADAS</span></div>
-          <div class="member-detail-stat"><b>${formatBrl(data.approved_orders_value||0)}</b><span>ENCOMENDAS APROVADAS</span></div>
-          <div class="member-detail-stat"><b>${Number(data.completed_missions||0)}</b><span>MISSÕES</span></div>
+          <div class="member-detail-stat"><b>${Number(data.mission_count||0)}</b><span>MISSÕES</span></div>
+          <div class="member-detail-stat"><b>${Number(data.completed_missions||0)}</b><span>CONCLUÍDAS</span></div>
         </div>
-        <div class="member-detail-commission"><div style="color:#aaa;font-size:11px">COMISSÃO GANHA EM VENDAS APROVADAS</div><strong>${formatBrl(data.sales_commission_total||0)}</strong><div class="member-detail-note">Calculada a partir das vendas aprovadas registradas neste sistema.</div></div>`;
+        <div class="member-detail-commission"><div style="color:#aaa;font-size:11px">COMISSÃO GANHA EM VENDAS</div><strong>${formatBrl(data.sales_commission_total||0)}</strong><div class="member-detail-note">Calculada a partir das comissões de vendas registradas neste sistema.</div></div>`;
     }catch(e){ $('member-detail-title').textContent='Perfil do player'; $('member-detail-content').innerHTML=`<div class="mission-empty">Erro ao carregar informações.<br><small>${escapeHtml(e.message||'Erro desconhecido')}</small></div>`; }
   };
   window.fecharDetalheMembro=()=>{ const m=$('member-detail-modal'); if(m)m.style.display='none'; };
@@ -1884,24 +2130,24 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     try{const rows=await adminRpc('tarjas_mission_ranking');$('mission-ranking-list').innerHTML=rows.length?rows.map((r,i)=>`<div class="ranking-row"><div class="ranking-pos">${i+1}</div><div><div class="ranking-name">${escapeHtml(r.name||'Sem nome')}</div><div class="ranking-sub">${escapeHtml(r.role_name||'Sem cargo')} · ${Number(r.completed_missions||0)} missões concluídas</div></div><div class="ranking-stars">${formatStars(r.stars_total)}</div></div>`).join(''):'<div class="mission-empty">Ainda não há pontuação no ranking.</div>';}catch(e){$('mission-ranking-list').innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message)}</div>`;}
   }
   async function carregarRecompensas(){
-    try{const data=await adminRpc('tarjas_reward_list');const balance=Number(data.stars_balance||0);$('mission-my-stars').textContent=formatStars(balance);const rows=data.rewards||[];$('mission-rewards-list').innerHTML=rows.length?rows.map(r=>`<div class="reward-card"><div class="reward-head"><div class="reward-name">${escapeHtml(r.name)}</div><div class="reward-cost">${formatStars(r.stars_cost)}</div></div><div class="reward-desc">${escapeHtml(r.description||'')}</div><button class="reward-btn" ${balance<Number(r.stars_cost)?'disabled':''} onclick="resgatarRecompensa(${r.id})">${balance>=Number(r.stars_cost)?'RECOLHER RECOMPENSA':'ESTRELAS INSUFICIENTES'}</button></div>`).join(''):'<div class="mission-empty">Nenhuma recompensa disponível.</div>';}catch(e){$('mission-rewards-list').innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message)}</div>`;}
+    try{const data=await adminRpc('tarjas_reward_list');const balance=Number(data.stars_balance||0);$('mission-my-stars').textContent=formatStars(balance);const rows=data.rewards||[];$('mission-rewards-list').innerHTML=rows.length?rows.map(r=>{const left=Number(r.quantity_available||0),canRedeem=left>0&&balance>=Number(r.stars_cost);return `<div class="reward-card"><div class="reward-head"><div class="reward-name">${escapeHtml(r.name)}</div><div class="reward-cost">${formatStars(r.stars_cost)}</div></div><div class="reward-desc">${escapeHtml(r.description||'')}</div><div class="mission-card-meta">Disponíveis: <b style="color:${left>0?'#63e38a':'#ff7777'}">${left}</b></div><button class="reward-btn" ${canRedeem?'':'disabled'} onclick="resgatarRecompensa(${r.id})">${left<=0?'ESGOTADA':canRedeem?'RECOLHER RECOMPENSA':'ESTRELAS INSUFICIENTES'}</button></div>`}).join(''):'<div class="mission-empty">Nenhuma recompensa disponível.</div>';}catch(e){$('mission-rewards-list').innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message)}</div>`;}
   }
   window.resgatarRecompensa=async function(id){ if(!confirm('Confirmar o resgate desta recompensa?'))return; try{const data=await adminRpc('tarjas_redeem_reward',{p_reward_id:Number(id)});await carregarRecompensas();alert(`Recompensa resgatada com sucesso. Saldo restante: ${formatStars(data.stars_balance)}`);}catch(e){alert('Não foi possível resgatar: '+e.message);} };
   document.querySelectorAll('.mission-tab').forEach(b=>b.addEventListener('click',async()=>{document.querySelectorAll('.mission-tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.mission-panel').forEach(x=>x.classList.toggle('active',x.id==='mission-panel-'+b.dataset.missionTab));if(b.dataset.missionTab==='mine')await carregarMinhasMissoes();if(b.dataset.missionTab==='ranking')await carregarRankingMissoes();if(b.dataset.missionTab==='rewards')await carregarRecompensas();}));
 
   function renderHomePlayerList(rows){
     const target=$('home-member-directory'); if(!target)return; if(!rows?.length){target.innerHTML='<div class="admin-empty">Nenhum player cadastrado.</div>';return;}
-    target.innerHTML=rows.map(r=>{const online=!!r.online;const initials=String(r.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';return `<div class="home-player-row" onclick="abrirDetalheMembro('${r.id}')"><div class="home-player-avatar">${escapeHtml(initials)}</div><div class="home-player-main"><div class="home-player-name-row"><span class="home-player-dot ${online?'online':''}"></span><span class="home-player-name">${escapeHtml(r.name||'Sem nome')}</span><span class="home-player-status ${online?'online':'offline'}">${online?'ONLINE':'OFFLINE'}</span></div><div class="home-player-role">${escapeHtml(r.role_name||'Sem cargo')} · #${escapeHtml(r.passport||'—')}</div><div class="home-player-stats"><span>Vendas <b>${Number(r.sales_count||0)}</b></span><span>Enc. <b>${Number(r.order_count||0)}</b></span></div></div></div>`}).join('');
+    target.innerHTML=rows.map(r=>{const online=!!r.online;const initials=String(r.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';return `<div class="home-player-row" onclick="abrirDetalheMembro('${r.id}')"><div class="home-player-avatar">${escapeHtml(initials)}</div><div class="home-player-main"><div class="home-player-name-row"><span class="home-player-dot ${online?'online':''}"></span><span class="home-player-name">${escapeHtml(r.name||'Sem nome')}</span><span class="home-player-status ${online?'online':'offline'}">${online?'ONLINE':'OFFLINE'}</span></div><div class="home-player-role">${escapeHtml(r.role_name||'Sem cargo')} · #${escapeHtml(r.passport||'—')} · <span class="level-badge">Nv. ${Number(r.level||1)}</span></div><div class="home-player-stats"><span>Vendas <b>${Number(r.sales_count||0)}</b></span><span>Enc. <b>${Number(r.order_count||0)}</b></span><span>XP <b>${Number(r.xp||0)}</b></span></div></div></div>`}).join('');
   }
   async function carregarEquipePaginaInicial(){
-    const target=$('home-member-directory'); if(!target)return; try{target.innerHTML='<div class="home-member-loading">Atualizando players...</div>';await touchPresence();const rows=await adminRpc('tarjas_public_member_directory');renderHomePlayerList(rows);}catch(e){target.innerHTML=`<div class="home-member-loading">Erro: ${escapeHtml(e.message||'Erro desconhecido')}</div>`;}
+    const target=$('home-member-directory'); if(!target)return; try{target.innerHTML='<div class="home-member-loading">Atualizando players...</div>';await touchPresence();const [rows,progressRows]=await Promise.all([adminRpc('tarjas_public_member_directory'),adminRpc('tarjas_xp_directory')]);const progress=new Map((progressRows||[]).map(x=>[x.player_id,x]));renderHomePlayerList((rows||[]).map(r=>({...r,...(progress.get(r.id)||{})})));}catch(e){target.innerHTML=`<div class="home-member-loading">Erro: ${escapeHtml(e.message||'Erro desconhecido')}</div>`;}
   }
   window.carregarEquipePaginaInicial=carregarEquipePaginaInicial;
   const homeRefreshBtn = $('home-team-refresh');
   if(homeRefreshBtn){
     const freshHomeRefreshBtn = homeRefreshBtn.cloneNode(true);
     homeRefreshBtn.replaceWith(freshHomeRefreshBtn);
-    freshHomeRefreshBtn.addEventListener('click', window.carregarEquipePaginaInicial);
+    freshHomeRefreshBtn.addEventListener('click', window.atualizarTelaInicialCompleta||window.carregarEquipePaginaInicial);
   }
 
   /* Admin missions */
@@ -1924,19 +2170,59 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
   window.devolverMissaoAdmin=async function(id){if(!confirm('Devolver esta missão para o player marcar novamente como concluída?'))return;try{await adminRpc('tarjas_admin_return_mission',{p_player_mission_id:Number(id)});await carregarMissaoAdmin();alert('Missão devolvida para o player.');}catch(e){alert('Erro ao devolver missão: '+e.message);}};
 
   window.cancelarMissaoAdmin=async function(id){if(!confirm('Cancelar esta missão para o player?'))return;try{await adminRpc('tarjas_admin_cancel_player_mission',{p_player_mission_id:Number(id)});await carregarMissaoAdmin();}catch(e){alert(e.message)}};
-  window.criarRecompensaAdmin=async function(){try{const name=$('reward-name').value.trim(),description=$('reward-description').value.trim(),cost=Math.max(1,Math.floor(Number($('reward-cost').value)||0));if(!name)throw new Error('Informe o nome da recompensa.');await adminRpc('tarjas_admin_create_reward',{p_name:name,p_description:description,p_stars_cost:cost});$('reward-name').value='';$('reward-description').value='';$('reward-cost').value=10;await carregarMissaoAdmin();alert('Recompensa criada.');}catch(e){alert('Erro: '+e.message);}};
+  window.criarRecompensaAdmin=async function(){try{const name=$('reward-name').value.trim(),description=$('reward-description').value.trim(),cost=Math.max(1,Math.floor(Number($('reward-cost').value)||0)),quantity=Math.max(1,Math.floor(Number($('reward-quantity').value)||0));if(!name)throw new Error('Informe o nome da recompensa.');await adminRpc('tarjas_admin_create_reward',{p_name:name,p_description:description,p_stars_cost:cost,p_quantity_available:quantity});$('reward-name').value='';$('reward-description').value='';$('reward-cost').value=10;$('reward-quantity').value=1;await carregarMissaoAdmin();alert('Recompensa criada.');}catch(e){alert('Erro: '+e.message);}};
 
   /* Hook existing tab handler: mission tab */
   const _existingAdminTabHandler = window.__tarjasAdminTabHooked;
   if(!_existingAdminTabHandler){
     window.__tarjasAdminTabHooked=true;
-    document.querySelectorAll('.admin-tab').forEach(b=>b.addEventListener('click',async()=>{ if(b.dataset.adminTab==='missions') await carregarMissaoAdmin(); }));
+    document.querySelectorAll('.admin-tab').forEach(b=>b.addEventListener('click',async()=>{ if(b.dataset.adminTab==='missions') await carregarMissaoAdmin(); if(b.dataset.adminTab==='settings') await carregarConfiguracoesAdmin(); }));
   }
+  async function carregarWebhooksConfigurados(){try{const data=await adminRpc('tarjas_admin_get_settings');Object.assign(DISCORD_WEBHOOKS,data.webhooks||{});}catch(_){}}
+  window.carregarConfiguracoesAdmin=async function(){
+    if(!['owner','admin'].includes(window.currentProfile?.roles?.slug)){alert('Somente Dono e Administradores podem abrir as configurações.');return;}
+    const target=$('admin-settings-content');target.innerHTML='<div class="mission-empty">Carregando configurações...</div>';
+    try{
+      const data=await adminRpc('tarjas_admin_get_settings'),webhooks=data.webhooks||{},xp=data.xp||{},levels=data.level_rules||{};Object.assign(DISCORD_WEBHOOKS,webhooks);
+      const hooks=[['vendas','Registro de vendas'],['encomendas','Registro de encomendas'],['aprovadas','Operações aprovadas'],['recusadas','Operações recusadas'],['estoque','Alterações de estoque'],['entregas','Entregas']];
+      target.innerHTML=`<div class="settings-title">WEBHOOKS DO DISCORD</div><p class="settings-help">Cole os webhooks do Discord. Eles ficam visíveis somente para Dono e Administradores. Os registros são enviados diretamente pelo Supabase.</p><div class="settings-grid">${hooks.map(([key,label])=>`<div class="admin-form-field"><label>${label}</label><input id="cfg-hook-${key}" type="url" value="${escapeHtml(webhooks[key]||'')}" placeholder="https://discord.com/api/webhooks/..."></div>`).join('')}</div><div class="settings-title">XP E NÍVEIS</div><p class="settings-help">Defina o XP necessário em cada nível e a bonificação de estrelas. Exemplo: a cada 100 XP sobe 1 nível; ao chegar nos níveis 10, 20, 30... recebe estrelas.</p><div class="settings-grid"><div class="admin-form-field"><label>XP por venda aprovada</label><input id="cfg-xp-venda" type="number" min="0" step="1" value="${Number(xp.venda_aprovada||0)}"></div><div class="admin-form-field"><label>XP por encomenda aprovada</label><input id="cfg-xp-encomenda" type="number" min="0" step="1" value="${Number(xp.encomenda_aprovada||0)}"></div><div class="admin-form-field"><label>XP por missão concluída</label><input id="cfg-xp-missao" type="number" min="0" step="1" value="${Number(xp.missao_concluida||0)}"></div><div class="admin-form-field"><label>XP necessário por nível</label><input id="cfg-level-xp" type="number" min="1" step="1" value="${Number(levels.xp_per_level||100)}"></div><div class="admin-form-field"><label>Dar estrelas a cada quantos níveis</label><input id="cfg-level-every" type="number" min="1" step="1" value="${Number(levels.reward_every_levels||10)}"></div><div class="admin-form-field"><label>Estrelas por bonificação</label><input id="cfg-level-stars" type="number" min="1" step="1" value="${Number(levels.stars_per_reward||5)}"></div></div><div class="settings-title">IMAGENS DOS PRODUTOS</div><p class="settings-help">Cole uma URL ou envie PNG/JPG/WEBP de até 5 MB.</p><div class="settings-grid">${produtos.map((p,i)=>`<div class="admin-form-field"><label>${escapeHtml(p.nome)}</label><input id="cfg-image-${i}" type="url" value="${escapeHtml(produtoImagem(p,i))}" placeholder="https://.../imagem.png"><input id="cfg-image-file-${i}" type="file" accept="image/png,image/jpeg,image/webp" style="margin-top:6px"></div>`).join('')}</div><div class="admin-actions settings-save"><button class="admin-btn orange" onclick="salvarConfiguracoesAdmin()">Salvar configurações</button></div>`;
+    }catch(e){target.innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message||'Erro desconhecido')}</div>`;}
+  };
+  window.salvarConfiguracoesAdmin=async function(){
+    try{
+      const webhooks={vendas:$('cfg-hook-vendas').value.trim(),encomendas:$('cfg-hook-encomendas').value.trim(),aprovadas:$('cfg-hook-aprovadas').value.trim(),recusadas:$('cfg-hook-recusadas').value.trim(),estoque:$('cfg-hook-estoque').value.trim(),entregas:$('cfg-hook-entregas').value.trim()};
+      const xp={venda_aprovada:Math.max(0,Math.floor(Number($('cfg-xp-venda').value)||0)),encomenda_aprovada:Math.max(0,Math.floor(Number($('cfg-xp-encomenda').value)||0)),missao_concluida:Math.max(0,Math.floor(Number($('cfg-xp-missao').value)||0))};
+      const levelRules={xp_per_level:Math.max(1,Math.floor(Number($('cfg-level-xp').value)||0)),reward_every_levels:Math.max(1,Math.floor(Number($('cfg-level-every').value)||0)),stars_per_reward:Math.max(1,Math.floor(Number($('cfg-level-stars').value)||0))};
+      const imagens={};produtos.forEach((p,i)=>{const url=$('cfg-image-'+i).value.trim();if(url)imagens[p.nome]=url;});
+      for(const [i,p] of produtos.entries()){const arquivo=$('cfg-image-file-'+i).files?.[0];if(!arquivo)continue;if(!arquivo.type.startsWith('image/')||arquivo.size>5*1024*1024)throw new Error('Cada imagem deve ser PNG, JPG ou WEBP e ter no máximo 5 MB.');const ext=(arquivo.name.split('.').pop()||'png').toLowerCase(),path=`${nomeArquivoProduto(p.nome)}/${Date.now()}.${ext}`;const {error:uploadError}=await window.supabaseClient.storage.from('product-images').upload(path,arquivo,{upsert:true,contentType:arquivo.type});if(uploadError)throw uploadError;const {data:urlData}=window.supabaseClient.storage.from('product-images').getPublicUrl(path);imagens[p.nome]=urlData.publicUrl;}
+      await adminRpc('tarjas_admin_save_settings',{p_webhooks:webhooks,p_xp:xp,p_level_rules:levelRules});Object.assign(DISCORD_WEBHOOKS,webhooks);
+      await adminRpc('tarjas_admin_save_product_images',{p_images:imagens});Object.assign(IMAGENS_PRODUTOS,imagens);localStorage.setItem('tarjas_imagens_produtos',JSON.stringify(IMAGENS_PRODUTOS));
+      alert('Configurações salvas com sucesso.');
+    }catch(e){alert('Não foi possível salvar: '+e.message);}
+  };
   carregarResumoFinanceiroHome();
-  document.getElementById('home-finance-refresh')?.addEventListener('click',carregarResumoFinanceiroHome);
+  document.getElementById('home-finance-refresh')?.addEventListener('click',window.atualizarTelaInicialCompleta||carregarResumoFinanceiroHome);
   document.getElementById('abrir-missoes')?.addEventListener('click',window.abrirMissoes);
   document.getElementById('abrir-missoes-bar')?.addEventListener('click',window.abrirMissoes);
   document.getElementById('member-detail-modal')?.addEventListener('click',e=>{if(e.target.id==='member-detail-modal')fecharDetalheMembro();});
   document.getElementById('missoes-modal')?.addEventListener('click',e=>{if(e.target.id==='missoes-modal')fecharMissoes();});
+  const userMenu=$('user-menu'),userMenuToggle=$('user-menu-toggle');
+  userMenuToggle?.addEventListener('click',e=>{e.stopPropagation();userMenu.style.display=userMenu.style.display==='none'?'block':'none';});
+  document.addEventListener('click',e=>{if(userMenu&&!e.target.closest('.user-menu-wrap'))userMenu.style.display='none';});
+  $('abrir-perfil')?.addEventListener('click',()=>{if(userMenu)userMenu.style.display='none';});
+
+  /* Chat global e privado */
+  document.body.insertAdjacentHTML('beforeend',`<button id="chat-fab" class="chat-fab" type="button" aria-label="Abrir bate papo">💬</button><aside id="chat-panel" class="chat-panel" aria-label="Bate papo"><div class="chat-head"><strong id="chat-title">BATE PAPO · GLOBAL</strong><div><button id="chat-global" class="chat-mode active" type="button">Todos</button><button id="chat-people-toggle" class="chat-mode" type="button">Pessoas</button><button id="chat-close" class="chat-close" type="button">×</button></div></div><div id="chat-people" class="chat-people" style="display:none"></div><div id="chat-messages" class="chat-messages"><div class="mission-empty">Carregando mensagens...</div></div><form id="chat-form" class="chat-compose"><input id="chat-input" maxlength="1000" placeholder="Digite sua mensagem" autocomplete="off"><button type="submit">ENVIAR</button></form></aside>`);
+  let chatPartnerId=null, chatPeople=[];
+  const chatPanel=$('chat-panel'),chatPeopleBox=$('chat-people'),chatMessages=$('chat-messages'),chatTitle=$('chat-title');
+  const chatEscape=v=>escapeHtml(String(v??''));
+  async function chatLoadPeople(){try{chatPeople=await adminRpc('tarjas_chat_list_people');chatPeopleBox.innerHTML=chatPeople.length?chatPeople.map(p=>`<button class="chat-person ${p.id===chatPartnerId?'active':''}" type="button" data-chat-person="${p.id}"><b>${chatEscape(p.name||'Sem nome')}</b><small>${chatEscape(p.role_name||'Sem cargo')} · Passaporte #${chatEscape(p.passport||'—')} · ${p.online?'Online':'Offline'}</small></button>`).join(''):'<div class="mission-empty">Nenhuma pessoa disponível.</div>';}catch(e){chatPeopleBox.innerHTML=`<div class="mission-empty">Não foi possível carregar pessoas.</div>`;}}
+  async function chatLoadMessages(){try{const rows=await adminRpc('tarjas_chat_list_messages',{p_partner_id:chatPartnerId});chatMessages.innerHTML=rows.length?rows.map(m=>{const mine=m.sender_id===window.authUser?.id;return `<div class="chat-message ${mine?'mine':''}"><small>${mine?'Você':chatEscape(m.sender_name||'Sem nome')} · ${m.created_at?new Date(m.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''}</small>${chatEscape(m.body)}</div>`}).join(''):'<div class="mission-empty">Nenhuma mensagem ainda.</div>';chatMessages.scrollTop=chatMessages.scrollHeight;}catch(e){chatMessages.innerHTML='<div class="mission-empty">Não foi possível carregar mensagens.</div>';}}
+  async function chatOpen(){chatPanel.classList.add('open');await Promise.all([chatLoadPeople(),chatLoadMessages()]);}
+  $('chat-fab').addEventListener('click',chatOpen);$('chat-close').addEventListener('click',()=>chatPanel.classList.remove('open'));
+  $('chat-global').addEventListener('click',async()=>{chatPartnerId=null;chatTitle.textContent='BATE PAPO · GLOBAL';$('chat-global').classList.add('active');$('chat-people-toggle').classList.remove('active');chatPeopleBox.style.display='none';await chatLoadMessages();});
+  $('chat-people-toggle').addEventListener('click',async()=>{chatPeopleBox.style.display=chatPeopleBox.style.display==='none'?'block':'none';$('chat-people-toggle').classList.add('active');await chatLoadPeople();});
+  chatPeopleBox.addEventListener('click',async e=>{const btn=e.target.closest('[data-chat-person]');if(!btn)return;chatPartnerId=btn.dataset.chatPerson;const p=chatPeople.find(x=>x.id===chatPartnerId);chatTitle.textContent=p?`BATE PAPO · ${p.name}`:'BATE PAPO PRIVADO';$('chat-global').classList.remove('active');chatPeopleBox.style.display='none';await chatLoadMessages();});
+  $('chat-form').addEventListener('submit',async e=>{e.preventDefault();const input=$('chat-input'),body=input.value.trim();if(!body)return;try{await adminRpc('tarjas_chat_send_message',{p_recipient_id:chatPartnerId,p_body:body});input.value='';await chatLoadMessages();}catch(err){alert('Não foi possível enviar: '+err.message);}});
 })();
 </script>
