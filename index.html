@@ -857,7 +857,7 @@ footer p {
 .auth-field{margin:10px 0}.auth-field label{display:block;color:#fc6500;font-weight:bold;font-size:13px;margin-bottom:5px}.auth-field input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #333;border-radius:8px;background:#050505;color:#fff}
 .auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auth-primary,.auth-secondary{width:100%;padding:12px;border-radius:9px;font-weight:900;cursor:pointer;margin-top:10px}.auth-primary{border:0;background:#fc6500;color:#000}.auth-secondary{border:1px solid #fc6500;background:#111;color:#fc6500}
 .auth-message{min-height:20px;margin-top:10px;color:#bbb;text-align:center;font-size:13px}.auth-message.error{color:#ff6b6b}.auth-message.ok{color:#7dff9b}
-#pending-screen{text-align:center;color:#fff}#pending-screen .pending-icon{font-size:48px}#pending-screen h2{color:#fc6500}
+
 .user-bar{width:calc(100% - 40px);max-width:1200px;margin:8px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;box-sizing:border-box;border:1px solid #222;border-radius:10px;background:#090909}
 .user-info{color:#aaa;font-size:13px}.user-info strong{color:#fc6500}.user-actions{display:flex;gap:7px;flex-wrap:wrap}.small-action{border:1px solid #333;background:#111;color:#fff;border-radius:7px;padding:7px 10px;cursor:pointer;font-weight:bold}.small-action.admin{border-color:#fc6500;color:#fc6500}.small-action.logout{color:#ff7777;border-color:#633}
 #admin-modal,#profile-modal{display:none;position:fixed;inset:0;z-index:45000;background:rgba(0,0,0,.86);justify-content:center;align-items:center;padding:18px;box-sizing:border-box}
@@ -889,7 +889,7 @@ footer p {
         <button id="auth-tab-register" class="auth-tab" type="button">CRIAR CONTA</button>
       </div>
       <form id="login-form">
-        <div class="auth-field"><label>E-mail</label><input id="login-email" type="email" required></div>
+        <div class="auth-field"><label>Passaporte</label><input id="login-passport" type="text" inputmode="numeric" autocomplete="username" required></div>
         <div class="auth-field"><label>Senha</label><input id="login-password" type="password" required></div>
         <button class="auth-primary" type="submit">ENTRAR</button>
       </form>
@@ -897,10 +897,9 @@ footer p {
         <div class="auth-grid">
           <div class="auth-field"><label>Nome</label><input id="reg-name" required></div>
           <div class="auth-field"><label>Idade</label><input id="reg-age" type="number" min="1" max="100" required></div>
-          <div class="auth-field"><label>Telefone no jogo</label><input id="reg-phone" required></div>
           <div class="auth-field"><label>Passaporte</label><input id="reg-passport" required></div>
+          <div class="auth-field"><label>Telefone no jogo</label><input id="reg-phone" required></div>
         </div>
-        <div class="auth-field"><label>E-mail</label><input id="reg-email" type="email" required></div>
         <div class="auth-grid">
           <div class="auth-field"><label>Senha</label><input id="reg-password" type="password" minlength="6" required></div>
           <div class="auth-field"><label>Confirmar senha</label><input id="reg-password2" type="password" minlength="6" required></div>
@@ -909,57 +908,134 @@ footer p {
       </form>
       <div id="auth-message" class="auth-message"></div>
     </div>
-    <div id="pending-screen" style="display:none;">
-      <div class="pending-icon">⏳</div>
-      <h2>CADASTRO EM ANÁLISE</h2>
-      <p>Seu cadastro foi salvo e está aguardando autorização dos administradores.</p>
-      <p>Depois da aprovação você poderá usar o sistema.</p>
-      <button id="pending-logout" class="auth-secondary" type="button">Sair</button>
-    </div>
+    
   </div>
 </div>
 
 <div id="admin-modal">
   <div class="admin-box">
-    <div class="admin-header"><h2>PAINEL ADMINISTRATIVO</h2><button class="admin-close" onclick="fecharAdmin()">Fechar</button></div>
-    <div class="admin-tabs">
-      <button class="admin-tab active" data-admin-tab="dashboard">Visão geral</button>
-      <button class="admin-tab" data-admin-tab="members">Membros</button>
-      <button class="admin-tab" data-admin-tab="sales">Aprovar vendas</button>
-      <button class="admin-tab" data-admin-tab="stock">Estoque</button>
-      <button class="admin-tab" data-admin-tab="roles">Cargos</button>
-      <button class="admin-tab" data-admin-tab="deliveries">Entregas finalizadas</button>
-      <button class="admin-tab" data-admin-tab="logs">Logs</button>
-    </div>
-    <section id="admin-dashboard" class="admin-section active">
-      <div class="admin-stat-grid">
-        <div class="admin-stat"><b id="stat-members">0</b><span>Membros</span></div>
-        <div class="admin-stat"><b id="stat-pending-members">0</b><span>Cadastros pendentes</span></div>
-        <div class="admin-stat"><b id="stat-pending-sales">0</b><span>Vendas pendentes</span></div>
-        <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas finalizadas</span></div>
-      </div>
-      <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;">Aqui você aprova membros e vendas, administra cargos, controla o estoque e consulta todo o histórico.</p></div>
-    </section>
-    <section id="admin-members" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarMembrosAdmin()">Atualizar</button></div><div id="admin-members-list"></div></section>
-    <section id="admin-sales" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarVendasAdmin()">Atualizar</button></div><div id="admin-sales-list"></div></section>
-    <section id="admin-stock" class="admin-section">
-      <div class="admin-card"><strong>Controle de estoque</strong><p style="color:#aaa;">O estoque só pode ser alterado por quem possui a permissão de estoque.</p>
-      <div id="admin-stock-list" class="admin-form-grid"></div><div class="admin-actions"><button class="admin-btn orange" onclick="salvarEstoqueAdmin()">Salvar estoque</button></div></div>
-    </section>
-    <section id="admin-roles" class="admin-section">
-      <div class="admin-card"><strong>Criar novo cargo</strong>
-        <div class="admin-form-grid" style="margin-top:10px;">
-          <div class="admin-form-field"><label>Nome</label><input id="new-role-name" placeholder="Ex.: Supervisor"></div>
-          <div class="admin-form-field"><label>Identificador</label><input id="new-role-slug" placeholder="ex: supervisor"></div>
+    <div class="admin-header"><div><h2>PAINEL ADMINISTRATIVO</h2><div style="color:#666;font-size:11px;margin-top:3px">Controle de membros, cargos, permissões, operações e estoque.</div></div><button class="admin-close" onclick="fecharAdmin()">Fechar</button></div>
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-head">
+          <div><div class="admin-sidebar-title">MEMBROS</div><div class="admin-sidebar-sub">Presença e desempenho</div></div>
+          <button class="member-refresh" type="button" onclick="carregarMembrosSidebar()" title="Atualizar membros">↻</button>
         </div>
-        <div class="admin-form-field" style="margin-top:10px;"><label>Descrição</label><input id="new-role-description"></div>
-        <div id="permissions-create-grid" class="permission-grid"></div>
-        <div class="admin-actions"><button class="admin-btn orange" onclick="criarCargoAdmin()">Criar cargo</button></div>
+        <div id="admin-member-sidebar" class="admin-member-list"><div class="admin-empty">Carregando membros...</div></div>
+      </aside>
+      <div class="admin-main">
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-admin-tab="dashboard">Visão geral</button>
+          <button class="admin-tab" data-admin-tab="members">Membros</button>
+          <button class="admin-tab" data-admin-tab="sales">Aprovar operações</button>
+          <button class="admin-tab" data-admin-tab="stock">Estoque</button>
+          <button class="admin-tab" data-admin-tab="roles">Cargos e permissões</button>
+          <button class="admin-tab" data-admin-tab="deliveries">Entregas finalizadas</button>
+          <button class="admin-tab" data-admin-tab="missions">Missões e recompensas</button>
+        </div>
+        <section id="admin-dashboard" class="admin-section active">
+          <div class="admin-stat-grid">
+            <div class="admin-stat"><b id="stat-members">0</b><span>Membros</span></div>
+            <div class="admin-stat"><b id="stat-pending-sales">0</b><span>Operações pendentes</span></div>
+            <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas finalizadas</span></div>
+            <div class="admin-stat"><b id="stat-rejected">0</b><span>Operações recusadas</span></div>
+          </div>
+          <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;line-height:1.6">Use a coluna esquerda para acompanhar quem está online e o volume de vendas e encomendas de cada membro. Em <b style="color:#fc6500">Cargos e permissões</b> você define exatamente o que cada cargo pode fazer.</p></div>
+          <div id="admin-dashboard-members"></div>
+        </section>
+        <section id="admin-members" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarMembrosAdmin()">Atualizar</button></div><div id="admin-members-list"></div></section>
+        <section id="admin-sales" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarVendasAdmin()">Atualizar</button></div><div id="admin-sales-list"></div></section>
+        <section id="admin-stock" class="admin-section">
+          <div class="admin-card"><strong>Controle de estoque</strong><p style="color:#aaa;line-height:1.5">O estoque só pode ser alterado por quem possui a permissão de estoque.</p><div id="admin-stock-list" class="admin-form-grid"></div><div class="admin-actions"><button class="admin-btn orange" onclick="salvarEstoqueAdmin()">Salvar estoque</button></div></div>
+        </section>
+        <section id="admin-roles" class="admin-section">
+          <div class="admin-card">
+            <div style="color:#fff;font-size:16px;font-weight:900">Criar novo cargo</div>
+            <div style="color:#777;font-size:11px;margin-top:3px">Crie um cargo e escolha as permissões abaixo. Cada opção explica exatamente o que ela libera.</div>
+            <div class="admin-form-grid" style="margin-top:12px"><div class="admin-form-field"><label>Nome</label><input id="new-role-name" placeholder="Ex.: Supervisor"></div><div class="admin-form-field"><label>Identificador</label><input id="new-role-slug" placeholder="ex: supervisor"></div></div>
+            <div class="admin-form-field" style="margin-top:10px"><label>Descrição</label><input id="new-role-description" placeholder="Explique para que esse cargo serve"></div>
+            <div id="permissions-create-grid" class="permission-grid-premium"></div>
+            <div class="admin-actions"><button class="admin-btn orange" onclick="criarCargoAdmin()">Criar cargo</button></div>
+          </div>
+          <div id="admin-roles-list"></div>
+        </section>
+        <section id="admin-deliveries" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasAdmin()">Atualizar</button></div><div id="admin-deliveries-list"></div></section>
+        <section id="admin-missions" class="admin-section">
+          <div class="mission-admin-grid">
+            <div class="admin-card">
+              <div class="mission-admin-title">Criar missão</div>
+              <div class="mission-admin-sub">Crie um modelo de missão com a quantidade de estrelas que ela vale.</div>
+              <div class="admin-form-grid" style="margin-top:12px">
+                <div class="admin-form-field"><label>Nome da missão</label><input id="mission-title" placeholder="Ex.: Fechar 10 vendas"></div>
+                <div class="admin-form-field"><label>Estrelas</label><input id="mission-stars" type="number" min="1" step="1" value="1"></div>
+              </div>
+              <div class="admin-form-field" style="margin-top:10px"><label>Descrição</label><textarea id="mission-description" class="mission-textarea" placeholder="Explique o objetivo da missão"></textarea></div>
+              <button class="admin-btn orange" type="button" onclick="criarMissaoAdmin()">Criar missão</button>
+            </div>
+            <div class="admin-card">
+              <div class="mission-admin-title">Atribuir missão</div>
+              <div class="mission-admin-sub">Escolha o player e a missão que será colocada na conta dele.</div>
+              <div class="admin-form-grid" style="margin-top:12px">
+                <div class="admin-form-field"><label>Player</label><select id="mission-player-select"></select></div>
+                <div class="admin-form-field"><label>Missão</label><select id="mission-template-select"></select></div>
+              </div>
+              <button class="admin-btn orange" type="button" onclick="atribuirMissaoAdmin()">Enviar missão</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="mission-admin-title">Missões criadas</div>
+            <div id="admin-mission-templates"></div>
+          </div>
+          <div class="admin-card">
+            <div class="mission-admin-title">Conclusões aguardando aprovação</div>
+            <div class="mission-admin-sub">Quando o player marcar uma missão como feita, ela aparece aqui. As estrelas só são liberadas depois da aprovação do administrador.</div>
+            <div id="admin-mission-submissions"></div>
+          </div>
+          <div class="admin-card">
+            <div class="mission-admin-title">Missões atribuídas</div>
+            <div id="admin-player-missions"></div>
+          </div>
+          <div class="mission-admin-grid">
+            <div class="admin-card">
+              <div class="mission-admin-title">Criar recompensa</div>
+              <div class="mission-admin-sub">Os players usam suas estrelas para resgatar estas recompensas.</div>
+              <div class="admin-form-grid" style="margin-top:12px">
+                <div class="admin-form-field"><label>Nome da recompensa</label><input id="reward-name" placeholder="Ex.: Folga premium"></div>
+                <div class="admin-form-field"><label>Custo em estrelas</label><input id="reward-cost" type="number" min="1" step="1" value="10"></div>
+              </div>
+              <div class="admin-form-field" style="margin-top:10px"><label>Descrição</label><textarea id="reward-description" class="mission-textarea" placeholder="O que o player recebe"></textarea></div>
+              <button class="admin-btn orange" type="button" onclick="criarRecompensaAdmin()">Criar recompensa</button>
+            </div>
+            <div class="admin-card">
+              <div class="mission-admin-title">Resgates recentes</div>
+              <div id="admin-reward-redemptions"></div>
+            </div>
+          </div>
+        </section>
       </div>
-      <div id="admin-roles-list"></div>
-    </section>
-    <section id="admin-deliveries" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasAdmin()">Atualizar</button></div><div id="admin-deliveries-list"></div></section>
-    <section id="admin-logs" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarLogsAdmin()">Atualizar</button></div><div id="admin-logs-list"></div></section>
+    </div>
+  </div>
+</div>
+
+<div id="member-detail-modal" class="feature-modal">
+  <div class="feature-box member-detail-box">
+    <div class="feature-header"><div><div class="feature-kicker">PERFIL DO PLAYER</div><h2 id="member-detail-title">—</h2></div><button class="feature-close" type="button" onclick="fecharDetalheMembro()">Fechar</button></div>
+    <div id="member-detail-content"></div>
+  </div>
+</div>
+
+<div id="missoes-modal" class="feature-modal">
+  <div class="feature-box missions-box">
+    <div class="feature-header"><div><div class="feature-kicker">PROGRAMA TARJAS</div><h2>MISSÕES <span class="mission-star-inline">★</span></h2></div><button class="feature-close" type="button" onclick="fecharMissoes()">Fechar</button></div>
+    <div class="mission-balance-strip"><span>Suas estrelas</span><strong id="mission-my-stars">0 ★</strong></div>
+    <div class="mission-tabs">
+      <button class="mission-tab active" data-mission-tab="mine" type="button">Minhas missões</button>
+      <button class="mission-tab" data-mission-tab="ranking" type="button">Ranking</button>
+      <button class="mission-tab" data-mission-tab="rewards" type="button">Recompensas</button>
+    </div>
+    <section id="mission-panel-mine" class="mission-panel active"><div id="my-missions-list"></div></section>
+    <section id="mission-panel-ranking" class="mission-panel"><div id="mission-ranking-list"></div></section>
+    <section id="mission-panel-rewards" class="mission-panel"><div id="mission-rewards-list"></div></section>
   </div>
 </div>
 
@@ -971,77 +1047,97 @@ footer p {
 </div>
 
   <header>
-    <div class="logo">
-      <img src="https://cdn.discordapp.com/attachments/1341224116350484560/1539028728749756446/ChatGPT_Image_17_de_ago._de_2026_18_48_53.png?ex=6a84d3b2&is=6a838232&hm=a998e26efb386a2c2655dd2194ebd65b2041690baa4f840e301050d8d2b8325f&"
-      <h1 style="color:#fc6500;
-  text-shadow: none;">TARJAS</h1>
-      <p style="color:#fc6500;
-  text-shadow: none;">Bem vindo (a) a calculadora dos TARJAS! — CATÁLOGO DO JOGO</p>
-    </div>
-   
-  </header>
-
+  <div class="logo">
+    <img src="https://cdn.discordapp.com/attachments/1341224116350484560/1539028728749756446/ChatGPT_Image_17_de_ago._de_2026_18_48_53.png?ex=6a84d3b2&is=6a838232&hm=a998e26efb386a2c2655dd2194ebd65b2041690baa4f840e301050d8d2b8325f&" alt="TARJAS">
+    <h1>TARJAS</h1>
+    <p class="home-subtitle">Central de vendas, encomendas e agenda</p>
+  </div>
+</header>
 
 <div id="user-bar" class="user-bar" style="display:none;">
   <div class="user-info">Logado como <strong id="user-name-label">—</strong><span id="user-role-label"></span></div>
   <div class="user-actions">
     <button id="abrir-perfil" class="small-action" type="button">Meu Perfil</button>
+    <button id="abrir-missoes-bar" class="small-action mission-small" type="button">MISSÕES ★</button>
     <button id="abrir-admin" class="small-action admin" type="button" style="display:none;">ADMIN</button>
     <button id="logout-btn" class="small-action logout" type="button">Sair</button>
   </div>
 </div>
 
-  <main>
-    <div class="tabela-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Limpo (R$)</th>
-            <th>Sujo (R$)</th>
-            <th>Limpo Parceiro (R$)</th>
-            <th>Sujo Parceiro (R$)</th>
-            <th>Quantidade</th>
-          </tr>
-        </thead>
-        <tbody id="produtos"></tbody>
-      </table>
+<main>
+  <section class="home-hero">
+    <div class="hero-copy">
+      <span class="hero-kicker">PAINEL OPERACIONAL</span>
+      <h2>Organize suas vendas em um só lugar.</h2>
+      <p>Registre uma venda ou encomenda, acompanhe a aprovação e visualize sua agenda diretamente no calendário.</p>
     </div>
+    <div class="hero-actions">
+      <button id="abrir-realizar-venda" class="hero-primary" type="button"><span>＋</span> REALIZAR VENDA/ ENCOMENDA</button>
+      <button id="abrir-estoque" class="hero-secondary" type="button">ESTOQUE</button>
+      <button id="abrir-entregas-hoje" class="hero-secondary" type="button">ENTREGAS</button>
+      <button id="abrir-missoes" class="hero-secondary mission-trigger" type="button">MISSÕES ★</button>
+      <button id="abrir-admin-main" class="hero-secondary" type="button" style="display:none;">ADMIN</button>
+    </div>
+  </section>
 
-    <div class="dados-retorno">
-      <div class="dados-body">
-        <div class="botoes-pedido">
-          <div style="position:relative;">
-            <button id="tipo-pagamento" type="button">Pagamento: Limpo ▾</button>
-            <div id="pagamento-menu">
-              <button type="button" data-pagamento="limpo">Limpo</button>
-              <button type="button" data-pagamento="sujo">Sujo</button>
-              <button type="button" data-pagamento="limpoParceiro">Limpo Parceiro</button>
-              <button type="button" data-pagamento="sujoParceiro">Sujo Parceiro</button>
-            </div>
-          </div>
-          <button id="limpar-itens" type="button">Limpar Itens</button>
-<button id="finalizar-pedido" type="button">Finalizar Pedido</button>
-        </div>
-        <div class="gestao-botoes">
-          <button id="abrir-estoque" class="gestao-btn" type="button">Estoque</button>
-          <button id="abrir-encomendas" class="gestao-btn" type="button">Encomendas</button>
-          <button id="abrir-entregas-hoje" class="gestao-btn" type="button">ENTREGAS DE HOJE</button>
-          <button id="abrir-admin-main" class="gestao-btn" type="button" style="display:none;">ADMIN</button>
-        </div>
-        <div id="totais" aria-live="polite"></div>
+  <section class="home-stats">
+    <div class="home-stat"><span>AGENDADOS NO MÊS</span><strong id="home-stat-orders">0</strong></div>
+    <div class="home-stat"><span>VENDAS NO MÊS</span><strong id="home-stat-sales">0</strong></div>
+    <div class="home-stat"><span>PENDENTES</span><strong id="home-stat-pending">0</strong></div>
+    <div class="home-stat"><span>APROVADOS</span><strong id="home-stat-approved">0</strong></div>
+  </section>
+  <section class="home-finance-card">
+    <div class="home-finance-head">
+      <div><span class="hero-kicker">RESULTADO TARJAS</span><h2>Saldo e faturamento</h2><p>Somente vendas e encomendas <strong style="color:#fff">aprovadas</strong> entram nestes valores. Pendentes e recusadas ficam fora do saldo.</p></div>
+      <button id="home-finance-refresh" class="home-team-refresh" type="button">↻ Atualizar</button>
+    </div>
+    <div class="home-finance-grid">
+      <div class="home-finance-item"><span>VENDAS APROVADAS</span><strong id="home-finance-sales-count">0</strong><small id="home-finance-sales-total">R$ 0,00</small></div>
+      <div class="home-finance-item"><span>ENCOMENDAS APROVADAS</span><strong id="home-finance-orders-count">0</strong><small id="home-finance-orders-total">R$ 0,00</small></div>
+      <div class="home-finance-item highlight"><span>SALDO TOTAL</span><strong id="home-finance-total">R$ 0,00</strong><small>Vendas + encomendas aprovadas</small></div>
+      <div class="home-finance-item"><span>COMISSÃO TOTAL</span><strong id="home-finance-commission">R$ 0,00</strong><small>Comissões de vendas aprovadas</small></div>
+    </div>
+  </section>
+  <aside class="home-player-sidebar">
+    <div class="home-player-sidebar-head">
+      <div><div class="home-player-title">PLAYERS</div><div class="home-player-subtitle">Online e offline</div></div>
+      <button id="home-team-refresh" class="home-player-refresh" type="button" title="Atualizar players">↻</button>
+    </div>
+    <div id="home-member-directory" class="home-player-list"><div class="home-member-loading">Carregando players...</div></div>
+  </aside>
+
+  <section class="calendar-card">
+    <div class="calendar-toolbar">
+      <button id="calendar-prev" class="calendar-nav" type="button">‹</button>
+      <div>
+        <div class="calendar-label">AGENDA TARJAS</div>
+        <h2 id="calendar-title">—</h2>
       </div>
-
+      <button id="calendar-next" class="calendar-nav" type="button">›</button>
     </div>
+    <div class="calendar-filters">
+      <button class="calendar-filter active" data-calendar-filter="all" type="button">Tudo</button>
+      <button class="calendar-filter" data-calendar-filter="venda" type="button">Vendas</button>
+      <button class="calendar-filter" data-calendar-filter="encomenda" type="button">Encomendas</button>
+      <button id="calendar-today" class="calendar-filter" type="button">Hoje</button>
+    </div>
+    <div class="calendar-weekdays">
+      <span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
+    </div>
+    <div id="calendar-grid" class="calendar-grid"></div>
+    <div id="calendar-events" class="calendar-events">
+      <div class="calendar-empty">Selecione um dia para ver as movimentações.</div>
+    </div>
+  </section>
+</main>
 
+<footer></footer>
 
-  </main>
-
-  <footer>
-
-  </footer>
-
-  <script>const produtos = [
+<script>
+/* =========================
+   CATÁLOGO + OPERAÇÃO
+   ========================= */
+const produtos = [
   { nome: "Five Seven", categoria: "PISTOLAS", limpo: 60000, sujo: 81000, limpoParceiro: 55000, sujoParceiro: 74250 },
   { nome: "HK", categoria: "PISTOLAS", limpo: 30000, sujo: 40500, limpoParceiro: 25000, sujoParceiro: 33750 },
   { nome: "Glock Rajada", categoria: "PISTOLAS", limpo: 120000, sujo: 162000, limpoParceiro: 100000, sujoParceiro: 135000 },
@@ -1054,1284 +1150,793 @@ footer p {
   { nome: "UZI", categoria: "SUB METRALHADORAS", limpo: 140000, sujo: 189000, limpoParceiro: 120000, sujoParceiro: 162000 },
   { nome: "Thompson", categoria: "SUB METRALHADORAS", limpo: 170000, sujo: 229500, limpoParceiro: 150000, sujoParceiro: 202500 },
   { nome: "DOZE", categoria: "SHOTGUN", limpo: 280000, sujo: 378000, limpoParceiro: 260000, sujoParceiro: 351000 },
-  { nome: "Lean", categoria: "DROGAS", limpo: 250, sujo: 338, limpoParceiro: 200, sujoParceiro: 270 },
+  { nome: "Lean", categoria: "DROGAS", limpo: 250, sujo: 338, limpoParceiro: 200, sujoParceiro: 270 }
 ];
-
-const porcentagemVendedor = 0.10 //10%
-
-let tipoPagamentoSelecionado = "limpo";
-
-const nomesPagamento = {
-  limpo: "Limpo",
-  sujo: "Sujo",
-  limpoParceiro: "Limpo Parceiro",
-  sujoParceiro: "Sujo Parceiro"
-};
-
-const tbody = document.getElementById('produtos');
-// const totalLimpo = document.getElementById('total-limpo');
-// const totalSujo = document.getElementById('total-sujo');
-// const totalLimpoParceiro = document.getElementById('total-limpo-parceiro');
-// const totalSujoParceiro = document.getElementById('total-sujo-parceiro');
-
-// Preencher a tabela com produtos agrupados por categoria
-let categoriaAtual = "";
-
-produtos.forEach((produto, index) => {
-  if (produto.categoria !== categoriaAtual) {
-    categoriaAtual = produto.categoria;
-
-    const categoriaTr = document.createElement('tr');
-    categoriaTr.className = 'categoria-linha';
-    categoriaTr.innerHTML = `
-      <td colspan="6">${produto.categoria}</td>
-    `;
-    tbody.appendChild(categoriaTr);
-  }
-
-  const tr = document.createElement('tr');
-  tr.dataset.produtoIndex = index;
-  tr.innerHTML = `
-    <td>${produto.nome}</td>
-    <td class="limpo">R$ ${(produto.limpo * 0).toLocaleString('pt-BR')}</td>
-    <td class="sujo">R$ ${(produto.sujo * 0).toLocaleString('pt-BR')}</td>
-    <td class="limpo-parceiro">R$ ${(produto.limpoParceiro * 0).toLocaleString('pt-BR')}</td>
-    <td class="sujo-parceiro">R$ ${(produto.sujoParceiro * 0).toLocaleString('pt-BR')}</td>
-    <td>
-      <div class="quantidade-controle">
-        <button type="button" onclick="alterarQuantidade(${index}, -1)">−</button>
-        <input type="number" min="0" value="0" onchange="atualizaValor(${index}, this.value)">
-        <button type="button" onclick="alterarQuantidade(${index}, 1)">+</button>
-      </div>
-    </td>
-  `;
-  tbody.appendChild(tr);
-});
-
-// Atualizar os valores exibidos em cada linha.
-function atualizaValor(index, qtd) {
-  const produto = produtos[index];
-  const tr = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-  const quantidade = Math.max(0, Number(qtd) || 0);
-
-  const limpo = produto.limpo * quantidade;
-  const sujo = produto.sujo * quantidade;
-  const limpoParceiro = produto.limpoParceiro * quantidade;
-  const sujoParceiro = produto.sujoParceiro * quantidade;
-
-  tr.querySelector('.limpo').textContent = `R$ ${limpo.toLocaleString('pt-BR')}`;
-  tr.querySelector('.sujo').textContent = `R$ ${sujo.toLocaleString('pt-BR')}`;
-  tr.querySelector('.limpo-parceiro').textContent = `R$ ${limpoParceiro.toLocaleString('pt-BR')}`;
-  tr.querySelector('.sujo-parceiro').textContent = `R$ ${sujoParceiro.toLocaleString('pt-BR')}`;
-}
-
-function formatBrl(value) {
-  return value.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  });
-}
-
-// Finaliza o pedido e mostra o total calculado conforme as quantidades.
-// Como o seletor de pagamento foi removido, o total principal usa o valor "Limpo".
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, ch => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-  }[ch]));
-}
-
-
-/* =========================
-   BANCO COMPARTILHADO - SUPABASE
-   ========================= */
+const porcentagemVendedor = 0.10;
+const nomesPagamento = { limpo:"Limpo", sujo:"Sujo", limpoParceiro:"Limpo Parceiro", sujoParceiro:"Sujo Parceiro" };
 const SUPABASE_URL = "https://siuwooarjrpbdfuqcwcw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Fe5esrf571UXT5t0lPNyIw_NWaDxubm";
-const SUPABASE_HEADERS = {
-  "apikey": SUPABASE_KEY,
-  "Content-Type": "application/json"
-};
+const SUPABASE_HEADERS = { apikey: SUPABASE_KEY, "Content-Type":"application/json" };
+const CHAVE_ESTOQUE = "tarjas_estoque_v2";
+const CHAVE_ENCOMENDAS = "tarjas_encomendas_v2";
+let estoque = {};
+let encomendas = [];
 let bancoCompartilhadoPronto = false;
+let dadosVendedor = { nome:"", id:"" };
+let tipoPagamentoSelecionado = "limpo";
+let tipoOperacaoAtual = "venda";
+let calendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let calendarFilter = "all";
+let calendarSelectedDate = hojeISO();
 
-async function supabaseFetch(path, options = {}) {
-  let authHeaders = {};
-  try {
-    const sessionResult = window.supabaseClient
-      ? await window.supabaseClient.auth.getSession()
-      : { data: { session: null } };
-    const token = sessionResult?.data?.session?.access_token;
-    if (token) authHeaders = { "Authorization": `Bearer ${token}` };
-  } catch (_) {}
+function $(id){ return document.getElementById(id); }
+function formatBrl(value){ return Number(value||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+function escapeHtml(value){ return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[ch])); }
+function hojeISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function formatarDataEntrega(data){ if(!data)return "—"; const [a,m,d]=String(data).split("-"); return d&&m&&a?`${d}/${m}/${a}`:data; }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function dateKey(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
+function currentDateTime(){ const d=new Date(); return {date:`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`,time:`${pad2(d.getHours())}:${pad2(d.getMinutes())}`}; }
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: { ...SUPABASE_HEADERS, ...authHeaders, ...(options.headers || {}) }
+async function supabaseFetch(path,options={}){
+  let authHeaders={};
+  try { const session=window.supabaseClient?await window.supabaseClient.auth.getSession():null; const token=session?.data?.session?.access_token; if(token)authHeaders={Authorization:`Bearer ${token}`}; } catch(_){ }
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...options,headers:{...SUPABASE_HEADERS,...authHeaders,...(options.headers||{})}});
+  if(!response.ok){ const texto=await response.text(); throw new Error(`Supabase ${response.status}: ${texto||response.statusText}`); }
+  const texto=await response.text(); return texto?JSON.parse(texto):null;
+}
+function carregarEstoque(){ try{return JSON.parse(localStorage.getItem(CHAVE_ESTOQUE)||"{}")}catch(_){return {}} }
+function carregarEncomendas(){ try{const d=JSON.parse(localStorage.getItem(CHAVE_ENCOMENDAS)||"[]");return Array.isArray(d)?d:[]}catch(_){return []} }
+function encomendaParaBanco(e){ return {
+  id:Number(e.id),cliente:e.cliente||"",telefone:e.telefone||"",valor:Number(e.valor)||0,comissao:Number(e.comissao)||0,repasse:Number(e.repasse)||0,
+  itens_texto:e.itensTexto||"",itens:Array.isArray(e.itens)?e.itens:[],pagamento:e.pagamento||"limpo",data_entrega:e.dataEntrega||null,hora_entrega:e.horaEntrega||null,
+  vendedor:e.vendedor||"",vendedor_id:e.vendedorId||"",cadastrada_em:e.cadastradaEm||new Date().toISOString(),tipo:e.tipo||"encomenda",evento_at:e.eventoAt||new Date().toISOString(),
+  status:e.status||"pending",created_by:e.createdBy||null,approved_by:e.approvedBy||null,approved_at:e.approvedAt||null,rejected_by:e.rejectedBy||null,rejected_at:e.rejectedAt||null,rejection_reason:e.rejectionReason||""
+}; }
+function encomendaDoBanco(e){ return {
+  id:Number(e.id),cliente:e.cliente||"",telefone:e.telefone||"",valor:Number(e.valor)||0,comissao:Number(e.comissao)||0,repasse:Number(e.repasse)||0,itensTexto:e.itens_texto||"",
+  itens:Array.isArray(e.itens)?e.itens:[],pagamento:e.pagamento||"limpo",dataEntrega:e.data_entrega||null,horaEntrega:e.hora_entrega||"",vendedor:e.vendedor||"",vendedorId:e.vendedor_id||"",
+  cadastradaEm:e.cadastrada_em||"",tipo:e.tipo||"encomenda",eventoAt:e.evento_at||null,status:e.status||"pending",createdBy:e.created_by||null,approvedBy:e.approved_by||null,approvedAt:e.approved_at||null,
+  rejectedBy:e.rejected_by||null,rejectedAt:e.rejected_at||null,rejectionReason:e.rejection_reason||""
+}; }
+async function atualizarEstoqueNoBanco(){ const rows=produtos.map(p=>({product_name:p.nome,quantity:Math.max(0,Math.floor(Number(estoque[p.nome])||0)),updated_at:new Date().toISOString()})); await supabaseFetch("stock",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)}); }
+async function atualizarEncomendaNoBanco(e){ const {data,error}=await window.supabaseClient.rpc("tarjas_create_order",{p_order:encomendaParaBanco(e)}); if(error)throw error; if(data?.success===false)throw new Error(data.message||"Não foi possível registrar a operação."); return data; }
+async function excluirEncomendaDoBanco(id){ await supabaseFetch(`orders?id=eq.${encodeURIComponent(id)}`,{method:"DELETE"}); }
+async function concluirEntregaNoBanco(id){ return await supabaseFetch("rpc/complete_delivery",{method:"POST",body:JSON.stringify({p_order_id:Number(id)})}); }
+async function recarregarBancoCompartilhado(){
+  const [stockRows,orderRows]=await Promise.all([supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),supabaseFetch("orders?select=*&order=id.asc")]);
+  estoque={}; produtos.forEach(p=>estoque[p.nome]=0); (stockRows||[]).forEach(r=>{estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0));});
+  encomendas=(orderRows||[]).map(encomendaDoBanco); localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
+}
+async function carregarBancoCompartilhado(){
+  const [stockRows,orderRows]=await Promise.all([supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),supabaseFetch("orders?select=*&order=id.asc")]);
+  if(!stockRows.length){ estoque=carregarEstoque(); await atualizarEstoqueNoBanco(); }
+  else { estoque={}; produtos.forEach(p=>estoque[p.nome]=0); stockRows.forEach(r=>estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0))); }
+  encomendas=(orderRows||[]).map(encomendaDoBanco); localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
+}
+function obterItensOperacao(){ return produtos.map((p,i)=>{const input=document.querySelector(`[data-operacao-produto="${i}"]`);const quantidade=Math.max(0,Math.floor(Number(input?.value)||0));const precoUnitario=Number(p[tipoPagamentoSelecionado])||0;return {nome:p.nome,quantidade,precoUnitario,subtotal:precoUnitario*quantidade};}).filter(x=>x.quantidade>0); }
+function calcularOperacao(){ const itens=obterItensOperacao(); const total=itens.reduce((s,i)=>s+i.subtotal,0); const comissao=total*porcentagemVendedor; return {itens,total,comissao,repasse:total-comissao}; }
+function renderizarProdutosOperacao(){
+  const lista=$("operacao-produtos-lista"); let categoria="";
+  lista.innerHTML=produtos.map((p,i)=>{ const cat=p.categoria!==categoria?`<div class="operacao-categoria">${escapeHtml(p.categoria)}</div>`:""; categoria=p.categoria; return `${cat}<div class="operacao-produto"><div><strong>${escapeHtml(p.nome)}</strong><small>${formatBrl(p[tipoPagamentoSelecionado])} un.</small></div><div class="quantidade-controle"><button type="button" onclick="alterarQtdOperacao(${i},-1)">−</button><input type="number" min="0" step="1" value="0" data-operacao-produto="${i}" onchange="atualizarCalculoOperacao()"><button type="button" onclick="alterarQtdOperacao(${i},1)">+</button></div><div class="operacao-subtotal" data-operacao-subtotal="${i}">${formatBrl(0)}</div></div>`;}).join(""); atualizarCalculoOperacao(); }
+function alterarQtdOperacao(index,delta){const input=document.querySelector(`[data-operacao-produto="${index}"]`);if(!input)return;input.value=Math.max(0,Math.floor((Number(input.value)||0)+delta));atualizarCalculoOperacao();}
+function atualizarCalculoOperacao(){ const c=calcularOperacao(); produtos.forEach((p,i)=>{const el=document.querySelector(`[data-operacao-subtotal="${i}"]`);const item=c.itens.find(x=>x.nome===p.nome);if(el)el.textContent=formatBrl(item?.subtotal||0);}); $("operacao-calculo").innerHTML=`<div><span>Valor total</span><strong>${formatBrl(c.total)}</strong></div><div><span>Comissão do vendedor (10%)</span><strong>${formatBrl(c.comissao)}</strong></div><div class="destaque"><span>Valor a repassar</span><strong>${formatBrl(c.repasse)}</strong></div>`; }
+function limparOperacao(){ $("operacao-cliente").value="";$("operacao-telefone").value="";$("operacao-data").value="";$("operacao-hora").value="";produtos.forEach((_,i)=>{const x=document.querySelector(`[data-operacao-produto="${i}"]`);if(x)x.value=0;});atualizarCalculoOperacao(); }
+function alternarTipoOperacao(tipo){ tipoOperacaoAtual=tipo; document.querySelectorAll("[data-tipo-operacao]").forEach(b=>b.classList.toggle("active",b.dataset.tipoOperacao===tipo)); $("operacao-agendamento").style.display=tipo==="encomenda"?"grid":"none"; $("finalizar-operacao").textContent=tipo==="encomenda"?"FINALIZAR ENCOMENDA":"FINALIZAR VENDA"; }
+function abrirRealizarVenda(){ limparOperacao(); $("operacao-pagamento").value=tipoPagamentoSelecionado; alternarTipoOperacao("venda"); renderizarProdutosOperacao(); $("operacao-modal").style.display="flex"; }
+function fecharRealizarVenda(){ $("operacao-modal").style.display="none"; }
+async function finalizarOperacao(){
+  if(!bancoCompartilhadoPronto){alert("Aguarde o banco compartilhado carregar.");return;}
+  const cliente=$("operacao-cliente").value.trim(), telefone=$("operacao-telefone").value.trim(), pagamento=$("operacao-pagamento").value, c=calcularOperacao();
+  if(!cliente||!telefone){alert("Preencha o nome e o telefone do cliente.");return;}
+  if(!c.itens.length){alert("Selecione pelo menos um produto.");return;}
+  let dataEntrega,horaEntrega;
+  if(tipoOperacaoAtual==="encomenda"){
+    dataEntrega=$("operacao-data").value; horaEntrega=$("operacao-hora").value;
+    if(!dataEntrega||!horaEntrega){alert("Informe a data e o horário da entrega.");return;}
+  } else { const now=currentDateTime(); dataEntrega=now.date; horaEntrega=now.time; }
+  const agora=new Date();
+  const pedido={id:Date.now(),cliente,telefone,valor:c.total,comissao:c.comissao,repasse:c.repasse,itensTexto:c.itens.map(i=>`${i.quantidade}x ${i.nome}`).join(", "),itens:c.itens,pagamento,dataEntrega,horaEntrega,vendedor:dadosVendedor.nome,vendedorId:dadosVendedor.id,cadastradaEm:agora.toISOString(),tipo:tipoOperacaoAtual,eventoAt:agora.toISOString(),status:"pending",createdBy:window.authUser?.id||null};
+  try{await atualizarEncomendaNoBanco(pedido);}catch(e){console.error(e);alert("Não foi possível registrar. Verifique a conexão e tente novamente.");return;}
+  encomendas.push(pedido); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas)); renderCalendar(); renderHomeStats(); fecharRealizarVenda(); mostrarResumoOperacao(pedido);
+}
+function mostrarResumoOperacao(pedido){ const tipo=pedido.tipo==="encomenda"?"ENCOMENDA REGISTRADA":"VENDA REGISTRADA"; $("resumo-operacao-conteudo").innerHTML=`<div class="resumo-status"><span>✓</span><div><strong>${tipo}</strong><small>Aguardando aprovação</small></div></div><div class="resumo-grid"><div><span>Cliente</span><strong>${escapeHtml(pedido.cliente)}</strong></div><div><span>Vendedor</span><strong>${escapeHtml(pedido.vendedor||"—")}</strong></div><div><span>Data</span><strong>${formatarDataEntrega(pedido.dataEntrega)}</strong></div><div><span>Horário</span><strong>${escapeHtml(pedido.horaEntrega)}</strong></div></div><div class="resumo-itens"><strong>Itens</strong>${pedido.itens.map(i=>`<div><span>${escapeHtml(i.nome)}</span><b>${i.quantidade}x</b><em>${formatBrl(i.subtotal)}</em></div>`).join("")}</div><div class="resumo-total"><span>Total</span><strong>${formatBrl(pedido.valor)}</strong></div><p class="resumo-aviso">O estoque será baixado somente quando a operação for aprovada.</p>`; $("resumo-operacao-modal").style.display="flex"; }
+function fecharResumoOperacao(){ $("resumo-operacao-modal").style.display="none"; }
+function traduzirStatus(status){const m={pending:"PENDENTE",approved:"APROVADO",rejected:"RECUSADO",suspended:"SUSPENSO"};return m[status]||String(status||"").toUpperCase();}
+function statusBadgeHtml(e){const m={pending:["pending","PENDENTE"],approved:["approved","APROVADA"],rejected:["rejected","RECUSADA"]};const x=m[e.status]||m.pending;return `<span class="admin-badge ${x[0]}">${x[1]}</span>`;}
+function eventoVisivel(e){return calendarFilter==="all"||e.tipo===calendarFilter;}
+function eventosDoDia(data){return encomendas.filter(e=>e.dataEntrega===data&&eventoVisivel(e)).sort((a,b)=>String(a.horaEntrega||"").localeCompare(String(b.horaEntrega||"")));}
+function renderCalendar(){
+  const y=calendarDate.getFullYear(),m=calendarDate.getMonth(); $("calendar-title").textContent=new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(calendarDate).replace(/^./,x=>x.toUpperCase());
+  const grid=$("calendar-grid"),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate(); let html="";
+  for(let i=0;i<first;i++){const d=prevDays-first+i+1;html+=`<button class="calendar-day muted" type="button" disabled><span>${d}</span></button>`;}
+  for(let d=1;d<=days;d++){const key=dateKey(y,m,d),events=encomendas.filter(e=>e.dataEntrega===key&&eventoVisivel(e)),isToday=key===hojeISO(),isSelected=key===calendarSelectedDate;const sales=events.filter(e=>e.tipo==="venda").length,orders=events.filter(e=>e.tipo==="encomenda").length;html+=`<button class="calendar-day ${isToday?"today":""} ${isSelected?"selected":""}" type="button" onclick="selecionarDiaCalendario('${key}')"><span>${d}</span>${events.length?`<div class="day-counts">${sales?`<b>${sales}</b>`:""}${orders?`<i>${orders}</i>`:""}</div>`:""}</button>`;}
+  const total=first+days,tail=(7-total%7)%7;for(let d=1;d<=tail;d++)html+=`<button class="calendar-day muted" type="button" disabled><span>${d}</span></button>`; grid.innerHTML=html; renderEventosCalendario(calendarSelectedDate); }
+function selecionarDiaCalendario(key){calendarSelectedDate=key;renderCalendar();}
+function renderEventosCalendario(data){ const list=$("calendar-events"),events=eventosDoDia(data); if(!events.length){list.innerHTML=`<div class="calendar-events-head"><strong>${formatarDataEntrega(data)}</strong><span>Nenhuma movimentação</span></div>`;return;} list.innerHTML=`<div class="calendar-events-head"><strong>${formatarDataEntrega(data)}</strong><span>${events.length} registro(s)</span></div>${events.map(e=>`<div class="calendar-event"><div class="event-time">${escapeHtml(e.horaEntrega||"—")}</div><div class="event-main"><div><strong>${e.tipo==="venda"?"VENDA":"ENCOMENDA"}</strong> ${statusBadgeHtml(e)}</div><p>${escapeHtml(e.cliente)} · ${escapeHtml(e.itensTexto)}</p><small>${formatBrl(e.valor)} · Vendedor: ${escapeHtml(e.vendedor||"—")}</small></div></div>`).join("")}`; }
+function renderHomeStats(){ const y=calendarDate.getFullYear(),m=calendarDate.getMonth(),prefix=`${y}-${pad2(m+1)}`;const month=encomendas.filter(e=>String(e.dataEntrega||"").startsWith(prefix));$("home-stat-orders").textContent=month.filter(e=>e.tipo==="encomenda").length;$("home-stat-sales").textContent=month.filter(e=>e.tipo==="venda").length;$("home-stat-pending").textContent=encomendas.filter(e=>e.status==="pending").length;$("home-stat-approved").textContent=encomendas.filter(e=>e.status==="approved").length; }
+function mudarMes(delta){calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+delta,1);calendarSelectedDate=`${calendarDate.getFullYear()}-${pad2(calendarDate.getMonth()+1)}-01`;renderCalendar();renderHomeStats();}
+
+function renderizarEstoque(){const lista=$("estoque-lista");lista.innerHTML=`<div class="estoque-cab">Produto</div><div class="estoque-cab">Quantidade</div>${produtos.map(p=>`<div>${escapeHtml(p.nome)}</div><div><input class="estoque-input" type="number" min="0" data-estoque-produto="${escapeHtml(p.nome)}" value="${estoque[p.nome]||0}"></div>`).join("")}`;}
+function abrirEstoque(){renderizarEstoque();$("estoque-modal").style.display="flex";}
+function fecharEstoque(){$("estoque-modal").style.display="none";}
+async function salvarEstoqueFormulario(){const anterior={...estoque};document.querySelectorAll("[data-estoque-produto]").forEach(i=>estoque[i.dataset.estoqueProduto]=Math.max(0,Math.floor(Number(i.value)||0)));try{await atualizarEstoqueNoBanco();localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque));fecharEstoque();alert("Estoque salvo com sucesso.");}catch(e){estoque=anterior;alert("Não foi possível salvar o estoque.");}}
+function renderizarEntregasHoje(){const data=$("entregas-data-busca").value||hojeISO();const events=encomendas.filter(e=>e.dataEntrega===data&&e.tipo==="encomenda").sort((a,b)=>String(a.horaEntrega).localeCompare(String(b.horaEntrega)));$("titulo-entregas-data").textContent=data===hojeISO()?"ENTREGAS DE HOJE":`ENTREGAS DE ${formatarDataEntrega(data)}`;$("entregas-hoje-lista").innerHTML=events.length?events.map(e=>`<div class="entrega-card"><div class="entrega-horario">${escapeHtml(e.horaEntrega)}</div><div><strong>Cliente:</strong> ${escapeHtml(e.cliente)}</div><div><strong>Telefone:</strong> ${escapeHtml(e.telefone)}</div><div><strong>Itens:</strong> ${escapeHtml(e.itensTexto)}</div><div><strong>Valor:</strong> ${formatBrl(e.valor)}</div><div><strong>Vendedor:</strong> ${escapeHtml(e.vendedor)} — ${escapeHtml(e.vendedorId)}</div><div><strong>Status:</strong> ${statusBadgeHtml(e)}</div>${e.status==="approved"?`<div class="encomenda-acoes"><button class="encomenda-acao concluir" onclick="concluirEntrega(${e.id})">Concluir / Arquivar</button></div>`:""}</div>`).join(""):`<div class="entrega-vazia">Nenhuma encomenda para esta data.</div>`;}
+function abrirEntregasHoje(){$("entregas-data-busca").value=hojeISO();renderizarEntregasHoje();$("entregas-hoje-modal").style.display="flex";}
+function fecharEntregasHoje(){$("entregas-hoje-modal").style.display="none";}
+async function concluirEntrega(id){const e=encomendas.find(x=>x.id===id);if(!e)return;if(e.status!=="approved"){alert("A operação precisa estar aprovada pelo administrador.");return;}if(!confirm(`Arquivar ${e.tipo==="venda"?"a venda":"a encomenda"} de ${e.cliente}?`))return;try{const r=await concluirEntregaNoBanco(id);if(!r?.success){alert(r?.message||"Não foi possível concluir.");return;}await recarregarBancoCompartilhado();renderizarEntregasHoje();alert("Operação arquivada com sucesso.");}catch(err){console.error(err);alert("Erro ao arquivar a operação.");}}
+
+$("abrir-realizar-venda").onclick=abrirRealizarVenda;
+$("abrir-estoque").onclick=abrirEstoque;
+$("abrir-entregas-hoje").onclick=abrirEntregasHoje;
+$("calendar-prev").onclick=()=>mudarMes(-1);$("calendar-next").onclick=()=>mudarMes(1);$("calendar-today").onclick=()=>{const d=new Date();calendarDate=new Date(d.getFullYear(),d.getMonth(),1);calendarSelectedDate=hojeISO();renderCalendar();renderHomeStats();};
+document.querySelectorAll(".calendar-filter[data-calendar-filter]").forEach(b=>b.onclick=()=>{calendarFilter=b.dataset.calendarFilter;document.querySelectorAll(".calendar-filter[data-calendar-filter]").forEach(x=>x.classList.toggle("active",x===b));renderCalendar();});
+
+window.iniciarBancoDepoisDoLogin=async function(){try{await carregarBancoCompartilhado();}catch(e){console.error(e);alert("Não foi possível conectar ao banco compartilhado.\n\n"+(e?.message||"Erro desconhecido"));}};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  /* Modais operacionais — ligados somente depois que todos os elementos existem */
+  $("operacao-modal").addEventListener("click",e=>{if(e.target.id==="operacao-modal")fecharRealizarVenda();});
+  $("resumo-operacao-modal").addEventListener("click",e=>{if(e.target.id==="resumo-operacao-modal")fecharResumoOperacao();});
+  $("estoque-modal").addEventListener("click",e=>{if(e.target.id==="estoque-modal")fecharEstoque();});
+  $("entregas-hoje-modal").addEventListener("click",e=>{if(e.target.id==="entregas-hoje-modal")fecharEntregasHoje();});
+
+  document.querySelectorAll("[data-tipo-operacao]").forEach(b=>{
+    b.addEventListener("click",()=>alternarTipoOperacao(b.dataset.tipoOperacao));
   });
-  if (!response.ok) {
-    const texto = await response.text();
-    throw new Error(`Supabase ${response.status}: ${texto || response.statusText}`);
-  }
-  const texto = await response.text();
-  return texto ? JSON.parse(texto) : null;
-}
 
-async function carregarBancoCompartilhado() {
-  const [stockRows, orderRows] = await Promise.all([
-    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
-    supabaseFetch("orders?select=*&order=id.asc")
-  ]);
-
-  // Migra automaticamente os dados locais apenas quando o banco ainda está vazio.
-  const localStock = carregarEstoque();
-  if (!stockRows.length) {
-    const rows = produtos.map(p => ({ product_name: p.nome, quantity: Math.max(0, Math.floor(Number(localStock[p.nome]) || 0)) }));
-    await supabaseFetch("stock", {
-      method: "POST",
-      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify(rows)
-    });
-  }
-
-  const stockFinal = stockRows.length ? stockRows : await supabaseFetch("stock?select=product_name,quantity&order=product_name.asc");
-  estoque = produtos.reduce((obj, produto) => {
-    const row = stockFinal.find(r => r.product_name === produto.nome);
-    obj[produto.nome] = row ? Math.max(0, Math.floor(Number(row.quantity) || 0)) : 0;
-    return obj;
-  }, {});
-
-  const localOrders = carregarEncomendas();
-  if (!orderRows.length && localOrders.length) {
-    await supabaseFetch("orders", {
-      method: "POST",
-      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify(localOrders.map(encomendaParaBanco))
-    });
-  }
-
-  const orderFinal = orderRows.length ? orderRows : await supabaseFetch("orders?select=*&order=id.asc");
-  encomendas = orderFinal.map(encomendaDoBanco);
-  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
-  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
-  bancoCompartilhadoPronto = true;
-  renderizarEstoque();
-  renderizarEncomendas();
-  renderizarEntregasHoje();
-}
-
-function encomendaParaBanco(e) {
-  return {
-    id: Number(e.id), cliente: e.cliente || "", telefone: e.telefone || "",
-    valor: Number(e.valor) || 0, comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0,
-    itens_texto: e.itensTexto || "", itens: Array.isArray(e.itens) ? e.itens : [],
-    pagamento: e.pagamento || "limpo", data_entrega: e.dataEntrega, hora_entrega: e.horaEntrega || "",
-    vendedor: e.vendedor || "", vendedor_id: e.vendedorId || "", cadastrada_em: e.cadastradaEm || "",
-    status: e.status || "pending", created_by: e.createdBy || null, approved_by: e.approvedBy || null, approved_at: e.approvedAt || null, rejected_by: e.rejectedBy || null, rejected_at: e.rejectedAt || null, rejection_reason: e.rejectionReason || ""
+  $("operacao-pagamento").onchange=e=>{
+    tipoPagamentoSelecionado=e.target.value;
+    renderizarProdutosOperacao();
   };
-}
 
-function encomendaDoBanco(e) {
-  return {
-    id: Number(e.id), cliente: e.cliente || "", telefone: e.telefone || "", valor: Number(e.valor) || 0,
-    comissao: Number(e.comissao) || 0, repasse: Number(e.repasse) || 0, itensTexto: e.itens_texto || "",
-    itens: Array.isArray(e.itens) ? e.itens : [], pagamento: e.pagamento || "limpo",
-    dataEntrega: e.data_entrega, horaEntrega: e.hora_entrega || "", vendedor: e.vendedor || "",
-    vendedorId: e.vendedor_id || "", cadastradaEm: e.cadastrada_em || "",
-    status: e.status || "pending", createdBy: e.created_by || null, approvedBy: e.approved_by || null, approvedAt: e.approved_at || null, rejectedBy: e.rejected_by || null, rejectedAt: e.rejected_at || null, rejectionReason: e.rejection_reason || ""
-  };
-}
+  $("finalizar-operacao").onclick=finalizarOperacao;
+  $("fechar-operacao").onclick=fecharRealizarVenda;
+  $("fechar-resumo-operacao").onclick=fecharResumoOperacao;
 
-async function atualizarEstoqueNoBanco() {
-  const rows = produtos.map(p => ({
-    product_name: p.nome,
-    quantity: Math.max(0, Math.floor(Number(estoque[p.nome]) || 0)),
-    updated_at: new Date().toISOString()
-  }));
-  await supabaseFetch("stock", {
-    method: "POST",
-    headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
-    body: JSON.stringify(rows)
-  });
-}
+  renderCalendar();
+  renderHomeStats();
+});
 
-async function atualizarEncomendaNoBanco(e) {
-  await supabaseFetch("orders", {
-    method: "POST",
-    headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
-    body: JSON.stringify(encomendaParaBanco(e))
-  });
-}
-
-async function excluirEncomendaDoBanco(id) {
-  await supabaseFetch(`orders?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-}
-
-async function concluirEntregaNoBanco(id) {
-  const resultado = await supabaseFetch("rpc/complete_delivery", {
-    method: "POST",
-    body: JSON.stringify({ p_order_id: Number(id) })
-  });
-  return resultado;
-}
-
-async function recarregarBancoCompartilhado() {
-  const [stockRows, orderRows] = await Promise.all([
-    supabaseFetch("stock?select=product_name,quantity&order=product_name.asc"),
-    supabaseFetch("orders?select=*&order=id.asc")
-  ]);
-  estoque = produtos.reduce((obj, produto) => {
-    const row = stockRows.find(r => r.product_name === produto.nome);
-    obj[produto.nome] = row ? Math.max(0, Math.floor(Number(row.quantity) || 0)) : 0;
-    return obj;
-  }, {});
-  encomendas = orderRows.map(encomendaDoBanco);
-  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
-  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
-  if (document.getElementById("estoque-modal")?.style.display !== "flex") {
-    renderizarEstoque();
-  }
-  renderizarEncomendas();
-  renderizarEntregasHoje();
-}
-
-/* =========================
-   ESTOQUE
-   ========================= */
-const CHAVE_ESTOQUE = "tarjas_estoque_v1";
-const CHAVE_ENCOMENDAS = "tarjas_encomendas_v1";
-
-function carregarEstoque() {
-  try {
-    const salvo = JSON.parse(localStorage.getItem(CHAVE_ESTOQUE) || "{}");
-    return produtos.reduce((obj, produto) => {
-      const valor = Number(salvo[produto.nome]);
-      obj[produto.nome] = Number.isFinite(valor) ? Math.floor(valor) : 0;
-      return obj;
-    }, {});
-  } catch (_) {
-    return produtos.reduce((obj, produto) => {
-      obj[produto.nome] = 0;
-      return obj;
-    }, {});
-  }
-}
-
-let estoque = carregarEstoque();
-
-function salvarEstoque() {
-  localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
-  return atualizarEstoqueNoBanco();
-}
-
-function renderizarEstoque() {
-  const lista = document.getElementById("estoque-lista");
-  lista.innerHTML = `
-    <div class="estoque-cab">Produto</div>
-    <div class="estoque-cab">Quantidade</div>
-    ${produtos.map(produto => `
-      <div>${escapeHtml(produto.nome)}</div>
-      <div>
-        <input class="estoque-input" type="number" min="0" step="1"
-          data-estoque-produto="${escapeHtml(produto.nome)}"
-          value="${estoque[produto.nome] || 0}">
-      </div>
-    `).join("")}
-  `;
-}
-
-function abrirEstoque() {
-  renderizarEstoque();
-  document.getElementById("estoque-modal").style.display = "flex";
-}
-
-function fecharEstoque() {
-  document.getElementById("estoque-modal").style.display = "none";
-}
-
-async function salvarEstoqueFormulario() {
-  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
-  const anterior = { ...estoque };
-  document.querySelectorAll("[data-estoque-produto]").forEach(input => {
-    const nome = input.dataset.estoqueProduto;
-    estoque[nome] = Math.max(0, Math.floor(Number(input.value) || 0));
-  });
-  try {
-    await atualizarEstoqueNoBanco();
-    localStorage.setItem(CHAVE_ESTOQUE, JSON.stringify(estoque));
-    fecharEstoque();
-    alert("Estoque compartilhado salvo com sucesso.");
-  } catch (erro) {
-    estoque = anterior;
-    alert("Não foi possível salvar o estoque online. Verifique sua conexão e tente novamente.");
-    console.error(erro);
-  }
-}
-
-function estoqueDisponivel(nome) {
-  return Number(estoque[nome]) || 0;
-}
-
-function itensSelecionadosTexto() {
-  const selecionados = [];
-  produtos.forEach((produto, index) => {
-    const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-    const input = linha && linha.querySelector('input[type="number"]');
-    const qtd = input ? Math.max(0, Number(input.value) || 0) : 0;
-    if (qtd > 0) selecionados.push(`${qtd}x ${produto.nome}`);
-  });
-  return selecionados.join(", ");
-}
-
-function finalizarPedido() {
-  let total = 0;
-  let quantidadeTotal = 0;
-  const itens = [];
-
-  produtos.forEach((produto, index) => {
-    const linhaProduto = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-    const input = linhaProduto.querySelector('input[type="number"]');
-    const qtd = Math.max(0, Number(input.value) || 0);
-
-    if (qtd > 0) {
-      const preco = Number(produto[tipoPagamentoSelecionado]) || 0;
-      const subtotal = preco * qtd;
-      total += subtotal;
-      quantidadeTotal += qtd;
-
-      itens.push({
-        nome: produto.nome,
-        quantidade: qtd,
-        subtotal: subtotal
-      });
-    }
-  });
-  if (quantidadeTotal === 0) {
-    alert("Adicione pelo menos um item ao pedido antes de finalizar.");
-    document.querySelector("#totais").innerHTML =
-      "<p>Nenhum produto foi selecionado.</p>";
-    return;
-  }
-
-  /* O estoque NÃO baixa aqui. A baixa ocorre somente quando a entrega
-     for aprovada e concluída no Supabase. */
-  const comissao = total * porcentagemVendedor;
-  const repasse = total - comissao;
-
-  const resumoItens = document.querySelector("#pedido-itens");
-  resumoItens.classList.toggle("muitos-itens", itens.length >= 7);
-
-  document.querySelector("#pedido-itens").innerHTML = `
-    <div class="resumo-vendedor">
-      <div><strong>Vendedor:</strong> ${escapeHtml(dadosVendedor.nome)}</div>
-      <div><strong>Passaporte / ID:</strong> ${escapeHtml(dadosVendedor.id)}</div>
-    </div>
-
-    ${itens.map(item => `
-      <div class="item-pedido">
-        <span>${escapeHtml(item.nome)}</span>
-        <span class="item-qtd">${item.quantidade}x — ${formatBrl(item.subtotal)}</span>
-      </div>
-    `).join("")}
-
-    <div class="comissao-box">
-      <p><strong>Valor total do pedido:</strong> ${formatBrl(total)}</p>
-      <p><strong>Comissão do vendedor (10%):</strong> ${formatBrl(comissao)}</p>
-      <p class="destaque"><strong>Valor a repassar:</strong> ${formatBrl(repasse)}</p>
-      <p style="font-size:13px;color:#aaa;">
-        Chave PIX : <strong> ( 5688 ) GABRIEL CRUZ </strong>
-      </p>
-    </div>
-  `;
-
-  document.querySelector("#pedido-total").innerHTML =
-    `Pedido concluído<br><span style="font-size:18px;color:#fff;">Valor total: ${formatBrl(total)}</span>`;
-
-  document.querySelector("#pedido-modal").style.display = "flex";
-  document.querySelector("#totais").innerHTML =
-    `<p>Valor total do pedido: ${formatBrl(total)}</p>`;
-}
-
-function fecharModalPedido() {
-  document.querySelector("#pedido-modal").style.display = "none";
-}
-
-
-
+setInterval(async()=>{
+  if(!bancoCompartilhadoPronto||!window.authUser||document.visibilityState!=="visible")return;
+  try{await recarregarBancoCompartilhado();}catch(e){console.error(e);}
+},15000);
 </script>
 
+<style>
+.home-subtitle{color:#aaa!important;margin:6px 0 0!important;font-size:14px}.home-hero{width:calc(100% - 40px);max-width:1200px;margin:22px auto 14px;padding:28px;border:1px solid #272727;border-radius:18px;background:linear-gradient(135deg,#111 0%,#0a0a0a 70%);display:flex;justify-content:space-between;align-items:center;gap:24px;box-sizing:border-box;box-shadow:0 12px 45px rgba(0,0,0,.35)}.hero-copy{max-width:650px}.hero-kicker,.calendar-label{font-size:11px;letter-spacing:1.6px;color:#fc6500;font-weight:900}.hero-copy h2{margin:8px 0;color:#fff;font-size:30px}.hero-copy p{margin:0;color:#9d9d9d;line-height:1.6}.hero-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}.hero-primary,.hero-secondary{border-radius:10px;padding:12px 16px;font-weight:900;cursor:pointer}.hero-primary{border:2px solid #fc6500;background:#fc6500;color:#000;min-width:180px}.hero-secondary{border:1px solid #fc6500;background:#111;color:#fc6500}.hero-secondary:hover{background:#fc6500;color:#000}.home-stats{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.home-stat{padding:14px 16px;background:#0d0d0d;border:1px solid #242424;border-radius:12px}.home-stat span{display:block;color:#777;font-size:11px;font-weight:bold}.home-stat strong{display:block;color:#fc6500;font-size:25px;margin-top:5px}.home-finance-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;padding:18px;background:linear-gradient(135deg,#111 0%,#090909 72%);border:1px solid #272727;border-radius:16px;box-sizing:border-box}.home-finance-head{display:flex;justify-content:space-between;align-items:center;gap:14px}.home-finance-head h2{margin:5px 0 4px;color:#fff;font-size:21px}.home-finance-head p{margin:0;color:#777;font-size:12px;line-height:1.5}.home-finance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}.home-finance-item{padding:13px;border:1px solid #242424;border-radius:11px;background:#0d0d0d}.home-finance-item span{display:block;color:#777;font-size:10px;font-weight:900}.home-finance-item strong{display:block;color:#fff;font-size:22px;margin-top:6px}.home-finance-item small{display:block;color:#666;font-size:10px;margin-top:4px}.home-finance-item.highlight{border-color:#fc6500;background:#120d08}.home-finance-item.highlight strong{color:#fc6500;font-size:27px}.home-team-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 14px;background:linear-gradient(135deg,#0f0f0f,#090909);border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 10px 35px rgba(0,0,0,.22)}.home-team-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:16px}.home-team-head h2{margin:6px 0 5px;color:#fff;font-size:24px}.home-team-head p{margin:0;color:#888;line-height:1.5}.home-team-refresh{border:1px solid #fc6500;background:#111;color:#fc6500;padding:9px 13px;border-radius:9px;font-weight:900;cursor:pointer;white-space:nowrap}.home-team-refresh:hover{background:#fc6500;color:#000}.home-member-directory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.home-member-card{background:#111;border:1px solid #242424;border-radius:14px;padding:13px;min-width:0}.home-member-top{display:flex;align-items:center;gap:10px}.home-member-avatar{width:44px;height:44px;border-radius:12px;background:#1a120d;border:1px solid #fc6500;color:#fc6500;display:grid;place-items:center;font-weight:900;font-size:15px;flex:none}.home-member-name{color:#fff;font-weight:900;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-member-meta{display:flex;align-items:center;gap:7px;color:#888;font-size:11px;margin-top:3px}.home-member-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block}.home-member-dot.online{background:#57d57a;box-shadow:0 0 8px rgba(87,213,122,.55)}.home-member-role{margin-top:10px;display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#181818;border:1px solid #333;color:#fc6500;font-size:10px;font-weight:900}.home-member-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.home-member-metric{background:#0b0b0b;border:1px solid #222;border-radius:9px;padding:7px 5px;text-align:center}.home-member-metric b{display:block;color:#fff;font-size:15px}.home-member-metric span{display:block;color:#666;font-size:9px;margin-top:2px}.home-member-loading,.home-member-empty{padding:24px;text-align:center;border:1px dashed #333;border-radius:12px;color:#777;grid-column:1/-1}.home-member-status-online{color:#7dff9b}.home-member-status-offline{color:#777}@media(max-width:1050px){.home-member-directory{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.home-team-head{align-items:flex-start;flex-direction:column}.home-member-directory{grid-template-columns:1fr}.home-member-metrics{grid-template-columns:repeat(2,1fr)}}.calendar-card{width:calc(100% - 40px);max-width:1200px;margin:0 auto 30px;background:#0c0c0c;border:1px solid #262626;border-radius:18px;padding:20px;box-sizing:border-box}.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;text-align:center}.calendar-toolbar h2{margin:3px 0 0;color:#fff;text-transform:capitalize}.calendar-nav{width:42px;height:42px;border-radius:10px;border:1px solid #333;background:#111;color:#fc6500;font-size:30px;cursor:pointer}.calendar-nav:hover{background:#fc6500;color:#000}.calendar-filters{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:18px 0}.calendar-filter{border:1px solid #333;background:#111;color:#aaa;border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:bold}.calendar-filter.active{border-color:#fc6500;background:#fc6500;color:#000}.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.calendar-weekdays{margin-bottom:6px}.calendar-weekdays span{text-align:center;color:#666;font-size:10px;font-weight:bold;padding:6px}.calendar-day{min-height:78px;border:1px solid #222;border-radius:10px;background:#111;color:#fff;text-align:left;padding:8px;cursor:pointer;position:relative}.calendar-day:hover{border-color:#fc6500}.calendar-day.muted{opacity:.25;cursor:default}.calendar-day.today{box-shadow:inset 0 0 0 1px #fc6500}.calendar-day.selected{background:#18110b;border-color:#fc6500}.calendar-day>span{font-weight:bold}.day-counts{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}.day-counts b,.day-counts i{font-style:normal;font-size:10px;min-width:22px;text-align:center;padding:3px 5px;border-radius:999px}.day-counts b{background:#fc6500;color:#000}.day-counts i{background:#222;color:#fc6500;border:1px solid #fc6500}.calendar-events{margin-top:15px;border-top:1px solid #222;padding-top:13px}.calendar-events-head{display:flex;justify-content:space-between;color:#aaa;margin-bottom:9px}.calendar-events-head strong{color:#fc6500}.calendar-event{display:grid;grid-template-columns:75px 1fr;gap:12px;padding:11px;border:1px solid #252525;border-radius:10px;background:#101010;margin-top:7px}.event-time{color:#fc6500;font-weight:900;font-size:17px}.event-main strong{color:#fff;font-size:12px}.event-main p{margin:4px 0;color:#ddd}.event-main small{color:#777}.calendar-empty{padding:18px;text-align:center;color:#777}.operacao-modal,.resumo-operacao-modal{display:none;position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.operacao-box,.resumo-box{width:min(900px,96vw);max-height:92vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:18px;padding:20px;box-sizing:border-box;box-shadow:0 20px 70px rgba(0,0,0,.6)}.operacao-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.operacao-head h2,.resumo-box h2{margin:0;color:#fc6500}.operacao-close{border:1px solid #444;background:#111;color:#aaa;border-radius:8px;padding:7px 10px;cursor:pointer}.operacao-type{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}.operacao-type button{border:1px solid #333;background:#111;color:#aaa;padding:11px;border-radius:9px;font-weight:900;cursor:pointer}.operacao-type button.active{border-color:#fc6500;background:#fc6500;color:#000}.operacao-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-field label{display:block;color:#fc6500;font-size:12px;font-weight:bold;margin-bottom:5px}.operacao-field input,.operacao-field select{width:100%;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;padding:10px}.operacao-products{border:1px solid #252525;border-radius:12px;overflow:hidden;margin:15px 0}.operacao-categoria{padding:8px 10px;background:#171717;border-top:1px solid #fc6500;border-bottom:1px solid #fc6500;color:#fc6500;font-weight:900}.operacao-produto{display:grid;grid-template-columns:1fr 190px 120px;align-items:center;gap:8px;padding:9px 10px;border-top:1px solid #222;color:#fff}.operacao-produto small{display:block;color:#777;margin-top:3px}.operacao-produto .quantidade-controle{justify-content:center}.operacao-subtotal{text-align:right;color:#fc6500;font-weight:bold}.operacao-calculo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.operacao-calculo>div{padding:12px;border:1px solid #242424;border-radius:10px;background:#101010}.operacao-calculo span{display:block;color:#777;font-size:11px}.operacao-calculo strong{display:block;color:#fff;margin-top:5px}.operacao-calculo .destaque{border-color:#fc6500}.operacao-calculo .destaque strong{color:#fc6500}.operacao-agendamento{display:grid;grid-template-columns:1fr 1fr;gap:10px}.operacao-finalizar{width:100%;margin-top:14px;padding:13px;border:2px solid #fc6500;background:#fc6500;color:#000;border-radius:10px;font-weight:900;cursor:pointer}.resumo-box{width:min(600px,95vw)}.resumo-status{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #254d31;background:#0e1711;border-radius:11px;margin:15px 0}.resumo-status>span{width:30px;height:30px;border-radius:50%;background:#2d7b42;color:#fff;display:grid;place-items:center;font-weight:bold}.resumo-status strong{display:block;color:#7dff9b}.resumo-status small{color:#aaa}.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.resumo-grid>div{background:#111;border:1px solid #222;border-radius:9px;padding:10px}.resumo-grid span{display:block;color:#777;font-size:11px}.resumo-grid strong{display:block;color:#fff;margin-top:4px}.resumo-itens{margin-top:10px;border:1px solid #222;border-radius:10px;padding:10px}.resumo-itens>strong{color:#fc6500}.resumo-itens>div{display:grid;grid-template-columns:1fr 45px 100px;gap:8px;padding:7px 0;border-bottom:1px solid #222;color:#ddd}.resumo-itens b{color:#fc6500}.resumo-itens em{font-style:normal;text-align:right}.resumo-total{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;font-size:18px;color:#aaa}.resumo-total strong{color:#fc6500;font-size:25px}.resumo-aviso{color:#777;font-size:12px;text-align:center}.resumo-close{width:100%;border:1px solid #fc6500;background:#111;color:#fc6500;padding:11px;border-radius:9px;font-weight:bold;cursor:pointer}.resumo-close:hover{background:#fc6500;color:#000}.gestao-modal{display:none;position:fixed;inset:0;z-index:21000;background:rgba(0,0,0,.88);justify-content:center;align-items:center;padding:20px;box-sizing:border-box}.gestao-caixa{width:min(760px,95vw);max-height:90vh;overflow:auto;background:#111;border:2px solid #fc6500;border-radius:14px;padding:22px;box-sizing:border-box}.gestao-caixa h2{color:#fc6500;text-align:center;margin:0 0 16px}.gestao-topo{display:flex;justify-content:flex-end;margin-bottom:8px}.gestao-fechar{border:1px solid #fc6500;background:#000;color:#fc6500;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:bold}.estoque-lista{display:grid;grid-template-columns:1fr 150px;border:1px solid #333;border-radius:10px;overflow:hidden}.estoque-lista>div{padding:8px 10px;border-bottom:1px solid #333}.estoque-lista .estoque-cab{color:#fc6500;font-weight:bold;background:#181818}.estoque-input{width:100%;box-sizing:border-box;padding:7px;text-align:center;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff}.gestao-salvar{width:100%;margin-top:14px;border:2px solid #fc6500;background:#fc6500;color:#000;font-weight:bold;padding:10px;border-radius:9px;cursor:pointer}.encomenda-acoes{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}.encomenda-acao{border:1px solid #fc6500;background:#111;color:#fc6500;border-radius:8px;padding:8px 13px;cursor:pointer;font-weight:bold}.encomenda-acao.concluir{background:#fc6500;color:#000}.entrega-card{border:1px solid #333;border-radius:10px;padding:12px;margin-top:10px;background:#090909;color:#fff;line-height:1.5}.entrega-card strong{color:#fc6500}.entrega-horario{color:#fc6500;font-weight:bold;font-size:16px}.entrega-vazia{text-align:center;color:#aaa;padding:12px}.estoque-aviso{color:#aaa;font-size:13px;text-align:center;margin:8px 0 14px}
+@media(max-width:800px){.home-hero{flex-direction:column;align-items:flex-start}.hero-actions{justify-content:flex-start}.home-stats{grid-template-columns:1fr 1fr}.home-finance-grid{grid-template-columns:1fr 1fr}.home-finance-head{align-items:flex-start;flex-direction:column}.operacao-produto{grid-template-columns:1fr 150px 90px}.operacao-calculo{grid-template-columns:1fr}.calendar-day{min-height:65px}}
+@media(max-width:600px){.home-hero,.calendar-card,.home-stats{width:calc(100% - 20px)}.home-stats{grid-template-columns:1fr 1fr}.hero-copy h2{font-size:24px}.operacao-fields,.operacao-agendamento,.resumo-grid{grid-template-columns:1fr}.operacao-produto{grid-template-columns:1fr 125px 80px;font-size:13px}.calendar-weekdays span{font-size:8px}.calendar-day{padding:6px;min-height:58px}.day-counts{left:5px;bottom:5px}.calendar-event{grid-template-columns:55px 1fr}.resumo-itens>div{grid-template-columns:1fr 35px 80px}}
 
+/* ===== ADMIN PREMIUM / MEMBROS / PERMISSÕES ===== */
+.admin-shell{display:grid;grid-template-columns:290px minmax(0,1fr);gap:14px;align-items:stretch}
+.admin-sidebar{background:#090909;border:1px solid #232323;border-radius:14px;padding:12px;min-width:0;max-height:calc(92vh - 90px);overflow:auto}
+.admin-sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 10px;border-bottom:1px solid #222;margin-bottom:8px}
+.admin-sidebar-title{color:#fff;font-weight:900;font-size:14px}.admin-sidebar-sub{color:#666;font-size:11px;margin-top:2px}
+.member-refresh{border:1px solid #333;background:#111;color:#fc6500;border-radius:7px;padding:6px 8px;cursor:pointer}
+.admin-member-list{display:flex;flex-direction:column;gap:7px}
+.admin-member{display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;padding:9px;border:1px solid #222;background:#0f0f0f;border-radius:11px;cursor:pointer;transition:.15s}
+.admin-member:hover{border-color:#fc6500;background:#15100c;transform:translateY(-1px)}
+.member-avatar{width:38px;height:38px;border-radius:11px;background:#181818;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#fc6500;font-weight:900}
+.member-main{min-width:0}.member-name-row{display:flex;justify-content:space-between;gap:6px;align-items:center}.member-name{color:#fff;font-weight:900;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.member-passport{color:#777;font-size:10px;margin-top:2px}
+.member-status{display:flex;align-items:center;gap:4px;color:#777;font-size:10px;white-space:nowrap}.member-dot{width:7px;height:7px;border-radius:50%;background:#555}.member-dot.online{background:#59d66b;box-shadow:0 0 8px rgba(89,214,107,.5)}
+.member-role{color:#fc6500;font-size:10px;font-weight:800;margin-top:5px}.member-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:7px}.member-metric{padding:4px 3px;background:#090909;border:1px solid #1e1e1e;border-radius:6px;text-align:center}.member-metric b{display:block;color:#fff;font-size:11px}.member-metric span{display:block;color:#666;font-size:8px;margin-top:1px}
+.admin-main{min-width:0;display:flex;flex-direction:column}.admin-tabs{margin-top:0}
+.admin-empty{padding:18px;text-align:center;color:#777;border:1px dashed #2a2a2a;border-radius:10px}
+.role-card{background:linear-gradient(180deg,#121212,#0d0d0d);border:1px solid #252525;border-radius:13px;padding:14px;margin:9px 0}
+.role-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.role-title-wrap{min-width:0}.role-title{color:#fff;font-size:16px;font-weight:900}.role-slug{color:#666;font-size:10px;margin-left:6px}.role-description{color:#929292;font-size:12px;line-height:1.45;margin-top:4px}.role-actions{display:flex;gap:6px;flex-wrap:wrap}.role-delete{border:1px solid #713030;background:#171010;color:#ff7777;padding:7px 10px;border-radius:8px;cursor:pointer;font-weight:800}.role-delete:disabled{opacity:.35;cursor:not-allowed}
+.permission-grid-premium{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.permission-card{display:block;position:relative;border:1px solid #252525;background:#0b0b0b;border-radius:10px;padding:10px 11px;cursor:pointer;transition:.15s}.permission-card:hover{border-color:#5f3c20}.permission-card input{position:absolute;opacity:0;pointer-events:none}.permission-card.checked{border-color:#fc6500;background:linear-gradient(180deg,#1a120c,#0b0b0b);box-shadow:inset 0 0 0 1px rgba(252,101,0,.12)}
+.permission-check{display:flex;gap:9px;align-items:flex-start}.permission-icon{width:24px;height:24px;flex:0 0 24px;border-radius:7px;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px;font-weight:900}.permission-card.checked .permission-icon{border-color:#fc6500;background:#fc6500;color:#000}.permission-name{color:#fff;font-weight:900;font-size:12px}.permission-desc{color:#777;font-size:10px;line-height:1.4;margin-top:3px}.permission-card.checked .permission-desc{color:#a79a8e}
+.admin-profile-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}.admin-profile-stat{background:#0f0f0f;border:1px solid #242424;border-radius:10px;padding:10px}.admin-profile-stat b{display:block;color:#fc6500;font-size:19px}.admin-profile-stat span{display:block;color:#666;font-size:10px;margin-top:2px}
+@media(max-width:950px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{max-height:260px}.admin-member-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.permission-grid-premium{grid-template-columns:1fr}}
+@media(max-width:600px){.admin-member-list{grid-template-columns:1fr}.admin-profile-strip{grid-template-columns:1fr 1fr}.role-card-head{flex-direction:column}}
 
+/* TARJAS — Players + Missões */
+main{margin-left:294px}
+.home-player-sidebar{position:fixed;left:18px;top:128px;width:258px;height:calc(100vh - 150px);min-height:420px;z-index:1200;background:#0d0d0d;border:1px solid #262626;border-radius:18px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.home-player-sidebar-head{display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:1px solid #222;background:#111}
+.home-player-title{color:#fc6500;font-weight:900;font-size:13px;letter-spacing:1.2px}.home-player-subtitle{color:#666;font-size:10px;margin-top:2px}.home-player-refresh{border:1px solid #333;background:#090909;color:#fc6500;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:17px}.home-player-refresh:hover{background:#fc6500;color:#000}
+.home-player-list{height:calc(100% - 65px);overflow:auto;padding:8px}
+.home-player-row{display:flex;gap:9px;align-items:center;padding:10px;border:1px solid #202020;border-radius:11px;background:#0a0a0a;cursor:pointer;margin-bottom:7px;transition:.15s}.home-player-row:hover{border-color:#fc6500;background:#111}
+.home-player-avatar{width:38px;height:38px;border-radius:10px;border:1px solid #3a2a20;background:#18110d;display:grid;place-items:center;color:#fc6500;font-size:12px;font-weight:900;flex:none}.home-player-main{min-width:0;flex:1}.home-player-name-row{display:flex;align-items:center;gap:6px;min-width:0}.home-player-name{color:#fff;font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-player-status{font-size:9px;font-weight:900}.home-player-status.online{color:#63e38a}.home-player-status.offline{color:#666}.home-player-dot{width:7px;height:7px;border-radius:50%;background:#555;display:inline-block;margin-right:4px}.home-player-dot.online{background:#63e38a;box-shadow:0 0 7px rgba(99,227,138,.5)}.home-player-role{color:#fc6500;font-size:9px;margin-top:3px}.home-player-stats{display:flex;gap:6px;margin-top:5px;color:#777;font-size:9px}.home-player-stats b{color:#fff}
+.feature-modal{display:none;position:fixed;inset:0;z-index:47000;background:rgba(0,0,0,.84);justify-content:center;align-items:center;padding:20px;box-sizing:border-box}.feature-box{width:min(760px,95vw);max-height:90vh;overflow:auto;background:#0e0e0e;border:1px solid #fc6500;border-radius:18px;box-shadow:0 0 40px rgba(252,101,0,.2);padding:20px}.feature-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.feature-header h2{margin:4px 0 0;color:#fff}.feature-kicker{font-size:10px;letter-spacing:1.5px;color:#fc6500;font-weight:900}.feature-close{border:1px solid #444;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}.feature-close:hover{border-color:#fc6500;color:#fc6500}
+.member-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.member-detail-stat{background:#111;border:1px solid #252525;border-radius:11px;padding:12px;text-align:center}.member-detail-stat b{display:block;color:#fc6500;font-size:21px}.member-detail-stat span{display:block;color:#777;font-size:10px;margin-top:4px}.member-detail-hero{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #252525;border-radius:12px;background:#111;margin-bottom:12px}.member-detail-avatar{width:54px;height:54px;border-radius:14px;border:1px solid #fc6500;background:#18110d;color:#fc6500;display:grid;place-items:center;font-weight:900;font-size:17px}.member-detail-name{color:#fff;font-size:18px;font-weight:900}.member-detail-sub{color:#888;font-size:11px;margin-top:4px}.member-detail-commission{margin-top:12px;padding:14px;border:1px solid #3a2a20;border-radius:12px;background:linear-gradient(135deg,#17110d,#0e0e0e)}.member-detail-commission strong{color:#fc6500;font-size:24px}.member-detail-note{color:#777;font-size:11px;margin-top:4px}
+.mission-trigger{font-weight:900}.mission-small{border-color:#fc6500!important;color:#fc6500!important}.mission-small:hover{background:#fc6500!important;color:#000!important}.mission-star-inline{color:#ffd45a}.mission-balance-strip{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#15120b;border:1px solid #493a16;border-radius:12px;margin-bottom:12px}.mission-balance-strip span{color:#aaa}.mission-balance-strip strong{color:#ffd45a;font-size:22px}.mission-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.mission-tab{border:1px solid #333;background:#111;color:#888;padding:9px 12px;border-radius:9px;font-weight:900;cursor:pointer}.mission-tab.active{border-color:#fc6500;color:#000;background:#fc6500}.mission-panel{display:none}.mission-panel.active{display:block}
+.mission-card{border:1px solid #252525;background:#111;border-radius:13px;padding:13px;margin-bottom:9px}.mission-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.mission-card-title{color:#fff;font-weight:900}.mission-card-stars{color:#ffd45a;font-weight:900;white-space:nowrap}.mission-card-desc{color:#888;font-size:11px;line-height:1.5;margin-top:5px}.mission-card-meta{color:#666;font-size:10px;margin-top:8px}.mission-card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mission-action-btn{border:1px solid #fc6500;background:#111;color:#fc6500;border-radius:8px;padding:8px 11px;font-weight:900;cursor:pointer}.mission-action-btn.primary{background:#fc6500;color:#000}.mission-empty{padding:22px;border:1px dashed #333;border-radius:12px;text-align:center;color:#666}.ranking-row{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid #242424;background:#111;border-radius:11px;margin-bottom:7px}.ranking-pos{width:32px;height:32px;border-radius:9px;background:#17120b;border:1px solid #3e3217;display:grid;place-items:center;color:#ffd45a;font-weight:900}.ranking-name{color:#fff;font-weight:900}.ranking-sub{color:#777;font-size:10px;margin-top:3px}.ranking-stars{color:#ffd45a;font-weight:900}.reward-card{border:1px solid #252525;background:#111;border-radius:13px;padding:13px;margin-bottom:9px}.reward-head{display:flex;justify-content:space-between;gap:10px}.reward-name{color:#fff;font-weight:900}.reward-cost{color:#ffd45a;font-weight:900}.reward-desc{color:#888;font-size:11px;line-height:1.5;margin-top:5px}.reward-btn{margin-top:10px;border:1px solid #ffd45a;background:#111;color:#ffd45a;border-radius:8px;padding:8px 11px;font-weight:900;cursor:pointer}.reward-btn:disabled{opacity:.35;cursor:not-allowed}
+.mission-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mission-admin-title{color:#fff;font-weight:900;font-size:15px}.mission-admin-sub{color:#777;font-size:10px;line-height:1.45;margin-top:3px}.mission-textarea{width:100%;min-height:74px;resize:vertical;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:7px;padding:9px;font-family:Arial,sans-serif}.mission-template-row,.mission-assignment-row,.reward-admin-row{border:1px solid #252525;background:#111;border-radius:10px;padding:10px;margin-top:7px;display:flex;justify-content:space-between;gap:10px;align-items:center}.mission-template-info,.mission-assignment-info{min-width:0}.mission-template-name,.mission-assignment-name{color:#fff;font-weight:900}.mission-template-meta,.mission-assignment-meta{color:#777;font-size:10px;margin-top:3px}.mission-admin-danger{border:1px solid #713030;background:#111;color:#ff7777;border-radius:7px;padding:6px 9px;font-weight:900;cursor:pointer}
+@media(max-width:1050px){.home-player-sidebar{left:12px;width:225px;height:calc(100vh - 145px)}main{margin-left:248px}}
+@media(max-width:800px){main{margin-left:0}.home-player-sidebar{position:relative;left:auto;top:auto;width:calc(100% - 20px);height:330px;margin:14px auto;}.mission-admin-grid{grid-template-columns:1fr}.member-detail-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.member-detail-grid{grid-template-columns:1fr 1fr}.feature-box{padding:15px}.home-layout{width:calc(100% - 20px)}.home-player-sidebar{height:300px}}
+</style>
 
-  <!-- Janela que aparece ao finalizar o pedido -->
-  <div id="pedido-modal">
-    <div class="modal-caixa">
-      <h2>Resumo do Pedido</h2>
-      <div id="pedido-itens"></div>
-      <div class="modal-total" id="pedido-total"></div>
-      <button id="fechar-pedido" type="button">Fechar</button>
+<!-- Realizar venda / encomenda -->
+<div id="operacao-modal" class="operacao-modal">
+  <div class="operacao-box">
+    <div class="operacao-head"><h2>REALIZAR VENDA</h2><button id="fechar-operacao" class="operacao-close" type="button">Fechar</button></div>
+    <div class="operacao-type"><button type="button" data-tipo-operacao="venda" class="active">VENDA</button><button type="button" data-tipo-operacao="encomenda">ENCOMENDA</button></div>
+    <div class="operacao-fields">
+      <div class="operacao-field"><label>CLIENTE</label><input id="operacao-cliente" placeholder="Nome do cliente"></div>
+      <div class="operacao-field"><label>TELEFONE</label><input id="operacao-telefone" placeholder="Telefone do cliente"></div>
+      <div class="operacao-field"><label>PAGAMENTO</label><select id="operacao-pagamento"><option value="limpo">Limpo</option><option value="sujo">Sujo</option><option value="limpoParceiro">Limpo Parceiro</option><option value="sujoParceiro">Sujo Parceiro</option></select></div>
     </div>
-  </div>
-
-<div id="cadastro-modal">
-  <div class="cadastro-caixa">
-    <h2>Cadastro do Vendedor</h2>
-    <p style="color:#fff;">Preencha seus dados antes de iniciar o pedido.</p>
-    <div class="cadastro-campo">
-      <label for="cadastro-nome">Nome</label>
-      <input id="cadastro-nome" type="text" autocomplete="name" placeholder="Nome do vendedor">
+    <div id="operacao-agendamento" class="operacao-agendamento" style="display:none;margin-top:10px;">
+      <div class="operacao-field"><label>DATA DE ENTREGA</label><input id="operacao-data" type="date"></div>
+      <div class="operacao-field"><label>HORÁRIO DE ENTREGA</label><input id="operacao-hora" type="time"></div>
     </div>
-    <div class="cadastro-campo">
-      <label for="cadastro-id">Passaporte / ID</label>
-      <input id="cadastro-id" type="text" placeholder="Passaporte ou identificação">
-    </div>
-    <button id="salvar-cadastro" type="button">Entrar na Calculadora</button>
+    <div class="operacao-products"><div class="operacao-produto" style="background:#181818;color:#fc6500;font-weight:bold;"><div>PRODUTO</div><div style="text-align:center">QUANTIDADE</div><div style="text-align:right">SUBTOTAL</div></div><div id="operacao-produtos-lista"></div></div>
+    <div id="operacao-calculo" class="operacao-calculo"></div>
+    <div style="color:#777;font-size:12px;text-align:center;">A operação ficará pendente até a aprovação do administrador. O estoque não é alterado nesta etapa.</div>
+    <button id="finalizar-operacao" class="operacao-finalizar" type="button">FINALIZAR VENDA</button>
   </div>
 </div>
 
+<div id="resumo-operacao-modal" class="resumo-operacao-modal">
+  <div class="resumo-box"><h2>OPERAÇÃO REGISTRADA</h2><div id="resumo-operacao-conteudo"></div><button id="fechar-resumo-operacao" class="resumo-close" type="button">FECHAR</button></div>
+</div>
 
+<div id="estoque-modal" class="gestao-modal"><div class="gestao-caixa"><div class="gestao-topo"><button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button></div><h2>Estoque</h2><p class="estoque-aviso">O estoque pode ser consultado e alterado pelos administradores com permissão de estoque.</p><div id="estoque-lista" class="estoque-lista"></div><button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button></div></div>
 
+<div id="entregas-hoje-modal" class="gestao-modal"><div class="gestao-caixa"><div class="gestao-topo" style="align-items:center;justify-content:space-between;gap:10px;"><div><label for="entregas-data-busca" style="color:#fc6500;font-weight:bold;font-size:14px;">Buscar dia</label><input id="entregas-data-busca" type="date" style="margin-left:8px;padding:7px 9px;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff;"></div><button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button></div><h2 id="titulo-entregas-data">ENTREGAS DE HOJE</h2><p class="estoque-aviso">Encomendas aprovadas podem ser arquivadas quando forem entregues.</p><div id="entregas-hoje-lista"></div></div></div>
 
 <script>
-let dadosVendedor = { nome: "", id: "" };
-
-const cadastroModal = document.getElementById("cadastro-modal");
-const salvarCadastro = document.getElementById("salvar-cadastro");
-const nomeCadastro = document.getElementById("cadastro-nome");
-const idCadastro = document.getElementById("cadastro-id");
-
-salvarCadastro.addEventListener("click", () => {
-  const nome = nomeCadastro.value.trim();
-  const id = idCadastro.value.trim();
-
-  if (!nome || !id) {
-    alert("Preencha o Nome e o Passaporte / ID.");
-    return;
-  }
-
-  dadosVendedor = { nome, id };
-  cadastroModal.style.display = "none";
-});
-
-function alterarQuantidade(index, delta) {
-  const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-  if (!linha) return;
-
-  const input = linha.querySelector('input[type="number"]');
-  const atual = Math.max(0, Number(input.value) || 0);
-  const nova = Math.max(0, atual + delta);
-
-  input.value = nova;
-  atualizaValor(index, nova);
-}
-
-document.getElementById("limpar-itens").addEventListener("click", () => {
-  let tinhaItens = false;
-
-  produtos.forEach((produto, index) => {
-    const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-    const input = linha.querySelector('input[type="number"]');
-
-    if (Number(input.value) > 0) tinhaItens = true;
-
-    input.value = 0;
-    atualizaValor(index, 0);
-  });
-
-  document.querySelector("#totais").innerHTML =
-    tinhaItens
-      ? "<p>Todos os itens foram limpos.</p>"
-      : "<p>A tabela já estava zerada.</p>";
-});
-
-/* Tipo de pagamento */
-const botaoPagamento = document.getElementById("tipo-pagamento");
-const menuPagamento = document.getElementById("pagamento-menu");
-
-function fecharMenuPagamento() {
-  menuPagamento.style.display = "none";
-}
-
-botaoPagamento.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-
-  menuPagamento.style.display =
-    menuPagamento.style.display === "block" ? "none" : "block";
-});
-
-menuPagamento.querySelectorAll("button[data-pagamento]").forEach((botao) => {
-  botao.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const tipo = botao.dataset.pagamento;
-
-    if (!nomesPagamento[tipo]) return;
-
-    tipoPagamentoSelecionado = tipo;
-    botaoPagamento.textContent =
-      `Pagamento: ${nomesPagamento[tipo]} ▾`;
-
-    fecharMenuPagamento();
-
-    produtos.forEach((produto, index) => {
-      const linha = tbody.querySelector(`tr[data-produto-index="${index}"]`);
-      if (!linha) return;
-
-      const input = linha.querySelector('input[type="number"]');
-      atualizaValor(index, input.value);
-    });
-  });
-});
-
-document.addEventListener("click", (e) => {
-  if (!menuPagamento.contains(e.target) && e.target !== botaoPagamento) {
-    fecharMenuPagamento();
-  }
-});
-
-/* Finalizar pedido */
-document.getElementById("finalizar-pedido").addEventListener("click", finalizarPedido);
-
-/* Fechar resumo com confirmação */
-const pedidoModal = document.getElementById("pedido-modal");
-const fecharPedido = document.getElementById("fechar-pedido");
-
-function tentarFecharResumo() {
-  const confirmar = confirm("Tem certeza que deseja fechar o resumo do pedido?");
-
-  if (confirmar) {
-    pedidoModal.style.display = "none";
-  }
-}
-
-fecharPedido.addEventListener("click", (e) => {
-  e.preventDefault();
-  tentarFecharResumo();
-});
-
-pedidoModal.addEventListener("click", (e) => {
-  if (e.target === pedidoModal) {
-    tentarFecharResumo();
-  }
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && pedidoModal.style.display === "flex") {
-    tentarFecharResumo();
-  }
-});
-</script>
-
-
-<!-- Gestão de estoque -->
-<div id="estoque-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharEstoque()">Fechar</button>
-    </div>
-    <h2>Estoque</h2>
-    <p class="estoque-aviso">Defina a quantidade disponível de cada produto. Encomendas não exigem estoque e a quantidade só é descontada quando a entrega for concluída.</p>
-    <div id="estoque-lista" class="estoque-lista"></div>
-    <button class="gestao-salvar" type="button" onclick="salvarEstoqueFormulario()">Salvar Estoque</button>
-  </div>
-</div>
-
-<!-- Gestão de encomendas -->
-<div id="encomendas-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo">
-      <button class="gestao-fechar" type="button" onclick="fecharEncomendas()">Fechar</button>
-    </div>
-    <h2>Encomendas</h2>
-
-    <div class="encomenda-vendedor">
-      <div class="encomenda-campo">
-        <label>Vendedor</label>
-        <input id="encomenda-vendedor-nome" type="text" readonly>
-      </div>
-      <div class="encomenda-campo">
-        <label>Passaporte / ID</label>
-        <input id="encomenda-vendedor-id" type="text" readonly>
-      </div>
-    </div>
-
-    <div class="encomenda-campo">
-      <label for="encomenda-cliente">Quem fez a encomenda</label>
-      <input id="encomenda-cliente" type="text" placeholder="Nome do cliente">
-    </div>
-
-    <div class="encomenda-campo">
-      <label for="encomenda-telefone">Número do telefone</label>
-      <input id="encomenda-telefone" type="tel" placeholder="Telefone do cliente">
-    </div>
-
-    <div class="encomenda-pagamento">
-      <select id="encomenda-pagamento">
-        <option value="limpo">Pagamento: Limpo</option>
-        <option value="sujo">Pagamento: Sujo</option>
-        <option value="limpoParceiro">Pagamento: Limpo Parceiro</option>
-        <option value="sujoParceiro">Pagamento: Sujo Parceiro</option>
-      </select>
-    </div>
-
-    <div class="encomenda-produtos">
-      <div class="encomenda-produto-cab">
-        <div>Produto</div>
-        <div style="text-align:center;">Quantidade</div>
-        <div style="text-align:center;">Subtotal</div>
-      </div>
-      <div id="encomenda-produtos-lista"></div>
-    </div>
-
-    <div id="encomenda-calculo" class="encomenda-calculo">
-      <div><strong>Valor total:</strong> R$ 0,00</div>
-      <div><strong>Comissão do vendedor (10%):</strong> R$ 0,00</div>
-      <div class="destaque"><strong>Valor a repassar:</strong> R$ 0,00</div>
-    </div>
-
-    <div class="encomenda-datahora">
-      <div class="encomenda-campo">
-        <label for="encomenda-data">Data da entrega</label>
-        <input id="encomenda-data" type="date">
-      </div>
-      <div class="encomenda-campo">
-        <label for="encomenda-hora">Horário da entrega</label>
-        <input id="encomenda-hora" type="time">
-      </div>
-    </div>
-
-    <button id="salvar-encomenda" class="gestao-salvar" type="button">Salvar Encomenda</button>
-    <button id="cancelar-edicao-encomenda" class="gestao-salvar" type="button" style="display:none;background:#111;color:#fc6500;">Cancelar Edição</button>
-    <div id="encomendas-lista" class="encomendas-lista"></div>
-  </div>
-</div>
-
-<!-- Entregas -->
-<div id="entregas-hoje-modal" class="gestao-modal">
-  <div class="gestao-caixa">
-    <div class="gestao-topo" style="align-items:center;justify-content:space-between;gap:10px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <label for="entregas-data-busca" style="color:#fc6500;font-weight:bold;font-size:14px;">Buscar dia:</label>
-        <input id="entregas-data-busca" type="date"
-          style="padding:7px 9px;border:1px solid #fc6500;border-radius:7px;background:#000;color:#fff;">
-      </div>
-      <button class="gestao-fechar" type="button" onclick="fecharEntregasHoje()">Fechar</button>
-    </div>
-    <h2 id="titulo-entregas-data">ENTREGAS DE HOJE</h2>
-    <p class="estoque-aviso">Selecione uma data no canto superior para ver as entregas daquele dia.</p>
-    <div id="entregas-hoje-lista" class="encomendas-lista"></div>
-  </div>
-</div>
-
-<script>
-/* =========================
-   ENCOMENDAS E ENTREGAS
-   ========================= */
-function carregarEncomendas() {
-  try {
-    const dados = JSON.parse(localStorage.getItem(CHAVE_ENCOMENDAS) || "[]");
-    return Array.isArray(dados) ? dados : [];
-  } catch (_) {
-    return [];
-  }
-}
-
-let encomendas = carregarEncomendas();
-
-function salvarEncomendas() {
-  localStorage.setItem(CHAVE_ENCOMENDAS, JSON.stringify(encomendas));
-}
-
-function hojeISO() {
-  const agora = new Date();
-  const ano = agora.getFullYear();
-  const mes = String(agora.getMonth() + 1).padStart(2, "0");
-  const dia = String(agora.getDate()).padStart(2, "0");
-  return `${ano}-${mes}-${dia}`;
-}
-
-function formatarDataEntrega(dataISO) {
-  if (!dataISO) return "Não informada";
-  const partes = dataISO.split("-");
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataISO;
-}
-
-let encomendaEditandoId = null;
-
-function preencherFormularioEncomenda(encomenda) {
-  document.getElementById("cancelar-edicao-encomenda").style.display = "block";
-  document.getElementById("encomenda-cliente").value = encomenda.cliente || "";
-  document.getElementById("encomenda-telefone").value = encomenda.telefone || "";
-  document.getElementById("encomenda-data").value = encomenda.dataEntrega || hojeISO();
-  document.getElementById("encomenda-hora").value = encomenda.horaEntrega || "";
-  document.getElementById("encomenda-pagamento").value = encomenda.pagamento || "limpo";
-
-  produtos.forEach((produto, index) => {
-    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
-    const item = (encomenda.itens || []).find(i => i.nome === produto.nome);
-    if (input) input.value = item ? Number(item.quantidade) || 0 : 0;
-  });
-
-  atualizarCalculoEncomenda();
-  document.getElementById("salvar-encomenda").textContent = "Salvar Alterações";
-}
-
-function cancelarEdicaoEncomenda() {
-  encomendaEditandoId = null;
-  document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
-  document.getElementById("cancelar-edicao-encomenda").style.display = "none";
-  limparFormularioEncomenda();
-}
-
-function editarEncomenda(id) {
-  const encomenda = encomendas.find(item => item.id === id);
-  if (!encomenda) return;
-
-  encomendaEditandoId = id;
-  document.getElementById("encomenda-vendedor-nome").value = encomenda.vendedor || dadosVendedor.nome || "";
-  document.getElementById("encomenda-vendedor-id").value = encomenda.vendedorId || dadosVendedor.id || "";
-  renderizarProdutosEncomenda();
-  preencherFormularioEncomenda(encomenda);
-  document.getElementById("encomendas-modal").style.display = "flex";
-  document.getElementById("encomenda-cliente").focus();
-}
-
-async function concluirEntrega(id) {
-  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
-  const encomenda = encomendas.find(item => item.id === id);
-  if (!encomenda) return;
-
-  const confirmar = confirm(
-    `Deseja confirmar a entrega de ${encomenda.cliente}?\n\n` +
-    `Ao confirmar, a encomenda será excluída e o estoque compartilhado será atualizado.`
-  );
-  if (!confirmar) return;
-
-  try {
-    const resultado = await concluirEntregaNoBanco(id);
-    if (!resultado || resultado.success !== true) {
-      alert(`Não é possível concluir esta entrega.\n\n${resultado?.message || "Estoque insuficiente ou encomenda já concluída."}`);
-      await recarregarBancoCompartilhado();
-      return;
-    }
-
-    await recarregarBancoCompartilhado();
-    if (encomendaEditandoId === id) {
-      encomendaEditandoId = null;
-      document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
-      document.getElementById("cancelar-edicao-encomenda").style.display = "none";
-      limparFormularioEncomenda();
-    }
-    alert("Entrega concluída. A encomenda foi excluída e o estoque foi atualizado para todos.");
-  } catch (erro) {
-    console.error(erro);
-    alert("Não foi possível concluir a entrega online. Nada foi alterado. Tente novamente.");
-  }
-}
-
-function limparFormularioEncomenda() {
-  document.getElementById("encomenda-cliente").value = "";
-  document.getElementById("encomenda-telefone").value = "";
-  document.getElementById("encomenda-data").value = hojeISO();
-  document.getElementById("encomenda-hora").value = "";
-
-  produtos.forEach((produto, index) => {
-    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
-    if (input) input.value = 0;
-  });
-
-  atualizarCalculoEncomenda();
-}
-
-function renderizarProdutosEncomenda() {
-  const lista = document.getElementById("encomenda-produtos-lista");
-  let categoriaAtual = "";
-
-  lista.innerHTML = produtos.map((produto, index) => {
-    const categoria = produto.categoria !== categoriaAtual
-      ? `<div style="grid-column:1/-1;color:#fc6500;font-weight:bold;background:#111;border-top:1px solid #fc6500;padding:7px 10px;">${escapeHtml(produto.categoria)}</div>`
-      : "";
-
-    categoriaAtual = produto.categoria;
-
-    return `
-      ${categoria}
-      <div class="encomenda-produto-linha">
-        <div><strong>${escapeHtml(produto.nome)}</strong></div>
-        <div class="encomenda-qtd-controle">
-          <button type="button" onclick="alterarQuantidadeEncomenda(${index}, -1)">−</button>
-          <input type="number" min="0" step="1" value="0"
-                 data-encomenda-produto="${index}"
-                 onchange="atualizarCalculoEncomenda()">
-          <button type="button" onclick="alterarQuantidadeEncomenda(${index}, 1)">+</button>
-        </div>
-        <div class="preco-encomenda" data-encomenda-subtotal="${index}">R$ 0,00</div>
-      </div>
-    `;
-  }).join("");
-}
-
-function alterarQuantidadeEncomenda(index, delta) {
-  const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
-  if (!input) return;
-
-  const atual = Math.max(0, Number(input.value) || 0);
-  input.value = Math.max(0, Math.floor(atual + delta));
-  atualizarCalculoEncomenda();
-}
-
-function obterItensEncomenda() {
-  const tipo = document.getElementById("encomenda-pagamento").value;
-
-  return produtos.map((produto, index) => {
-    const input = document.querySelector(`[data-encomenda-produto="${index}"]`);
-    const quantidade = Math.max(0, Math.floor(Number(input?.value) || 0));
-    const precoUnitario = Number(produto[tipo]) || 0;
-
-    return {
-      nome: produto.nome,
-      quantidade,
-      precoUnitario,
-      subtotal: precoUnitario * quantidade
-    };
-  }).filter(item => item.quantidade > 0);
-}
-
-function calcularEncomenda() {
-  const itens = obterItensEncomenda();
-  const total = itens.reduce((soma, item) => soma + item.subtotal, 0);
-  const comissao = total * porcentagemVendedor;
-  const repasse = total - comissao;
-
-  return { itens, total, comissao, repasse };
-}
-
-function atualizarCalculoEncomenda() {
-  const calculo = calcularEncomenda();
-
-  produtos.forEach((produto, index) => {
-    const elemento = document.querySelector(`[data-encomenda-subtotal="${index}"]`);
-    const item = calculo.itens.find(i => i.nome === produto.nome);
-    if (elemento) elemento.textContent = formatBrl(item ? item.subtotal : 0);
-  });
-
-  document.getElementById("encomenda-calculo").innerHTML = `
-    <div><strong>Valor total:</strong> ${formatBrl(calculo.total)}</div>
-    <div><strong>Comissão do vendedor (10%):</strong> ${formatBrl(calculo.comissao)}</div>
-    <div class="destaque"><strong>Valor a repassar:</strong> ${formatBrl(calculo.repasse)}</div>
-  `;
-}
-
-function abrirEncomendas() {
-  encomendaEditandoId = null;
-  document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
-  document.getElementById("cancelar-edicao-encomenda").style.display = "none";
-  document.getElementById("encomenda-vendedor-nome").value = dadosVendedor.nome || "";
-  document.getElementById("encomenda-vendedor-id").value = dadosVendedor.id || "";
-  document.getElementById("encomenda-pagamento").value = tipoPagamentoSelecionado || "limpo";
-
-  renderizarProdutosEncomenda();
-  limparFormularioEncomenda();
-  renderizarEncomendas();
-  document.getElementById("encomendas-modal").style.display = "flex";
-}
-
-function fecharEncomendas() {
-  document.getElementById("encomendas-modal").style.display = "none";
-}
-
-function statusBadgeHtml(encomenda) {
-  const m = {
-    pending:["pending","AGUARDANDO APROVAÇÃO"],
-    approved:["approved","COMPRA VERIFICADA PELOS ADMINS"],
-    rejected:["rejected","RECUSADA"]
-  };
-  const x=m[encomenda.status]||["pending",String(encomenda.status||"PENDENTE").toUpperCase()];
-  return `<span class="admin-badge ${x[0]}">${escapeHtml(x[1])}</span>`;
-}
-
-function renderizarEncomendas() {
-  const lista = document.getElementById("encomendas-lista");
-
-  if (!encomendas.length) {
-    lista.innerHTML = '<p style="color:#aaa;text-align:center;">Nenhuma encomenda cadastrada.</p>';
-    return;
-  }
-
-  lista.innerHTML = encomendas.slice().reverse().map(encomenda => `
-    <div class="encomenda-card">
-      <div><strong>Cliente:</strong> ${escapeHtml(encomenda.cliente)}</div>
-      <div><strong>Telefone:</strong> ${escapeHtml(encomenda.telefone)}</div>
-      <div><strong>Entrega:</strong> ${formatarDataEntrega(encomenda.dataEntrega)} às ${escapeHtml(encomenda.horaEntrega || "Não informado")}</div>
-      <div><strong>Pagamento:</strong> ${escapeHtml(nomesPagamento[encomenda.pagamento] || encomenda.pagamento || "Limpo")}</div>
-      <div><strong>Valor total:</strong> ${formatBrl(Number(encomenda.valor) || 0)}</div>
-      <div><strong>Comissão:</strong> ${formatBrl(Number(encomenda.comissao) || 0)}</div>
-      <div><strong>Valor a repassar:</strong> ${formatBrl(Number(encomenda.repasse) || 0)}</div>
-      <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
-      <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)}</div>
-      <div><strong>Passaporte / ID:</strong> ${escapeHtml(encomenda.vendedorId)}</div>
-      <div><strong>Status:</strong> ${statusBadgeHtml(encomenda)}</div>
-      <div style="color:#777;font-size:12px;margin-top:5px;">Cadastrada em ${escapeHtml(encomenda.cadastradaEm)}</div>
-      <div class="encomenda-acoes">
-        <button class="encomenda-acao" type="button" onclick="editarEncomenda(${encomenda.id})">Editar Encomenda</button>
-        <button class="encomenda-acao concluir" type="button" onclick="concluirEntrega(${encomenda.id})">Entrega Concluída</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-function renderizarEntregasHoje() {
-  const lista = document.getElementById("entregas-hoje-lista");
-  const campoData = document.getElementById("entregas-data-busca");
-  const titulo = document.getElementById("titulo-entregas-data");
-  const dataSelecionada = campoData.value || hojeISO();
-  const hoje = hojeISO();
-
-  titulo.textContent = dataSelecionada === hoje
-    ? "ENTREGAS DE HOJE"
-    : `ENTREGAS DE ${formatarDataEntrega(dataSelecionada)}`;
-
-  const entregas = encomendas
-    .filter(encomenda => encomenda.dataEntrega === dataSelecionada)
-    .sort((a, b) => String(a.horaEntrega || "").localeCompare(String(b.horaEntrega || "")));
-
-  if (!entregas.length) {
-    lista.innerHTML = `<div class="entrega-vazia">Nenhuma entrega cadastrada para ${formatarDataEntrega(dataSelecionada)}.</div>`;
-    return;
-  }
-
-  lista.innerHTML = entregas.map(encomenda => `
-    <div class="entrega-card">
-      <div class="entrega-horario">${escapeHtml(encomenda.horaEntrega || "Horário não informado")}</div>
-      <div><strong>Data:</strong> ${formatarDataEntrega(encomenda.dataEntrega)}</div>
-      <div><strong>Cliente:</strong> ${escapeHtml(encomenda.cliente)}</div>
-      <div><strong>Telefone:</strong> ${escapeHtml(encomenda.telefone)}</div>
-      <div><strong>Encomenda:</strong> ${escapeHtml(encomenda.itensTexto)}</div>
-      <div><strong>Valor:</strong> ${formatBrl(Number(encomenda.valor) || 0)}</div>
-      <div><strong>Comissão:</strong> ${formatBrl(Number(encomenda.comissao) || 0)}</div>
-      <div><strong>Vendedor:</strong> ${escapeHtml(encomenda.vendedor)} — Passaporte/ID: ${escapeHtml(encomenda.vendedorId)}</div>
-      <div class="encomenda-acoes">
-        <button class="encomenda-acao" type="button" onclick="editarEncomenda(${encomenda.id})">Editar Encomenda</button>
-        <button class="encomenda-acao concluir" type="button" onclick="concluirEntrega(${encomenda.id})">Entrega Concluída</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-function abrirEntregasHoje() {
-  const campoData = document.getElementById("entregas-data-busca");
-  campoData.value = hojeISO();
-  renderizarEntregasHoje();
-  document.getElementById("entregas-hoje-modal").style.display = "flex";
-}
-
-function fecharEntregasHoje() {
-  document.getElementById("entregas-hoje-modal").style.display = "none";
-}
-
-document.getElementById("abrir-estoque").addEventListener("click", abrirEstoque);
-document.getElementById("abrir-encomendas").addEventListener("click", abrirEncomendas);
-document.getElementById("abrir-entregas-hoje").addEventListener("click", abrirEntregasHoje);
-document.getElementById("entregas-data-busca").addEventListener("change", renderizarEntregasHoje);
-
-document.getElementById("encomenda-pagamento").addEventListener("change", atualizarCalculoEncomenda);
-
-document.getElementById("cancelar-edicao-encomenda").addEventListener("click", cancelarEdicaoEncomenda);
-
-document.getElementById("salvar-encomenda").addEventListener("click", async () => {
-  if (!bancoCompartilhadoPronto) { alert("Aguarde o banco compartilhado carregar."); return; }
-  const cliente = document.getElementById("encomenda-cliente").value.trim();
-  const telefone = document.getElementById("encomenda-telefone").value.trim();
-  const dataEntrega = document.getElementById("encomenda-data").value;
-  const horaEntrega = document.getElementById("encomenda-hora").value;
-  const calculo = calcularEncomenda();
-
-  if (!cliente || !telefone || !dataEntrega || !horaEntrega) {
-    alert("Preencha o nome, telefone, data e horário da entrega.");
-    return;
-  }
-
-  if (!calculo.itens.length) {
-    alert("Selecione pelo menos uma arma ou item para a encomenda.");
-    return;
-  }
-
-  const itensTexto = calculo.itens
-    .map(item => `${item.quantidade}x ${item.nome}`)
-    .join(", ");
-
-  const dadosEncomenda = {
-    cliente,
-    telefone,
-    valor: calculo.total,
-    comissao: calculo.comissao,
-    repasse: calculo.repasse,
-    itensTexto,
-    itens: calculo.itens,
-    pagamento: document.getElementById("encomenda-pagamento").value,
-    dataEntrega,
-    horaEntrega,
-    vendedor: dadosVendedor.nome,
-    vendedorId: dadosVendedor.id,
-    status: "pending",
-    createdBy: window.authUser?.id || null
-  };
-
-  if (encomendaEditandoId !== null) {
-    const indice = encomendas.findIndex(item => item.id === encomendaEditandoId);
-
-    if (indice !== -1) {
-      const encomendaAtualizada = {
-        ...encomendas[indice],
-        ...dadosEncomenda
-      };
-      try {
-        await atualizarEncomendaNoBanco(encomendaAtualizada);
-      } catch (erro) {
-        console.error(erro);
-        alert("Não foi possível salvar a alteração online. Tente novamente.");
-        return;
-      }
-      encomendas[indice] = encomendaAtualizada;
-      salvarEncomendas();
-      encomendaEditandoId = null;
-      document.getElementById("salvar-encomenda").textContent = "Salvar Encomenda";
-      document.getElementById("cancelar-edicao-encomenda").style.display = "none";
-      renderizarEncomendas();
-      renderizarEntregasHoje();
-      limparFormularioEncomenda();
-      alert("Encomenda alterada com sucesso.");
-      return;
-    }
-  }
-
-  const novaEncomenda = {
-    id: Date.now(),
-    ...dadosEncomenda,
-    cadastradaEm: new Date().toLocaleString("pt-BR")
-  };
-
-  try {
-    await atualizarEncomendaNoBanco(novaEncomenda);
-  } catch (erro) {
-    console.error(erro);
-    alert("Não foi possível registrar a encomenda online. Tente novamente.");
-    return;
-  }
-
-  encomendas.push(novaEncomenda);
-  salvarEncomendas();
-  renderizarEncomendas();
-  renderizarEntregasHoje();
-  limparFormularioEncomenda();
-
-  alert("Encomenda registrada com sucesso. O estoque só será alterado quando a entrega for concluída.");
-});
-
-document.getElementById("estoque-modal").addEventListener("click", (e) => {
-  if (e.target.id === "estoque-modal") fecharEstoque();
-});
-
-document.getElementById("encomendas-modal").addEventListener("click", (e) => {
-  if (e.target.id === "encomendas-modal") fecharEncomendas();
-});
-
-document.getElementById("entregas-hoje-modal").addEventListener("click", (e) => {
-  if (e.target.id === "entregas-hoje-modal") fecharEntregasHoje();
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    fecharEstoque();
-    fecharEncomendas();
-    fecharEntregasHoje();
-  }
-});
-
-// O banco começa a carregar somente depois que um usuário aprovado entra.
-window.iniciarBancoDepoisDoLogin = async function() {
-  try { await carregarBancoCompartilhado(); }
-  catch (erro) { console.error(erro); alert("Não foi possível conectar ao banco compartilhado.\n\nDetalhes: " + (erro?.message || "erro desconhecido")); }
-};
-
-setInterval(async () => {
-  if (!bancoCompartilhadoPronto || !window.authUser || document.visibilityState !== "visible") return;
-  try { await recarregarBancoCompartilhado(); } catch (erro) { console.error(erro); }
-}, 15000);
+$("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
 </script>
 
 </body>
 <script>
-
 (function(){
-  const client = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  window.supabaseClient=client; window.authUser=null; window.currentProfile=null; window.currentPermissions=new Set();
-  const $=id=>document.getElementById(id), screen=$("auth-screen"), msgEl=$("auth-message");
-  const msg=(t,c="")=>{msgEl.textContent=t||"";msgEl.className="auth-message "+c;};
-  const mode=m=>{ $("auth-tab-login").classList.toggle("active",m==="login"); $("auth-tab-register").classList.toggle("active",m==="register"); $("login-form").style.display=m==="login"?"block":"none"; $("register-form").style.display=m==="register"?"block":"none"; msg(""); };
-  $("auth-tab-login").onclick=()=>mode("login"); $("auth-tab-register").onclick=()=>mode("register");
+  const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  window.supabaseClient=client;
+  window.authUser=null;
+  window.currentProfile=null;
+  window.currentPermissions=new Set();
+
+  const $=id=>document.getElementById(id);
+  const screen=$("auth-screen");
+  const msgEl=$("auth-message");
+
+  function cleanPassport(v){
+    return String(v??"").trim().replace(/\s+/g,"");
+  }
+
+  // O MESMO formato usado no SQL.
+  // O usuário nunca vê este e-mail.
+  function authEmailFromPassport(passport){
+    const clean=cleanPassport(passport).toLowerCase();
+    return `passport_${clean.replace(/[^a-z0-9_-]/g,"")}@tarjas.com`;
+  }
+
+  function msg(t,c=""){
+    msgEl.textContent=t||"";
+    msgEl.className="auth-message "+c;
+  }
+
+  function mode(m){
+    $("auth-tab-login").classList.toggle("active",m==="login");
+    $("auth-tab-register").classList.toggle("active",m==="register");
+    $("login-form").style.display=m==="login"?"block":"none";
+    $("register-form").style.display=m==="register"?"block":"none";
+    msg("");
+  }
+
+  $("auth-tab-login").onclick=()=>mode("login");
+  $("auth-tab-register").onclick=()=>mode("register");
 
   $("login-form").onsubmit=async e=>{
-    e.preventDefault(); msg("Entrando...");
-    const {error}=await client.auth.signInWithPassword({email:$("login-email").value.trim(),password:$("login-password").value});
-    if(error) msg(error.message,"error");
+    e.preventDefault();
+    const passport=cleanPassport($("login-passport").value);
+    const password=$("login-password").value;
+    if(!passport||!password){
+      msg("Informe o passaporte e a senha.","error");
+      return;
+    }
+
+    msg("Entrando...");
+    try{
+      const email=authEmailFromPassport(passport);
+      const {data,error}=await client.auth.signInWithPassword({email,password});
+      if(error||!data?.user){
+        const text=String(error?.message||"").toLowerCase();
+        if(text.includes("invalid login credentials")) msg("Passaporte ou senha inválidos.","error");
+        else msg(error?.message||"Não foi possível entrar agora.","error");
+        return;
+      }
+      window.authUser=data.user;
+      await refresh();
+    }catch(err){
+      console.error("TARJAS LOGIN",err);
+      msg(err?.message||"Não foi possível entrar agora.","error");
+    }
   };
+
   $("register-form").onsubmit=async e=>{
     e.preventDefault();
-    const name=$("reg-name").value.trim(), age=Number($("reg-age").value), phone=$("reg-phone").value.trim(), passport=$("reg-passport").value.trim(), email=$("reg-email").value.trim(), pass=$("reg-password").value, pass2=$("reg-password2").value;
-    if(pass!==pass2){msg("As senhas não conferem.","error");return;}
-    msg("Enviando cadastro...");
-    const {data,error}=await client.auth.signUp({email,password:pass,options:{data:{name,age,game_phone:phone,passport}}});
-    if(error){msg(error.message,"error");return;}
-    if(!data.session) msg("Cadastro criado. Confirme o e-mail se o Supabase solicitar e depois entre novamente.","ok");
-    else msg("Cadastro enviado para aprovação.","ok");
+    const name=$("reg-name").value.trim();
+    const age=Number($("reg-age").value);
+    const phone=$("reg-phone").value.trim();
+    const passport=cleanPassport($("reg-passport").value);
+    const pass=$("reg-password").value;
+    const pass2=$("reg-password2").value;
+
+    if(!name||!age||!phone||!passport||!pass){
+      msg("Preencha todos os campos.","error");
+      return;
+    }
+    if(pass!==pass2){
+      msg("As senhas não conferem.","error");
+      return;
+    }
+    if(pass.length<6){
+      msg("A senha precisa ter pelo menos 6 caracteres.","error");
+      return;
+    }
+
+    msg("Criando cadastro...");
+    try{
+      const email=authEmailFromPassport(passport);
+      const {data,error}=await client.auth.signUp({
+        email,
+        password:pass,
+        options:{
+          data:{
+            name,
+            age:String(age),
+            game_phone:phone,
+            passport
+          }
+        }
+      });
+
+      if(error) throw error;
+
+      if(data?.session&&data?.user){
+        window.authUser=data.user;
+        await refresh();
+        return;
+      }
+
+      mode("login");
+      $("login-passport").value=passport;
+      $("login-password").value=pass;
+      msg("Cadastro criado. Entre com seu passaporte e senha.","ok");
+    }catch(err){
+      console.error("TARJAS CADASTRO",err);
+      const text=String(err?.message||"").toLowerCase();
+      if(text.includes("already registered")||text.includes("user already registered")){
+        msg("Este passaporte já está cadastrado.","error");
+      }else{
+        msg(err?.message||"Não foi possível criar o cadastro.","error");
+      }
+    }
   };
-  const logout=()=>client.auth.signOut(); $("logout-btn").onclick=logout; $("pending-logout").onclick=logout;
+
+  const logout=async()=>{
+    await client.auth.signOut();
+    window.authUser=null;
+    window.currentProfile=null;
+    window.currentPermissions=new Set();
+    loginView();
+  };
+
+  $("logout-btn").onclick=logout;
 
   async function loadProfile(user){
-    const {data,error}=await client.from("profiles").select("*,roles(id,name,slug,description)").eq("id",user.id).single();
-    if(error) throw error; window.currentProfile=data;
-    const {data:rp,error:pe}=await client.from("role_permissions").select("permissions(slug,name)").eq("role_id",data.role_id);
-    if(pe) throw pe; window.currentPermissions=new Set((rp||[]).map(x=>x.permissions?.slug).filter(Boolean)); return data;
+    const {data,error}=await client
+      .from("profiles")
+      .select("*,roles(id,name,slug,description)")
+      .eq("id",user.id)
+      .single();
+    if(error) throw error;
+    if(!data) throw new Error("Perfil não encontrado.");
+
+    window.currentProfile=data;
+
+    const {data:rp,error:pe}=await client
+      .from("role_permissions")
+      .select("permissions(slug,name)")
+      .eq("role_id",data.role_id);
+    if(pe) throw pe;
+
+    window.currentPermissions=new Set((rp||[])
+      .map(x=>x.permissions?.slug)
+      .filter(Boolean));
+
+    return data;
   }
+
   const has=p=>window.currentPermissions.has(p);
 
   function enter(profile){
-    dadosVendedor = { nome: profile.name || "", id: profile.passport || "" };
-    screen.style.display="none"; $("user-bar").style.display="flex"; $("user-name-label").textContent=profile.name||window.authUser.email; $("user-role-label").textContent=profile.roles?.name?` • ${profile.roles.name}`:"";
-    const admin=["approve_members","manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries","view_logs"].some(has);
-    $("abrir-admin").style.display=admin?"inline-block":"none"; $("abrir-admin-main").style.display=admin?"inline-block":"none"; $("abrir-estoque").style.display="none";
+    dadosVendedor={nome:profile.name||"",id:profile.passport||""};
+    if(typeof touchPresence==="function") touchPresence();
+    screen.style.display="none";
+    $("auth-login-register").style.display="block";
+    $("user-bar").style.display="flex";
+    $("user-name-label").textContent=profile.name||window.authUser.email;
+    $("user-role-label").textContent=profile.roles?.name?` • ${profile.roles.name}`:"";
+
+    const admin=profile.roles?.slug==="owner"||
+      profile.roles?.slug==="admin"||
+      ["manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries"].some(has);
+
+    $("abrir-admin").style.display=admin?"inline-block":"none";
+    $("abrir-admin-main").style.display=admin?"inline-block":"none";
+    $("abrir-estoque").style.display=has("manage_stock")?"inline-block":"none";
+
     if(window.iniciarBancoDepoisDoLogin) window.iniciarBancoDepoisDoLogin();
   }
-  function pending(){screen.style.display="flex";$("auth-login-register").style.display="none";$("pending-screen").style.display="block";$("user-bar").style.display="none";$("abrir-admin").style.display="none";$("abrir-admin-main").style.display="none";}
-  function loginView(){screen.style.display="flex";$("auth-login-register").style.display="block";$("pending-screen").style.display="none";$("user-bar").style.display="none";}
+
+  function loginView(){
+    screen.style.display="flex";
+    $("auth-login-register").style.display="block";
+    $("user-bar").style.display="none";
+  }
 
   async function refresh(){
     const {data}=await client.auth.getSession();
-    if(!data.session){window.authUser=null;loginView();return;}
+    if(!data.session){
+      window.authUser=null;
+      loginView();
+      return;
+    }
+
     window.authUser=data.session.user;
-    try{const p=await loadProfile(window.authUser); if(p.status!=="approved"){pending();return;} enter(p);}
-    catch(e){console.error(e);loginView();msg("Perfil não encontrado. Execute o SQL de configuração novamente.","error");}
+    try{
+      const p=await loadProfile(window.authUser);
+      if(p.status==="suspended"){
+        await client.auth.signOut();
+        loginView();
+        msg("Esta conta está suspensa.","error");
+        return;
+      }
+      enter(p);
+    }catch(e){
+      console.error("TARJAS PERFIL",e);
+      await client.auth.signOut();
+      loginView();
+      msg("A conta entrou no Auth, mas o perfil não foi encontrado. Execute o SQL novo e cadastre novamente.","error");
+    }
   }
-  client.auth.onAuthStateChange(async()=>{await refresh();});
 
-  $("abrir-perfil").onclick=async()=>{
-    const p=window.currentProfile;
-    $("profile-content").innerHTML=`<div class="admin-card"><div class="admin-form-grid">
-      <div class="admin-form-field"><label>Nome</label><input id="pf-name" value="${escapeHtml(p.name||"")}"></div>
-      <div class="admin-form-field"><label>Idade</label><input id="pf-age" type="number" value="${p.age||""}"></div>
-      <div class="admin-form-field"><label>Telefone no jogo</label><input id="pf-phone" value="${escapeHtml(p.game_phone||"")}"></div>
-      <div class="admin-form-field"><label>Passaporte</label><input id="pf-passport" value="${escapeHtml(p.passport||"")}"></div>
-    </div><p style="color:#aaa">E-mail: ${escapeHtml(p.email||window.authUser.email)}</p><p style="color:#aaa">Cargo: <strong style="color:#fc6500">${escapeHtml(p.roles?.name||"Sem cargo")}</strong></p>
-    <div class="admin-actions"><button class="admin-btn orange" onclick="salvarMeuPerfil()">Salvar</button></div></div>`;
-    $("profile-modal").style.display="flex";
-  };
-  window.fecharPerfil=()=>{$("profile-modal").style.display="none";};
-  window.salvarMeuPerfil=async()=>{
-    const patch={name:$("pf-name").value.trim(),age:Number($("pf-age").value)||null,game_phone:$("pf-phone").value.trim(),passport:$("pf-passport").value.trim()};
-    const {error}=await client.from("profiles").update(patch).eq("id",window.authUser.id); if(error){alert(error.message);return;}
-    await loadProfile(window.authUser); fecharPerfil(); enter(window.currentProfile); alert("Perfil atualizado.");
+  client.auth.onAuthStateChange(()=>setTimeout(refresh,0));
+  refresh();
+
+  function showAdminSection(tab){
+    document.querySelectorAll(".admin-section").forEach(x=>x.classList.toggle("active",x.id==="admin-"+tab));
+    document.querySelectorAll(".admin-tab").forEach(x=>x.classList.toggle("active",x.dataset.adminTab===tab));
+  }
+
+  window.fecharAdmin=()=>$("admin-modal").style.display="none";
+  window.abrirAdmin=async()=>{
+    if(!window.authUser){msg("Faça login primeiro.","error");return;}
+    const allowed=["owner","admin","manager"].includes(window.currentProfile?.roles?.slug) || has("manage_members") || has("manage_roles") || has("approve_sales") || has("view_all_orders");
+    if(!allowed){alert("Sem permissão para acessar o painel administrativo.");return;}
+    $("admin-modal").style.display="flex";
+    showAdminSection("dashboard");
+    await carregarDashboardAdmin();
   };
 
-  window.fecharAdmin=()=>{$("admin-modal").style.display="none";};
-  window.abrirAdmin=async()=>{$("admin-modal").style.display="flex";await Promise.all([carregarDashboardAdmin(),carregarMembrosAdmin(),carregarVendasAdmin(),carregarEstoqueAdmin(),carregarCargosAdmin(),carregarEntregasAdmin(),carregarLogsAdmin(),montarPermissoes()]);};
-  document.querySelectorAll(".admin-tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".admin-section").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("admin-"+b.dataset.adminTab).classList.add("active");});
-  $("abrir-admin").onclick=window.abrirAdmin; $("abrir-admin-main").onclick=window.abrirAdmin;
+  async function adminRpc(name, params={}){
+    const {data,error}=await client.rpc(name,params);
+    if(error)throw error;
+    if(data && data.success===false)throw new Error(data.message||"Operação não permitida.");
+    return data;
+  }
+
+  async function touchPresence(){
+    try{ await adminRpc("tarjas_touch_presence"); }catch(_){ }
+  }
+
+  function initials(name){
+    return String(name||"?").trim().split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()||"?";
+  }
+
+  function memberMetric(value,label){return `<div class="member-metric"><b>${Number(value||0)}</b><span>${label}</span></div>`;}
+
+  function renderMemberSidebar(rows){
+    const target=$("admin-member-sidebar");
+    if(!target)return;
+    if(!rows?.length){target.innerHTML='<div class="admin-empty">Nenhum membro cadastrado.</div>';return;}
+    target.innerHTML=rows.map(r=>{
+      const online=!!r.online;
+      return `<div class="admin-member" title="Abrir informações de ${escapeHtml(r.name||"membro")}" onclick="abrirMembroNoPainel('${r.id}')">
+        <div class="member-avatar">${escapeHtml(initials(r.name))}</div>
+        <div class="member-main">
+          <div class="member-name-row"><div class="member-name">${escapeHtml(r.name||"Sem nome")}</div><div class="member-status"><i class="member-dot ${online?"online":""}"></i>${online?"Online":"Offline"}</div></div>
+          <div class="member-passport">Passaporte ${escapeHtml(r.passport||"—")}</div>
+          <div class="member-role">${escapeHtml(r.role_name||"Sem cargo")}</div>
+          <div class="member-metrics">${memberMetric(r.sales_count,"Vendas")}${memberMetric(r.order_count,"Encom.")}${memberMetric(r.approved_count,"Aprov.")}${memberMetric(r.pending_count,"Pend.")}</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  window.carregarMembrosSidebar=async()=>{
+    try{
+      await touchPresence();
+      const rows=await adminRpc("tarjas_admin_list_members");
+      renderMemberSidebar(rows);
+      return rows;
+    }catch(e){const target=$("admin-member-sidebar");if(target)target.innerHTML=`<div class='admin-empty'>Erro: ${escapeHtml(e.message)}</div>`;return []}
+  };
+
+  function renderHomeMemberDirectory(rows){
+    const target=$("home-member-directory");
+    if(!target)return;
+    if(!rows?.length){target.innerHTML='<div class="home-member-empty">Nenhum membro cadastrado.</div>';return;}
+    const sorted=[...rows].sort((a,b)=>{if(Boolean(b.online)!==Boolean(a.online))return Number(Boolean(b.online))-Number(Boolean(a.online));return String(a.name||'').localeCompare(String(b.name||''),'pt-BR');});
+    target.innerHTML=sorted.map(r=>{
+      const online=!!r.online;
+      const initials=String(r.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+      return `<div class="home-member-card"><div class="home-member-top"><div class="home-member-avatar">${escapeHtml(initials)}</div><div style="min-width:0;flex:1"><div class="home-member-name">${escapeHtml(r.name||'Sem nome')}</div><div class="home-member-meta"><span class="home-member-dot ${online?'online':''}"></span><span class="${online?'home-member-status-online':'home-member-status-offline'}">${online?'Online':'Offline'}</span><span>•</span><span>Passaporte ${escapeHtml(r.passport||'—')}</span></div></div></div><div class="home-member-role">${escapeHtml(r.role_name||'Sem cargo')}</div><div class="home-member-metrics"><div class="home-member-metric"><b>${Number(r.sales_count||0)}</b><span>VENDAS</span></div><div class="home-member-metric"><b>${Number(r.order_count||0)}</b><span>ENCOM.</span></div><div class="home-member-metric"><b>${Number(r.approved_count||0)}</b><span>APROV.</span></div><div class="home-member-metric"><b>${Number(r.pending_count||0)}</b><span>PEND.</span></div></div></div>`;
+    }).join('');
+  }
+
+  async function carregarEquipePaginaInicial(){
+    const target=$("home-member-directory");
+    if(!target)return;
+    try{
+      target.innerHTML='<div class="home-member-loading">Atualizando equipe...</div>';
+      await touchPresence();
+      const rows=await adminRpc("tarjas_public_member_directory");
+      renderHomeMemberDirectory(rows);
+    }catch(e){
+      console.error("TARJAS EQUIPE",e);
+      target.innerHTML=`<div class="home-member-empty">Não foi possível carregar a equipe agora.<br><small>${escapeHtml(e.message||'Erro desconhecido')}</small></div>`;
+    }
+  }
+
+  window.carregarEquipePaginaInicial=carregarEquipePaginaInicial;
+
+  window.abrirMembroNoPainel=(id)=>{
+    showAdminSection("members");
+    setTimeout(()=>{
+      const el=$("member-card-"+id); if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.style.boxShadow="0 0 0 2px #fc6500";setTimeout(()=>el.style.boxShadow="",1200);}
+    },60);
+  };
+
+  async function carregarResumoFinanceiroHome(){
+    try{
+      const data=await adminRpc("tarjas_home_financial_summary");
+      $("home-finance-sales-count").textContent=Number(data.sales_count||0).toLocaleString("pt-BR");
+      $("home-finance-sales-total").textContent=formatBrl(data.sales_total||0);
+      $("home-finance-orders-count").textContent=Number(data.orders_count||0).toLocaleString("pt-BR");
+      $("home-finance-orders-total").textContent=formatBrl(data.orders_total||0);
+      $("home-finance-total").textContent=formatBrl(data.total_balance||0);
+      $("home-finance-commission").textContent=formatBrl(data.sales_commission_total||0);
+    }catch(e){console.error("TARJAS FINANCEIRO",e);}
+  }
 
   async function carregarDashboardAdmin(){
-    const [a,b,c,d]=await Promise.all([
-      client.from("profiles").select("id",{count:"exact",head:true}),
-      client.from("profiles").select("id",{count:"exact",head:true}).eq("status","pending"),
-      client.from("orders").select("id",{count:"exact",head:true}).eq("status","pending"),
-      client.from("delivery_history").select("id",{count:"exact",head:true})
-    ]);
-    $("stat-members").textContent=a.count??0;$("stat-pending-members").textContent=b.count??0;$("stat-pending-sales").textContent=c.count??0;$("stat-deliveries").textContent=d.count??0;
+    try{
+      const d=await adminRpc("tarjas_admin_dashboard");
+      $("stat-members").textContent=d.members||0;
+      $("stat-pending-sales").textContent=d.pending_orders||0;
+      $("stat-deliveries").textContent=d.deliveries||0;
+      $("stat-rejected").textContent=d.rejected_orders||0;
+      await carregarMembrosSidebar();
+    }catch(e){console.error(e);["stat-members","stat-pending-sales","stat-deliveries","stat-rejected"].forEach(id=>{const el=$(id);if(el)el.textContent="—";});}
   }
 
   window.carregarMembrosAdmin=async()=>{
-    const {data,error}=await client.from("profiles").select("*,roles(id,name,slug)").order("created_at",{ascending:false});
-    if(error){$("admin-members-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    const {data:roles}=await client.from("roles").select("*").order("name");
-    $("admin-members-list").innerHTML=(data||[]).map(p=>`<div class="admin-card">
-      <strong>${escapeHtml(p.name||"Sem nome")}</strong> — ${escapeHtml(p.email||"")}
-      <div style="color:#bbb">Idade: ${p.age??"—"} • Telefone: ${escapeHtml(p.game_phone||"—")} • Passaporte: ${escapeHtml(p.passport||"—")}</div>
-      <div>Status: <span class="admin-badge ${escapeHtml(p.status)}">${escapeHtml(p.status.toUpperCase())}</span> • Cargo: <strong>${escapeHtml(p.roles?.name||"Sem cargo")}</strong></div>
-      <div class="admin-actions">
-      ${p.status==="pending"?`<button class="admin-btn ok" onclick="alterarStatusMembro('${p.id}','approved')">Aprovar</button><button class="admin-btn danger" onclick="alterarStatusMembro('${p.id}','rejected')">Recusar</button>`:""}
-      <button class="admin-btn orange" onclick="editarMembroAdmin('${p.id}')">Editar perfil</button>
-      ${p.status==="approved"?`<button class="admin-btn warn" onclick="alterarStatusMembro('${p.id}','suspended')">Suspender</button>`:""}
-      ${(p.status==="suspended"||p.status==="rejected")?`<button class="admin-btn ok" onclick="alterarStatusMembro('${p.id}','approved')">Reativar</button>`:""}
-      <select class="admin-btn" onchange="alterarCargoMembro('${p.id}',this.value)"><option value="">Alterar cargo...</option>${(roles||[]).map(r=>`<option value="${r.id}" ${p.role_id===r.id?"selected":""}>${escapeHtml(r.name)}</option>`).join("")}</select>
-      </div></div>`).join("")||`<div class="admin-card">Nenhum membro.</div>`;
-  };
-  window.alterarStatusMembro=async(id,status)=>{const reason=status==="rejected"?(prompt("Motivo (opcional):")||""):"";const {data,error}=await client.rpc("admin_set_member_status",{p_user_id:id,p_status:status,p_reason:reason});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarMembrosAdmin();await carregarDashboardAdmin();};
-  
-  window.editarMembroAdmin=async(id)=>{
-    const {data:p,error}=await client.from("profiles").select("*").eq("id",id).single();
-    if(error){alert(error.message);return;}
-    const name=prompt("Nome:",p.name||""); if(name===null)return;
-    const ageRaw=prompt("Idade:",p.age??""); if(ageRaw===null)return;
-    const phone=prompt("Telefone no jogo:",p.game_phone||""); if(phone===null)return;
-    const passport=prompt("Passaporte:",p.passport||""); if(passport===null)return;
-    const {error:e}=await client.from("profiles").update({
-      name:name.trim(), age:Number(ageRaw)||null, game_phone:phone.trim(), passport:passport.trim()
-    }).eq("id",id);
-    if(e){alert(e.message);return;}
-    await carregarMembrosAdmin();
-    alert("Perfil atualizado.");
+    const target=$("admin-members-list"); target.innerHTML='<div class="admin-card">Carregando membros...</div>';
+    try{
+      const rows=await adminRpc("tarjas_admin_list_members");
+      const roles=await adminRpc("tarjas_admin_list_roles");
+      renderMemberSidebar(rows);
+      target.innerHTML=rows.length?rows.map(r=>{
+        const options=roles.map(role=>`<option value="${escapeHtml(role.id)}" ${Number(role.id)===Number(r.role_id)?"selected":""}>${escapeHtml(role.name)}</option>`).join("");
+        const online=r.online;
+        return `<div class="admin-card" id="member-card-${r.id}"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div><strong>${escapeHtml(r.name||"Sem nome")}</strong> <span class="member-status" style="display:inline-flex;margin-left:8px"><i class="member-dot ${online?"online":""}"></i>${online?"Online":"Offline"}</span></div><div style="color:#aaa;margin-top:5px">Passaporte: ${escapeHtml(r.passport||"—")} · Idade: ${escapeHtml(r.age??"—")} · Telefone: ${escapeHtml(r.game_phone||"—")}</div><div style="color:#777;margin-top:4px">Cadastro: ${escapeHtml(r.created_at?new Date(r.created_at).toLocaleString("pt-BR"):"—")}</div></div><div style="text-align:right;color:#fc6500;font-weight:900">${escapeHtml(r.role_name||"Sem cargo")}</div></div><div class="admin-profile-strip" style="margin-top:12px"><div class="admin-profile-stat"><b>${r.sales_count||0}</b><span>VENDAS</span></div><div class="admin-profile-stat"><b>${r.order_count||0}</b><span>ENCOMENDAS</span></div><div class="admin-profile-stat"><b>${r.approved_count||0}</b><span>APROVADAS</span></div><div class="admin-profile-stat"><b>${r.pending_count||0}</b><span>PENDENTES</span></div></div><div style="color:#777;font-size:11px;margin-bottom:8px">Recusadas: <strong style="color:#ff7777">${r.rejected_count||0}</strong> · Total de operações: <strong style="color:#fff">${r.order_count||0}</strong></div><div class="admin-actions"><select id="member-role-${r.id}" style="padding:9px;background:#050505;border:1px solid #333;color:#fff;border-radius:8px;min-width:190px">${options}</select><button class="admin-btn orange" onclick="salvarCargoMembro('${r.id}')">Salvar cargo</button></div></div>`;
+      }).join(""):"<div class='admin-card'>Nenhum membro encontrado.</div>";
+    }catch(e){target.innerHTML=`<div class='admin-card'>Erro ao carregar membros: ${escapeHtml(e.message)}</div>`;}
   };
 
-window.alterarCargoMembro=async(id,role)=>{if(!role)return;const {data,error}=await client.rpc("admin_set_member_role",{p_user_id:id,p_role_id:Number(role)});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarMembrosAdmin();};
+  window.salvarCargoMembro=async(userId)=>{
+    try{const roleId=Number($("member-role-"+userId).value);await adminRpc("tarjas_admin_assign_role",{p_user_id:userId,p_role_id:roleId});await carregarMembrosAdmin();alert("Cargo atualizado com sucesso.");}catch(e){alert("Erro ao alterar cargo: "+e.message);}
+  };
+
+  function permissionCard(p,checked){
+    return `<label class="permission-card ${checked?"checked":""}"><input type="checkbox" data-permission-id="${p.id}" ${checked?"checked":""} onchange="const c=this.closest('.permission-card');c.classList.toggle('checked',this.checked);c.querySelector('.permission-icon').textContent=this.checked?'✓':''"><div class="permission-check"><div class="permission-icon">${checked?"✓":""}</div><div><div class="permission-name">${escapeHtml(p.name)}</div><div class="permission-desc">${escapeHtml(p.description||"Esta permissão libera funções específicas do painel e do site.")}</div></div></div></label>`;
+  }
+  function renderPermissoesChecklist(perms,selected){ return perms.map(p=>permissionCard(p,selected.has(Number(p.id)))).join(""); }
+
+  window.carregarCargosAdmin=async()=>{
+    const target=$("admin-roles-list"); target.innerHTML='<div class="admin-card">Carregando cargos...</div>';
+    try{
+      const roles=await adminRpc("tarjas_admin_list_roles");
+      const perms=await adminRpc("tarjas_admin_list_permissions");
+      $("permissions-create-grid").innerHTML=renderPermissoesChecklist(perms,new Set());
+      target.innerHTML=roles.map(r=>{
+        const owner=r.slug==="owner";
+        return `<div class="role-card" id="role-card-${r.id}"><div class="role-card-head"><div class="role-title-wrap"><div class="role-title">${escapeHtml(r.name)} <span class="role-slug">${escapeHtml(r.slug)}</span></div><div class="role-description">${escapeHtml(r.description||"Sem descrição.")}</div></div><div class="role-actions"><button class="admin-btn orange" onclick="salvarPermissoesCargo(${r.id})">Salvar permissões</button><button class="role-delete" ${owner?"disabled title=\"O cargo Dono não pode ser excluído.\"":""} onclick="excluirCargoAdmin(${r.id},'${escapeHtml(r.name).replace(/'/g,"\\'")}')">Excluir</button></div></div><div class="permission-grid-premium">${renderPermissoesChecklist(perms,new Set((r.permission_ids||[]).map(Number)))}</div></div>`;
+      }).join("");
+    }catch(e){target.innerHTML=`<div class='admin-card'>Erro ao carregar cargos: ${escapeHtml(e.message)}</div>`;}
+  };
+
+  window.salvarPermissoesCargo=async(roleId)=>{
+    try{
+      const card=$("role-card-"+roleId); if(!card)throw new Error("Cargo não encontrado.");
+      const ids=[...card.querySelectorAll('input[data-permission-id]:checked')].map(x=>Number(x.dataset.permissionId));
+      await adminRpc("tarjas_admin_set_role_permissions",{p_role_id:Number(roleId),p_permission_ids:ids});
+      await carregarCargosAdmin(); alert("Permissões do cargo atualizadas.");
+    }catch(e){alert("Erro ao salvar permissões: "+e.message);}
+  };
+
+  window.excluirCargoAdmin=async(roleId,roleName)=>{
+    if(!confirm(`Excluir o cargo “${roleName}”?\n\nO cargo só poderá ser excluído se não for o Dono e nenhum membro estiver usando esse cargo.`))return;
+    try{await adminRpc("tarjas_admin_delete_role",{p_role_id:Number(roleId)});await carregarCargosAdmin();await carregarMembrosSidebar();alert("Cargo excluído com sucesso.");}catch(e){alert("Não foi possível excluir o cargo: "+e.message);}
+  };
+
+  window.criarCargoAdmin=async()=>{
+    try{
+      const name=$("new-role-name").value.trim(),slug=$("new-role-slug").value.trim().toLowerCase(),description=$("new-role-description").value.trim();
+      const permissionIds=[...document.querySelectorAll("#permissions-create-grid input[data-permission-id]:checked")].map(x=>Number(x.dataset.permissionId));
+      if(!name||!slug)throw new Error("Informe o nome e o identificador do cargo.");
+      await adminRpc("tarjas_admin_create_role",{p_name:name,p_slug:slug,p_description:description,p_permission_ids:permissionIds});
+      $("new-role-name").value="";$("new-role-slug").value="";$("new-role-description").value="";
+      await carregarCargosAdmin(); alert("Cargo criado com sucesso.");
+    }catch(e){alert("Erro ao criar cargo: "+e.message);}
+  };
 
   window.carregarVendasAdmin=async()=>{
-    const {data,error}=await client.from("orders").select("*").order("id",{ascending:false});
-    if(error){$("admin-sales-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    const rows=(data||[]).filter(o=>o.status==="pending"||o.status==="rejected");
-    $("admin-sales-list").innerHTML=rows.map(o=>`<div class="admin-card"><strong>Venda #${o.id}</strong> <span class="admin-badge ${o.status}">${escapeHtml((o.status||"").toUpperCase())}</span>
-      <div style="color:#bbb">Cliente: ${escapeHtml(o.cliente)} • Telefone: ${escapeHtml(o.telefone)}</div>
-      <div style="color:#bbb">Vendedor: ${escapeHtml(o.vendedor)} • Passaporte: ${escapeHtml(o.vendedor_id)}</div>
-      <div style="color:#bbb">Entrega: ${escapeHtml(o.data_entrega||"—")} às ${escapeHtml(o.hora_entrega||"—")}</div>
-      <div>${escapeHtml(o.itens_texto||"")}</div><div><strong>Valor:</strong> ${formatBrl(Number(o.valor)||0)} • <strong>Comissão:</strong> ${formatBrl(Number(o.comissao)||0)}</div>
-      ${o.rejection_reason?`<div style="color:#ff7777">Motivo: ${escapeHtml(o.rejection_reason)}</div>`:""}
-      <div class="admin-actions"><button class="admin-btn ok" onclick="alterarStatusVenda(${o.id},'approved')">Aprovar</button><button class="admin-btn danger" onclick="recusarVenda(${o.id})">Recusar</button></div></div>`).join("")||`<div class="admin-card">Nenhuma venda pendente.</div>`;
-  };
-  window.alterarStatusVenda=async(id,status)=>{const {data,error}=await client.rpc("admin_set_order_status",{p_order_id:id,p_status:status,p_reason:""});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();};
-  window.recusarVenda=async id=>{const reason=prompt("Motivo (opcional):")||"";const {data,error}=await client.rpc("admin_set_order_status",{p_order_id:id,p_status:"rejected",p_reason:reason});if(error){alert(error.message);return;}if(!data?.success){alert(data?.message||"Falha");return;}await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();};
-
-  window.carregarEstoqueAdmin=async()=>{
-    const {data,error}=await client.from("stock").select("product_name,quantity").order("product_name");
-    if(error){$("admin-stock-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    $("admin-stock-list").innerHTML=(data||[]).map(r=>`<div class="admin-form-field"><label>${escapeHtml(r.product_name)}</label><input type="number" min="0" data-admin-stock="${escapeHtml(r.product_name)}" value="${Number(r.quantity)||0}"></div>`).join("");
-  };
-  window.salvarEstoqueAdmin=async()=>{
-    const rows=[...document.querySelectorAll("[data-admin-stock]")].map(i=>({product_name:i.dataset.adminStock,quantity:Math.max(0,Math.floor(Number(i.value)||0)),updated_at:new Date().toISOString()}));
-    const {error}=await client.from("stock").upsert(rows,{onConflict:"product_name"});if(error){alert(error.message);return;}await recarregarBancoCompartilhado();alert("Estoque salvo.");
+    const target=$("admin-sales-list"); target.innerHTML='<div class="admin-card">Carregando operações...</div>';
+    try{const rows=await adminRpc("tarjas_admin_list_orders",{p_status:"pending"});target.innerHTML=rows.length?rows.map(r=>`<div class="admin-card"><div><strong>${escapeHtml(r.tipo||"OPERAÇÃO").toUpperCase()}</strong> · ${escapeHtml(r.cliente||"Sem cliente")} ${r.vendedor?`· Vendedor: ${escapeHtml(r.vendedor)} (${escapeHtml(r.vendedor_id||"")})`:""}</div><div style="color:#aaa;margin-top:5px">Telefone: ${escapeHtml(r.telefone||"—")} · Data: ${escapeHtml(r.data_entrega||"—")} · Hora: ${escapeHtml(r.hora_entrega||"—")}</div><div style="color:#aaa;margin-top:5px">Itens: ${escapeHtml(r.itens_texto||"—")}</div><div style="margin-top:6px;color:#fff">Total: <strong style="color:#fc6500">${formatBrl(r.valor)}</strong> · Comissão: ${formatBrl(r.comissao)} · Repasse: ${formatBrl(r.repasse)}</div><div class="admin-actions"><button class="admin-btn ok" onclick="aprovarOperacaoAdmin(${r.id})">Aprovar</button><button class="admin-btn danger" onclick="recusarOperacaoAdmin(${r.id})">Recusar</button></div></div>`).join(""):"<div class='admin-card'>Nenhuma operação pendente.</div>";}catch(e){target.innerHTML=`<div class='admin-card'>Erro ao carregar operações: ${escapeHtml(e.message)}</div>`;}
   };
 
-  async function montarPermissoes(){const {data}=await client.from("permissions").select("*").order("name");$("permissions-create-grid").innerHTML=(data||[]).map(p=>`<label class="permission-item"><input type="checkbox" value="${p.id}" data-new-perm> ${escapeHtml(p.name)}</label>`).join("");}
-  window.criarCargoAdmin=async()=>{
-    const name=$("new-role-name").value.trim(),slug=$("new-role-slug").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,"-"),description=$("new-role-description").value.trim(),ids=[...document.querySelectorAll("[data-new-perm]:checked")].map(x=>Number(x.value));
-    if(!name||!slug){alert("Informe nome e identificador.");return;}
-    const {data:role,error}=await client.from("roles").insert({name,slug,description}).select().single();if(error){alert(error.message);return;}
-    if(ids.length){const {error:e}=await client.from("role_permissions").insert(ids.map(permission_id=>({role_id:role.id,permission_id})));if(e){alert(e.message);return;}}
-    $("new-role-name").value="";$("new-role-slug").value="";$("new-role-description").value="";await carregarCargosAdmin();alert("Cargo criado.");
-  };
-  window.carregarCargosAdmin=async()=>{
-    const {data,error}=await client.from("roles").select("*,role_permissions(permission_id,permissions(id,name,slug))").order("name");
-    if(error){$("admin-roles-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    $("admin-roles-list").innerHTML=(data||[]).map(r=>`<div class="admin-card"><strong>${escapeHtml(r.name)}</strong> <span style="color:#777">(${escapeHtml(r.slug)})</span><div style="color:#aaa">${escapeHtml(r.description||"")}</div><div style="color:#bbb">Permissões: ${(r.role_permissions||[]).map(x=>escapeHtml(x.permissions?.name||"")).join(", ")||"Nenhuma"}</div></div>`).join("");
-  };
-  window.carregarEntregasAdmin=async()=>{
-    const {data,error}=await client.from("delivery_history").select("*").order("completed_at",{ascending:false}).limit(100);
-    if(error){$("admin-deliveries-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    $("admin-deliveries-list").innerHTML=(data||[]).map(d=>`<div class="admin-card"><strong>Entrega #${d.order_id}</strong> • ${escapeHtml(d.client||"")}<div style="color:#bbb">${escapeHtml(d.items_text||"")}</div><div style="color:#bbb">Vendedor: ${escapeHtml(d.seller||"")} • Passaporte: ${escapeHtml(d.seller_id||"")}</div><div>Valor: ${formatBrl(Number(d.value)||0)} • Comissão: ${formatBrl(Number(d.commission)||0)}</div><div style="color:#777;font-size:12px">${new Date(d.completed_at).toLocaleString("pt-BR")}</div></div>`).join("")||`<div class="admin-card">Nenhuma entrega.</div>`;
-  };
-  window.carregarLogsAdmin=async()=>{
-    const {data,error}=await client.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(150);
-    if(error){$("admin-logs-list").innerHTML=`<div class="admin-card">${escapeHtml(error.message)}</div>`;return;}
-    $("admin-logs-list").innerHTML=(data||[]).map(l=>`<div class="admin-card"><strong>${escapeHtml(l.action)}</strong> • ${escapeHtml(l.entity_type)} #${escapeHtml(l.entity_id)}<div style="color:#aaa">${escapeHtml(JSON.stringify(l.details||{}))}</div><div style="color:#777;font-size:12px">${new Date(l.created_at).toLocaleString("pt-BR")}</div></div>`).join("")||`<div class="admin-card">Nenhum log.</div>`;
+  window.aprovarOperacaoAdmin=async(id)=>{if(!confirm("Confirmar aprovação desta operação?"))return;try{await adminRpc("tarjas_admin_approve_order",{p_order_id:Number(id)});await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();await carregarResumoFinanceiroHome();alert("Operação aprovada e estoque baixado.");}catch(e){alert("Erro ao aprovar operação: "+e.message);}};
+  window.recusarOperacaoAdmin=async(id)=>{const reason=prompt("Motivo da recusa (opcional):","");if(reason===null)return;try{await adminRpc("tarjas_admin_reject_order",{p_order_id:Number(id),p_reason:reason});await carregarVendasAdmin();await carregarDashboardAdmin();await recarregarBancoCompartilhado();alert("Operação recusada.");}catch(e){alert("Erro ao recusar operação: "+e.message);}};
+
+  window.carregarEntregasAdmin=async()=>{try{const rows=await adminRpc("tarjas_admin_list_deliveries");$("admin-deliveries-list").innerHTML=rows.length?rows.map(r=>`<div class="admin-card"><strong>${escapeHtml(r.cliente||"—")}</strong> · ${escapeHtml(r.tipo||"—")} · ${formatBrl(r.valor||0)}<div style="color:#aaa">${escapeHtml(r.itens_texto||"")} · ${escapeHtml(r.approved_at?new Date(r.approved_at).toLocaleString("pt-BR"):"")}</div></div>`).join(""):"<div class='admin-card'>Nenhuma entrega finalizada.</div>";}catch(e){$("admin-deliveries-list").innerHTML=`<div class='admin-card'>Erro: ${escapeHtml(e.message)}</div>`;}};
+
+  document.querySelectorAll(".admin-tab").forEach(b=>b.addEventListener("click",async()=>{
+    const tab=b.dataset.adminTab;showAdminSection(tab);
+    if(tab==="dashboard")await carregarDashboardAdmin();
+    else if(tab==="members")await carregarMembrosAdmin();
+    else if(tab==="sales")await carregarVendasAdmin();
+    else if(tab==="stock")await carregarEstoqueAdmin();
+    else if(tab==="roles")await carregarCargosAdmin();
+    else if(tab==="deliveries")await carregarEntregasAdmin();
+  }));
+
+  $("abrir-admin").addEventListener("click",abrirAdmin);
+  $("abrir-admin-main").addEventListener("click",abrirAdmin);
+  $("admin-modal").addEventListener("click",e=>{if(e.target.id==="admin-modal")fecharAdmin();});
+  carregarMembrosSidebar();
+  carregarEquipePaginaInicial();
+  carregarResumoFinanceiroHome();
+  $("home-team-refresh")?.addEventListener("click",carregarEquipePaginaInicial);
+  $("home-finance-refresh")?.addEventListener("click",carregarResumoFinanceiroHome);
+  setInterval(()=>{if(window.authUser&&document.visibilityState==="visible"){touchPresence();carregarEquipePaginaInicial();carregarResumoFinanceiroHome();if($("admin-modal")?.style.display==="flex")carregarMembrosSidebar();}},30000);
+
+  $("abrir-perfil").onclick=async()=>{
+    const p=window.currentProfile;
+    $("profile-content").innerHTML=`<div class="admin-card"><div class="admin-form-grid"><div class="admin-form-field"><label>Nome</label><input id="pf-name" value="${escapeHtml(p.name||"")}"></div><div class="admin-form-field"><label>Idade</label><input id="pf-age" type="number" value="${p.age||""}"></div><div class="admin-form-field"><label>Telefone no jogo</label><input id="pf-phone" value="${escapeHtml(p.game_phone||"")}"></div><div class="admin-form-field"><label>Passaporte</label><input id="pf-passport" value="${escapeHtml(p.passport||"")}" readonly title="O passaporte é usado para o login e não pode ser alterado aqui."></div></div><p style="color:#aaa">E-mail: ${escapeHtml(p.email||window.authUser.email)}</p><p style="color:#aaa">Cargo: <strong style="color:#fc6500">${escapeHtml(p.roles?.name||"Sem cargo")}</strong></p><div class="admin-actions"><button class="admin-btn orange" onclick="salvarMeuPerfil()">Salvar</button></div></div>`;
+    $("profile-modal").style.display="flex";
   };
 
-  refresh();
+  window.fecharPerfil=()=>$("profile-modal").style.display="none";
+  window.salvarMeuPerfil=async()=>{
+    const patch={
+      name:$("pf-name").value.trim(),
+      age:Number($("pf-age").value)||null,
+      game_phone:$("pf-phone").value.trim()
+    };
+    const {error}=await client.from("profiles").update(patch).eq("id",window.authUser.id);
+    if(error){alert(error.message);return;}
+    await refresh();
+    $("profile-modal").style.display="none";
+  };
+
+  /* =========================================================
+     PLAYERS + MISSÕES + RECOMPENSAS
+     ========================================================= */
+  function formatStars(n){ return `${Number(n||0)} ★`; }
+
+  window.abrirDetalheMembro=async function(userId){
+    const modal=$('member-detail-modal'); if(!modal)return;
+    modal.style.display='flex'; $('member-detail-title').textContent='Carregando...'; $('member-detail-content').innerHTML='<div class="mission-empty">Carregando informações...</div>';
+    try{
+      const data=await adminRpc('tarjas_public_member_detail',{p_user_id:userId});
+      if(!data || data.success===false) throw new Error(data?.message||'Não foi possível carregar o perfil.');
+      $('member-detail-title').textContent=data.name||'Perfil do player';
+      const initials=String(data.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+      $('member-detail-content').innerHTML=`
+        <div class="member-detail-hero"><div class="member-detail-avatar">${escapeHtml(initials)}</div><div><div class="member-detail-name">${escapeHtml(data.name||'Sem nome')}</div><div class="member-detail-sub">Passaporte ${escapeHtml(data.passport||'—')} · ${escapeHtml(data.role_name||'Sem cargo')} · <span style="color:${data.online?'#63e38a':'#777'}">${data.online?'Online':'Offline'}</span></div></div></div>
+        <div class="member-detail-grid">
+          <div class="member-detail-stat"><b>${Number(data.sales_count||0)}</b><span>VENDAS</span></div>
+          <div class="member-detail-stat"><b>${Number(data.order_count||0)}</b><span>ENCOMENDAS</span></div>
+          <div class="member-detail-stat"><b>${Number(data.approved_count||0)}</b><span>APROVADAS</span></div>
+          <div class="member-detail-stat"><b>${Number(data.pending_count||0)}</b><span>PENDENTES</span></div>
+          <div class="member-detail-stat"><b>${Number(data.rejected_count||0)}</b><span>RECUSADAS</span></div>
+          <div class="member-detail-stat"><b>${formatBrl(data.approved_sales_value||0)}</b><span>VENDAS APROVADAS</span></div>
+          <div class="member-detail-stat"><b>${formatBrl(data.approved_orders_value||0)}</b><span>ENCOMENDAS APROVADAS</span></div>
+          <div class="member-detail-stat"><b>${Number(data.completed_missions||0)}</b><span>MISSÕES</span></div>
+        </div>
+        <div class="member-detail-commission"><div style="color:#aaa;font-size:11px">COMISSÃO GANHA EM VENDAS APROVADAS</div><strong>${formatBrl(data.sales_commission_total||0)}</strong><div class="member-detail-note">Calculada a partir das vendas aprovadas registradas neste sistema.</div></div>`;
+    }catch(e){ $('member-detail-title').textContent='Perfil do player'; $('member-detail-content').innerHTML=`<div class="mission-empty">Erro ao carregar informações.<br><small>${escapeHtml(e.message||'Erro desconhecido')}</small></div>`; }
+  };
+  window.fecharDetalheMembro=()=>{ const m=$('member-detail-modal'); if(m)m.style.display='none'; };
+
+  window.abrirMissoes=async function(){
+    const m=$('missoes-modal'); if(!m)return; m.style.display='flex'; await carregarMinhasMissoes();
+  };
+  window.fecharMissoes=()=>{ const m=$('missoes-modal'); if(m)m.style.display='none'; };
+
+  async function carregarMinhasMissoes(){
+    try{ const data=await adminRpc('tarjas_mission_my_data'); $('mission-my-stars').textContent=formatStars(data.stars_balance); renderMinhasMissoes(data.missions||[]); }
+    catch(e){ $('my-missions-list').innerHTML=`<div class="mission-empty">Não foi possível carregar suas missões.<br><small>${escapeHtml(e.message||'Erro desconhecido')}</small></div>`; }
+  }
+  function renderMinhasMissoes(rows){
+    $('my-missions-list').innerHTML=rows.length?rows.map(r=>{
+      const action = r.status==='pending' ? `<div class="mission-card-actions"><button class="mission-action-btn primary" onclick="concluirMinhaMissao(${r.id})">Marcar como concluída</button></div>`
+        : r.status==='submitted' ? `<div class="mission-card-meta" style="color:#ffc857;font-weight:900">✓ Enviada para aprovação do administrador. As estrelas ainda não foram liberadas.</div>`
+        : r.status==='completed' ? `<div class="mission-card-meta" style="color:#63e38a;font-weight:900">★ Missão aprovada. ${formatStars(r.stars_awarded)} recebidas.</div>`
+        : `<div class="mission-card-meta" style="color:#ff7777">Missão encerrada.</div>`;
+      return `<div class="mission-card"><div class="mission-card-head"><div class="mission-card-title">${escapeHtml(r.title)}</div><div class="mission-card-stars">${formatStars(r.stars_awarded)}</div></div><div class="mission-card-desc">${escapeHtml(r.description||'')}</div><div class="mission-card-meta">Recebida em ${r.created_at?new Date(r.created_at).toLocaleString('pt-BR'):'—'} · Status: ${escapeHtml(r.status_label||r.status||'')}</div>${action}</div>`;
+    }).join(''):'<div class="mission-empty">Você ainda não recebeu nenhuma missão.</div>';
+  }
+  window.concluirMinhaMissao=async function(id){ if(!confirm('Confirmar que esta missão foi cumprida e enviar para aprovação do administrador?'))return; try{await adminRpc('tarjas_complete_my_mission',{p_player_mission_id:Number(id)});await carregarMinhasMissoes();alert('Missão enviada para aprovação. Você receberá as estrelas após o administrador aprovar.');}catch(e){alert('Não foi possível enviar a missão para aprovação: '+e.message);} };
+
+  async function carregarRankingMissoes(){
+    try{const rows=await adminRpc('tarjas_mission_ranking');$('mission-ranking-list').innerHTML=rows.length?rows.map((r,i)=>`<div class="ranking-row"><div class="ranking-pos">${i+1}</div><div><div class="ranking-name">${escapeHtml(r.name||'Sem nome')}</div><div class="ranking-sub">${escapeHtml(r.role_name||'Sem cargo')} · ${Number(r.completed_missions||0)} missões concluídas</div></div><div class="ranking-stars">${formatStars(r.stars_total)}</div></div>`).join(''):'<div class="mission-empty">Ainda não há pontuação no ranking.</div>';}catch(e){$('mission-ranking-list').innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message)}</div>`;}
+  }
+  async function carregarRecompensas(){
+    try{const data=await adminRpc('tarjas_reward_list');const balance=Number(data.stars_balance||0);$('mission-my-stars').textContent=formatStars(balance);const rows=data.rewards||[];$('mission-rewards-list').innerHTML=rows.length?rows.map(r=>`<div class="reward-card"><div class="reward-head"><div class="reward-name">${escapeHtml(r.name)}</div><div class="reward-cost">${formatStars(r.stars_cost)}</div></div><div class="reward-desc">${escapeHtml(r.description||'')}</div><button class="reward-btn" ${balance<Number(r.stars_cost)?'disabled':''} onclick="resgatarRecompensa(${r.id})">${balance>=Number(r.stars_cost)?'RECOLHER RECOMPENSA':'ESTRELAS INSUFICIENTES'}</button></div>`).join(''):'<div class="mission-empty">Nenhuma recompensa disponível.</div>';}catch(e){$('mission-rewards-list').innerHTML=`<div class="mission-empty">Erro: ${escapeHtml(e.message)}</div>`;}
+  }
+  window.resgatarRecompensa=async function(id){ if(!confirm('Confirmar o resgate desta recompensa?'))return; try{const data=await adminRpc('tarjas_redeem_reward',{p_reward_id:Number(id)});await carregarRecompensas();alert(`Recompensa resgatada com sucesso. Saldo restante: ${formatStars(data.stars_balance)}`);}catch(e){alert('Não foi possível resgatar: '+e.message);} };
+  document.querySelectorAll('.mission-tab').forEach(b=>b.addEventListener('click',async()=>{document.querySelectorAll('.mission-tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.mission-panel').forEach(x=>x.classList.toggle('active',x.id==='mission-panel-'+b.dataset.missionTab));if(b.dataset.missionTab==='mine')await carregarMinhasMissoes();if(b.dataset.missionTab==='ranking')await carregarRankingMissoes();if(b.dataset.missionTab==='rewards')await carregarRecompensas();}));
+
+  function renderHomePlayerList(rows){
+    const target=$('home-member-directory'); if(!target)return; if(!rows?.length){target.innerHTML='<div class="admin-empty">Nenhum player cadastrado.</div>';return;}
+    target.innerHTML=rows.map(r=>{const online=!!r.online;const initials=String(r.name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';return `<div class="home-player-row" onclick="abrirDetalheMembro('${r.id}')"><div class="home-player-avatar">${escapeHtml(initials)}</div><div class="home-player-main"><div class="home-player-name-row"><span class="home-player-dot ${online?'online':''}"></span><span class="home-player-name">${escapeHtml(r.name||'Sem nome')}</span><span class="home-player-status ${online?'online':'offline'}">${online?'ONLINE':'OFFLINE'}</span></div><div class="home-player-role">${escapeHtml(r.role_name||'Sem cargo')} · #${escapeHtml(r.passport||'—')}</div><div class="home-player-stats"><span>Vendas <b>${Number(r.sales_count||0)}</b></span><span>Enc. <b>${Number(r.order_count||0)}</b></span></div></div></div>`}).join('');
+  }
+  async function carregarEquipePaginaInicial(){
+    const target=$('home-member-directory'); if(!target)return; try{target.innerHTML='<div class="home-member-loading">Atualizando players...</div>';await touchPresence();const rows=await adminRpc('tarjas_public_member_directory');renderHomePlayerList(rows);}catch(e){target.innerHTML=`<div class="home-member-loading">Erro: ${escapeHtml(e.message||'Erro desconhecido')}</div>`;}
+  }
+  window.carregarEquipePaginaInicial=carregarEquipePaginaInicial;
+  const homeRefreshBtn = $('home-team-refresh');
+  if(homeRefreshBtn){
+    const freshHomeRefreshBtn = homeRefreshBtn.cloneNode(true);
+    homeRefreshBtn.replaceWith(freshHomeRefreshBtn);
+    freshHomeRefreshBtn.addEventListener('click', window.carregarEquipePaginaInicial);
+  }
+
+  /* Admin missions */
+  window.carregarMissaoAdmin=async function(){
+    try{
+      const [templates,players,assignments,rewardRows]=await Promise.all([adminRpc('tarjas_admin_list_mission_templates'),adminRpc('tarjas_admin_list_players_for_missions'),adminRpc('tarjas_admin_list_player_missions'),adminRpc('tarjas_admin_list_rewards')]);
+      $('mission-player-select').innerHTML=players.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} (#${escapeHtml(p.passport||'—')})</option>`).join('');
+      $('mission-template-select').innerHTML=templates.filter(x=>x.active).map(m=>`<option value="${m.id}">${escapeHtml(m.title)} — ${formatStars(m.stars)}</option>`).join('');
+      $('admin-mission-templates').innerHTML=templates.length?templates.map(m=>`<div class="mission-template-row"><div class="mission-template-info"><div class="mission-template-name">${escapeHtml(m.title)} · ${formatStars(m.stars)}</div><div class="mission-template-meta">${escapeHtml(m.description||'')} · ${m.active?'Ativa':'Inativa'}</div></div><div><button class="mission-admin-danger" onclick="excluirModeloMissao(${m.id})">Excluir</button></div></div>`).join(''):'<div class="mission-empty">Nenhuma missão criada.</div>';
+      const submitted=assignments.filter(a=>a.status==='submitted');
+      $('admin-mission-submissions').innerHTML=submitted.length?submitted.map(a=>`<div class="mission-assignment-row"><div class="mission-assignment-info"><div class="mission-assignment-name">${escapeHtml(a.player_name)} · ${escapeHtml(a.title)}</div><div class="mission-assignment-meta">${formatStars(a.stars_awarded)} · Marcada como concluída ${a.completed_at?new Date(a.completed_at).toLocaleString('pt-BR'):''}</div></div><div class="admin-actions"><button class="admin-btn ok" onclick="aprovarMissaoAdmin(${a.id})">Aprovar e dar estrelas</button><button class="mission-admin-danger" onclick="devolverMissaoAdmin(${a.id})">Devolver</button></div></div>`).join(''):'<div class="mission-empty">Nenhuma missão aguardando aprovação.</div>';
+      $('admin-player-missions').innerHTML=assignments.length?assignments.map(a=>`<div class="mission-assignment-row"><div class="mission-assignment-info"><div class="mission-assignment-name">${escapeHtml(a.player_name)} · ${escapeHtml(a.title)}</div><div class="mission-assignment-meta">${formatStars(a.stars_awarded)} · ${escapeHtml(a.status_label||a.status)}</div></div>${a.status==='pending'?`<button class="mission-admin-danger" onclick="cancelarMissaoAdmin(${a.id})">Cancelar</button>`:''}</div>`).join(''):'<div class="mission-empty">Nenhuma missão atribuída.</div>';
+      $('admin-reward-redemptions').innerHTML=(rewardRows.redemptions||[]).length?(rewardRows.redemptions||[]).map(r=>`<div class="reward-admin-row"><div><div class="mission-template-name">${escapeHtml(r.player_name)} · ${escapeHtml(r.reward_name)}</div><div class="mission-template-meta">${formatStars(r.stars_cost)} · ${r.created_at?new Date(r.created_at).toLocaleString('pt-BR'):''}</div></div></div>`).join(''):'<div class="mission-empty">Nenhum resgate ainda.</div>';
+    }catch(e){alert('Erro ao carregar missões: '+e.message);}
+  };
+  window.criarMissaoAdmin=async function(){try{const title=$('mission-title').value.trim(),description=$('mission-description').value.trim(),stars=Math.max(1,Math.floor(Number($('mission-stars').value)||0));if(!title)throw new Error('Informe o nome da missão.');await adminRpc('tarjas_admin_create_mission_template',{p_title:title,p_description:description,p_stars:stars});$('mission-title').value='';$('mission-description').value='';$('mission-stars').value=1;await carregarMissaoAdmin();alert('Missão criada.');}catch(e){alert('Erro: '+e.message);}};
+  window.atribuirMissaoAdmin=async function(){try{await adminRpc('tarjas_admin_assign_mission',{p_player_id:$('mission-player-select').value,p_mission_id:Number($('mission-template-select').value)});await carregarMissaoAdmin();alert('Missão enviada ao player.');}catch(e){alert('Erro ao enviar missão: '+e.message);}};
+  window.excluirModeloMissao=async function(id){if(!confirm('Excluir este modelo de missão? Missões já atribuídas não serão apagadas.'))return;try{await adminRpc('tarjas_admin_delete_mission_template',{p_mission_id:Number(id)});await carregarMissaoAdmin();}catch(e){alert(e.message)}};
+  window.aprovarMissaoAdmin=async function(id){if(!confirm('Aprovar esta missão e liberar as estrelas para o player?'))return;try{await adminRpc('tarjas_admin_approve_mission',{p_player_mission_id:Number(id)});await carregarMissaoAdmin();await carregarMinhasMissoes();alert('Missão aprovada. As estrelas foram liberadas.');}catch(e){alert('Erro ao aprovar missão: '+e.message);}};
+  window.devolverMissaoAdmin=async function(id){if(!confirm('Devolver esta missão para o player marcar novamente como concluída?'))return;try{await adminRpc('tarjas_admin_return_mission',{p_player_mission_id:Number(id)});await carregarMissaoAdmin();alert('Missão devolvida para o player.');}catch(e){alert('Erro ao devolver missão: '+e.message);}};
+
+  window.cancelarMissaoAdmin=async function(id){if(!confirm('Cancelar esta missão para o player?'))return;try{await adminRpc('tarjas_admin_cancel_player_mission',{p_player_mission_id:Number(id)});await carregarMissaoAdmin();}catch(e){alert(e.message)}};
+  window.criarRecompensaAdmin=async function(){try{const name=$('reward-name').value.trim(),description=$('reward-description').value.trim(),cost=Math.max(1,Math.floor(Number($('reward-cost').value)||0));if(!name)throw new Error('Informe o nome da recompensa.');await adminRpc('tarjas_admin_create_reward',{p_name:name,p_description:description,p_stars_cost:cost});$('reward-name').value='';$('reward-description').value='';$('reward-cost').value=10;await carregarMissaoAdmin();alert('Recompensa criada.');}catch(e){alert('Erro: '+e.message);}};
+
+  /* Hook existing tab handler: mission tab */
+  const _existingAdminTabHandler = window.__tarjasAdminTabHooked;
+  if(!_existingAdminTabHandler){
+    window.__tarjasAdminTabHooked=true;
+    document.querySelectorAll('.admin-tab').forEach(b=>b.addEventListener('click',async()=>{ if(b.dataset.adminTab==='missions') await carregarMissaoAdmin(); }));
+  }
+  carregarResumoFinanceiroHome();
+  document.getElementById('home-finance-refresh')?.addEventListener('click',carregarResumoFinanceiroHome);
+  document.getElementById('abrir-missoes')?.addEventListener('click',window.abrirMissoes);
+  document.getElementById('abrir-missoes-bar')?.addEventListener('click',window.abrirMissoes);
+  document.getElementById('member-detail-modal')?.addEventListener('click',e=>{if(e.target.id==='member-detail-modal')fecharDetalheMembro();});
+  document.getElementById('missoes-modal')?.addEventListener('click',e=>{if(e.target.id==='missoes-modal')fecharMissoes();});
 })();
-
 </script>
