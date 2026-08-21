@@ -1096,6 +1096,7 @@ footer p {
   <div class="user-info">Logado como <strong id="user-name-label">—</strong><span id="user-role-label"></span></div>
   <div class="user-actions">
     <button id="abrir-admin" class="small-action admin" type="button" style="display:none;">ADMIN</button>
+    <button id="abrir-financeiro" class="small-action admin" type="button" style="display:none;">FINANCEIRO</button>
     <button id="abrir-compras-admin" class="small-action admin" type="button" style="display:none;">LISTA DE COMPRAS</button>
     <button id="abrir-farm-admin" class="small-action admin" type="button" style="display:none;">FARM ADMIN</button>
     <div class="user-menu-wrap"><button id="user-menu-toggle" class="user-avatar-button" type="button" aria-label="Abrir opções do usuário">👤</button><div id="user-menu" class="user-menu" style="display:none"><button id="abrir-perfil" type="button">Meu perfil</button><button id="logout-btn" class="logout" type="button">Sair</button></div></div>
@@ -1864,6 +1865,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
       ["manage_members","manage_roles","assign_roles","manage_stock","approve_sales","view_all_orders","view_deliveries","manage_missions","manage_rewards","manage_actions"].some(has);
 
     $("abrir-admin").style.display=admin?"inline-block":"none";
+    $("abrir-financeiro").style.display=(profile.roles?.slug==="owner"||has("view_financial_history"))?"inline-block":"none";
     const ownerOrAdmin=["owner","admin"].includes(profile.roles?.slug);
     $("abrir-compras-admin").style.display=ownerOrAdmin?"inline-block":"none";
     $("abrir-farm-admin").style.display=ownerOrAdmin?"inline-block":"none";
@@ -2200,6 +2202,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     const modal=$('member-detail-modal'); if(!modal)return;
     modal.style.display='flex'; $('member-detail-title').textContent='Carregando...'; $('member-detail-content').innerHTML='<div class="mission-empty">Carregando informações...</div>';
     try{
+      await touchPresence();
       const [data,progresso]=await Promise.all([adminRpc('tarjas_public_member_detail',{p_user_id:userId}),adminRpc('tarjas_player_progress',{p_user_id:userId})]);
       if(!data || data.success===false) throw new Error(data?.message||'Não foi possível carregar o perfil.');
       $('member-detail-title').textContent=data.name||'Perfil do player';
@@ -2207,7 +2210,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
       const avatarUrl=String(data.avatar_url||'').trim();
       const avatar=avatarUrl?`<img src="${escapeHtml(avatarUrl)}" alt="Foto de ${escapeHtml(data.name||'player')}">`:escapeHtml(initials);
       $('member-detail-content').innerHTML=`
-        <div class="member-detail-hero"><div class="member-detail-avatar">${avatar}</div><div><div class="member-detail-name">${escapeHtml(data.name||'Sem nome')}</div><div class="member-detail-sub">Passaporte ${escapeHtml(data.passport||'—')} · ${escapeHtml(data.role_name||'Sem cargo')} · <span style="color:${data.online?'#63e38a':'#777'}">${data.online?'Online':'Offline'}</span></div><div style="margin-top:7px"><span class="level-badge">NÍVEL ${Number(progresso.level||1)} · ${Number(progresso.xp||0)} XP</span></div></div></div>
+        <div class="member-detail-hero"><div class="member-detail-avatar">${avatar}</div><div><div class="member-detail-name">${escapeHtml(data.name||'Sem nome')}</div><div class="member-detail-sub">Passaporte ${escapeHtml(data.passport||'—')} · ${escapeHtml(data.role_name||'Sem cargo')} · <span style="color:${data.online?'#63e38a':'#777'}">${data.online?'Online':'Offline'}</span></div><div class="member-detail-sub">Último acesso: <span style="color:#ddd">${data.last_seen_at?new Date(data.last_seen_at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'Ainda não registrado'}</span></div><div style="margin-top:7px"><span class="level-badge">NÍVEL ${Number(progresso.level||1)} · ${Number(progresso.xp||0)} XP</span></div></div></div>
         <div class="member-detail-grid">
           <div class="member-detail-stat"><b>${Number(data.sales_count||0)}</b><span>VENDAS</span></div>
           <div class="member-detail-stat"><b>${Number(data.order_count||0)}</b><span>ENCOMENDAS</span></div>
@@ -2441,4 +2444,59 @@ if (window.__tarjasWebhookPanel) {
   window.carregarConfiguracoesAdmin = window.__tarjasWebhookPanel.carregar;
   window.salvarConfiguracoesAdmin = window.__tarjasWebhookPanel.salvar;
 }
+</script>
+<script>
+/* Painel financeiro: visível somente para cargos com a permissão financeira. */
+(() => {
+  document.head.insertAdjacentHTML('beforeend', `<style>
+    #financeiro-modal{display:none;position:fixed;inset:0;z-index:65000;background:rgba(0,0,0,.86);padding:18px;box-sizing:border-box;align-items:center;justify-content:center}
+    .financeiro-box{width:min(1180px,96vw);max-height:92vh;overflow:auto;background:#0d0d0d;border:1px solid #fc6500;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 0 35px rgba(252,101,0,.18)}
+    .financeiro-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.financeiro-head h2{margin:4px 0;color:#fff}.financeiro-head p{margin:0;color:#999;font-size:12px;line-height:1.5}.financeiro-close{border:1px solid #555;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .financeiro-tabs{display:flex;gap:7px;margin:16px 0 10px;border-bottom:1px solid #292929;padding-bottom:10px}.financeiro-tab{border:1px solid #3a3a3a;background:#111;color:#aaa;padding:8px 11px;border-radius:8px;cursor:pointer;font-weight:900}.financeiro-tab.active{border-color:#fc6500;background:#fc6500;color:#000}.financeiro-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:16px 0}.financeiro-summary div{border:1px solid #2b2b2b;border-radius:10px;padding:12px;background:#111}.financeiro-summary span{display:block;color:#888;font-size:10px;font-weight:900}.financeiro-summary strong{display:block;color:#fc6500;font-size:21px;margin-top:5px}.financeiro-summary small{display:block;color:#888;margin-top:4px;font-size:10px}
+    .financeiro-filters{display:grid;grid-template-columns:1.2fr repeat(4,minmax(110px,.6fr)) auto;gap:8px;align-items:end;margin:12px 0}.financeiro-filters label{display:block;color:#fc6500;font-weight:800;font-size:10px;margin-bottom:4px}.financeiro-filters input,.financeiro-filters select{width:100%;box-sizing:border-box;background:#050505;border:1px solid #333;color:#fff;border-radius:7px;padding:9px}
+    .financeiro-commissions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.financeiro-commission{flex:1 1 180px;border:1px solid #34301d;border-radius:9px;background:#12110c;padding:10px}.financeiro-commission b{display:block;color:#fff;font-size:12px}.financeiro-commission small{display:block;color:#999;font-size:10px;margin-top:4px}.financeiro-commission strong{display:block;color:#ffc857;margin-top:4px}.financeiro-list{display:grid;gap:8px;margin-top:12px}.financeiro-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;border:1px solid #292929;border-radius:10px;padding:12px;background:#101010}.financeiro-row strong{color:#fff}.financeiro-row p{color:#aaa;font-size:12px;margin:5px 0 0;line-height:1.45}.financeiro-row small{display:block;color:#777;margin-top:5px}.financeiro-value{text-align:right;color:#fc6500;font-size:17px;font-weight:900}.financeiro-value small{font-size:10px}.financeiro-status{display:inline-block;margin-left:6px;padding:3px 6px;border:1px solid #555;border-radius:999px;font-size:9px;font-weight:900}.financeiro-status.approved{color:#7dff9b;border-color:#27713a}.financeiro-status.pending{color:#ffc857;border-color:#8b6b00}.financeiro-status.rejected{color:#ff8585;border-color:#713030}@media(max-width:760px){.financeiro-summary{grid-template-columns:1fr 1fr}.financeiro-filters{grid-template-columns:1fr 1fr}.financeiro-row{grid-template-columns:1fr}.financeiro-value{text-align:left}}
+  </style>`);
+  document.body.insertAdjacentHTML('beforeend', `<div id="financeiro-modal" aria-hidden="true"><div class="financeiro-box"><div class="financeiro-head"><div><span class="hero-kicker">PAINEL RESTRITO</span><h2>FINANCEIRO</h2><p>Faturamento confirmado e histórico completo das operações registradas.</p></div><button id="fechar-financeiro" class="financeiro-close" type="button">Fechar</button></div><div class="financeiro-tabs"><button class="financeiro-tab active" data-financeiro-tab="operacoes" type="button">Operações</button><button class="financeiro-tab" data-financeiro-tab="vendedores" type="button">Informações vendedor</button></div><section id="financeiro-operacoes-view"><div id="financeiro-summary" class="financeiro-summary"></div><div class="financeiro-filters"><div><label>BUSCAR CLIENTE, VENDEDOR OU ITEM</label><input id="financeiro-busca" placeholder="Digite para buscar"></div><div><label>STATUS</label><select id="financeiro-status"><option value="">Todos</option><option value="approved">Aprovadas</option><option value="pending">Pendentes</option><option value="rejected">Recusadas</option></select></div><div><label>TIPO</label><select id="financeiro-tipo"><option value="">Todos</option><option value="venda">Vendas</option><option value="encomenda">Encomendas</option></select></div><div><label>DATA</label><input id="financeiro-de" type="date"></div><button id="financeiro-filtrar" class="admin-btn orange" type="button">Buscar dia</button></div><div id="financeiro-list" class="financeiro-list"><div class="admin-card">Carregando histórico...</div></div></section><section id="financeiro-vendedores-view" style="display:none"><p class="settings-help">Busque qualquer membro cadastrado para ver suas vendas, encomendas e comissão confirmadas. A data é opcional: deixe vazia para consultar o total geral.</p><div class="financeiro-filters"><div><label>BUSCAR VENDEDOR</label><input id="financeiro-vendedor-busca" placeholder="Nome ou passaporte"></div><div><label>DATA</label><input id="financeiro-vendedor-data" type="date"></div><button id="financeiro-vendedor-filtrar" class="admin-btn orange" type="button">Buscar vendedor</button></div><div id="financeiro-vendedores-list" class="financeiro-list"><div class="admin-card">Escolha uma data ou busque um vendedor.</div></div></section></div></div>`);
+
+  const statusLabel={approved:'APROVADA',pending:'PENDENTE',rejected:'RECUSADA'};
+  const money=v=>window.formatBrl?window.formatBrl(v):Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const esc=v=>window.escapeHtml?window.escapeHtml(v||''):String(v||'');
+  const dateTime=v=>v?new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
+  async function carregarFinanceiro(){
+    const list=document.getElementById('financeiro-list');
+    list.innerHTML='<div class="admin-card">Carregando histórico...</div>';
+    try{
+      const dataSelecionada=document.getElementById('financeiro-de').value||null;
+      const data=await window.adminRpc('tarjas_financial_history',{p_status:document.getElementById('financeiro-status').value,p_tipo:document.getElementById('financeiro-tipo').value,p_search:document.getElementById('financeiro-busca').value.trim(),p_date_from:dataSelecionada,p_date_to:dataSelecionada});
+      const totals=data.totals||{},rows=data.records||[];
+      document.getElementById('financeiro-summary').innerHTML=`<div><span>FATURAMENTO CONFIRMADO</span><strong>${money(totals.approved_total)}</strong><small>${Number(totals.approved_count||0)} operação(ões) aprovada(s)</small></div><div><span>VENDAS CONFIRMADAS</span><strong>${money(totals.sales_total)}</strong><small>${Number(totals.sales_count||0)} venda(s)</small></div><div><span>ENCOMENDAS CONFIRMADAS</span><strong>${money(totals.orders_total)}</strong><small>${Number(totals.orders_count||0)} encomenda(s)</small></div><div><span>COMISSÕES CONFIRMADAS</span><strong>${money(totals.commission_total)}</strong><small>Repasse: ${money(totals.transfer_total)}</small></div>`;
+      list.innerHTML=rows.length?rows.map(r=>`<article class="financeiro-row"><div><strong>${esc((r.tipo||'operação').toUpperCase())} · ${esc(r.cliente||'Sem cliente')}</strong><span class="financeiro-status ${esc(r.status)}">${statusLabel[r.status]||esc(r.status)}</span><p>Telefone: ${esc(r.telefone||'—')}<br>Itens: ${esc(r.itens_texto||'Sem itens')}<br>Vendedor: ${esc(r.vendedor||'—')} · Pagamento: ${esc(r.pagamento||'—')}</p><small>Data do pedido: ${esc(r.data_entrega||String(r.cadastrada_em||'').slice(0,10)||'—')} · Horário: ${esc(r.hora_entrega||dateTime(r.cadastrada_em).split(', ')[1]||'—')}<br>Registrada em ${dateTime(r.cadastrada_em)}${r.approved_at?` · Aprovada em ${dateTime(r.approved_at)}`:''}${r.rejected_at?` · Recusada em ${dateTime(r.rejected_at)}`:''}</small></div><div class="financeiro-value">${money(r.valor)}<small>Comissão do vendedor: ${money(r.comissao)}<br>Repasse: ${money(r.repasse)}</small></div></article>`).join(''):'<div class="admin-card">Nenhuma operação encontrada para esta data e filtros.</div>';
+    }catch(error){list.innerHTML=`<div class="admin-card">Erro ao carregar histórico: ${esc(error.message||'erro desconhecido')}</div>`;}
+  }
+  async function carregarVendedoresFinanceiro(){
+    const list=document.getElementById('financeiro-vendedores-list');
+    const busca=document.getElementById('financeiro-vendedor-busca').value.trim();
+    if(!busca){list.innerHTML='<div class="admin-card">Digite o nome ou passaporte de um vendedor para consultar suas informações.</div>';return;}
+    list.innerHTML='<div class="admin-card">Carregando vendedores...</div>';
+    try{
+      const rows=await window.adminRpc('tarjas_financial_sellers',{p_search:busca,p_date:document.getElementById('financeiro-vendedor-data').value||null});
+      list.innerHTML=rows.length?rows.map(r=>`<article class="financeiro-row"><div><strong>${esc(r.name||'Sem nome')}</strong><p>Passaporte: ${esc(r.passport||'—')} · Cargo: ${esc(r.role_name||'Sem cargo')}<br>Operações confirmadas: ${Number(r.operations_count||0)} · Vendas: ${Number(r.sales_count||0)} · Encomendas: ${Number(r.orders_count||0)}</p></div><div class="financeiro-value">${money(r.total_sold)}<small>Vendas: ${money(r.sales_total)}<br>Encomendas: ${money(r.orders_total)}<br>Comissão: ${money(r.commission_total)}</small></div></article>`).join(''):'<div class="admin-card">Nenhum vendedor cadastrado foi encontrado.</div>';
+    }catch(error){list.innerHTML=`<div class="admin-card">Erro ao carregar vendedores: ${esc(error.message||'erro desconhecido')}</div>`;}
+  }
+  function abrirAbaFinanceiro(tab){
+    document.querySelectorAll('[data-financeiro-tab]').forEach(b=>b.classList.toggle('active',b.dataset.financeiroTab===tab));
+    document.getElementById('financeiro-operacoes-view').style.display=tab==='operacoes'?'block':'none';
+    document.getElementById('financeiro-vendedores-view').style.display=tab==='vendedores'?'block':'none';
+    if(tab==='vendedores')carregarVendedoresFinanceiro();
+  }
+  const dataLocalAtual=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
+  document.getElementById('abrir-financeiro').addEventListener('click',async()=>{const hoje=dataLocalAtual();document.getElementById('financeiro-de').value=hoje;document.getElementById('financeiro-vendedor-data').value=hoje;abrirAbaFinanceiro('operacoes');document.getElementById('financeiro-modal').style.display='flex';document.getElementById('financeiro-modal').setAttribute('aria-hidden','false');await carregarFinanceiro();});
+  document.getElementById('fechar-financeiro').addEventListener('click',()=>{document.getElementById('financeiro-modal').style.display='none';document.getElementById('financeiro-modal').setAttribute('aria-hidden','true');});
+  document.getElementById('financeiro-modal').addEventListener('click',e=>{if(e.target.id==='financeiro-modal')document.getElementById('fechar-financeiro').click();});
+  document.getElementById('financeiro-filtrar').addEventListener('click',carregarFinanceiro);
+  document.getElementById('financeiro-busca').addEventListener('keydown',e=>{if(e.key==='Enter')carregarFinanceiro();});
+  document.querySelectorAll('[data-financeiro-tab]').forEach(b=>b.addEventListener('click',()=>abrirAbaFinanceiro(b.dataset.financeiroTab)));
+  document.getElementById('financeiro-vendedor-filtrar').addEventListener('click',carregarVendedoresFinanceiro);
+  document.getElementById('financeiro-vendedor-busca').addEventListener('keydown',e=>{if(e.key==='Enter')carregarVendedoresFinanceiro();});
+})();
 </script>
