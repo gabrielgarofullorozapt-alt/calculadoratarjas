@@ -940,7 +940,7 @@ footer p {
           <button class="admin-tab" data-admin-tab="members">Membros</button>
           <button class="admin-tab" data-admin-tab="sales">Aprovar operações</button>
           <button class="admin-tab" data-admin-tab="stock">Estoque</button>
-          <button class="admin-tab" data-admin-tab="roles">Cargos e permissões</button>
+          <button class="admin-tab" data-admin-tab="roles">Cargos</button>
           <button class="admin-tab" data-admin-tab="deliveries">Entregas aprovadas</button>
           <button class="admin-tab" data-admin-tab="cancelled">Entregas recusadas</button>
           <button class="admin-tab" data-admin-tab="missions">Missões e recompensas</button>
@@ -958,7 +958,7 @@ footer p {
             <div class="admin-stat"><b id="stat-deliveries">0</b><span>Entregas aprovadas</span></div>
             <div class="admin-stat"><b id="stat-rejected">0</b><span>Registros encerrados</span></div>
           </div>
-          <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;line-height:1.6">Use a coluna esquerda para acompanhar quem está online e o volume de vendas e encomendas de cada membro. Em <b style="color:#fc6500">Cargos e permissões</b> você define exatamente o que cada cargo pode fazer.</p></div>
+          <div class="admin-card"><strong>Painel de controle</strong><p style="color:#aaa;line-height:1.6">Use a coluna esquerda para acompanhar quem está online e o volume de vendas e encomendas de cada membro. Em <b style="color:#fc6500">Cargos</b> você consulta os quatro níveis fixos de acesso.</p></div>
           <div id="admin-dashboard-members"></div>
         </section>
         <section id="admin-members" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarMembrosAdmin()">Atualizar</button></div><div id="admin-members-list"></div></section>
@@ -966,17 +966,7 @@ footer p {
         <section id="admin-stock" class="admin-section">
           <div class="admin-card"><strong>Controle de estoque</strong><p style="color:#aaa;line-height:1.5">O estoque só pode ser alterado por quem possui a permissão de estoque.</p><div id="admin-stock-list" class="admin-form-grid"></div><div class="admin-actions"><button class="admin-btn orange" onclick="salvarEstoqueAdmin()">Salvar estoque</button></div></div>
         </section>
-        <section id="admin-roles" class="admin-section">
-          <div class="admin-card">
-            <div style="color:#fff;font-size:16px;font-weight:900">Criar novo cargo</div>
-            <div style="color:#777;font-size:11px;margin-top:3px">Crie um cargo e escolha as permissões abaixo. Cada opção explica exatamente o que ela libera.</div>
-            <div class="admin-form-grid" style="margin-top:12px"><div class="admin-form-field"><label>Nome</label><input id="new-role-name" placeholder="Ex.: Supervisor"></div><div class="admin-form-field"><label>Identificador</label><input id="new-role-slug" placeholder="ex: supervisor"></div></div>
-            <div class="admin-form-field" style="margin-top:10px"><label>Descrição</label><input id="new-role-description" placeholder="Explique para que esse cargo serve"></div>
-            <div id="permissions-create-grid" class="permission-grid-premium"></div>
-            <div class="admin-actions"><button class="admin-btn orange" onclick="criarCargoAdmin()">Criar cargo</button></div>
-          </div>
-          <div id="admin-roles-list"></div>
-        </section>
+        <section id="admin-roles" class="admin-section"><div class="admin-card"><strong>CARGOS FIXOS</strong><p style="color:#aaa;line-height:1.6">Os acessos são definidos pelo cargo e não possuem permissões individuais.</p></div><div id="admin-roles-list"></div></section>
         <section id="admin-deliveries" class="admin-section"><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasAdmin()">Atualizar</button></div><div id="admin-deliveries-list"></div></section>
         <section id="admin-game-cash" class="admin-section"><div class="admin-card"><strong>LAVAGEM</strong><p style="color:#aaa;line-height:1.5">Registros individuais enviados pelos players. Aprove ou recuse; toda recusa deve informar o motivo.</p><div class="admin-actions"><button class="admin-btn orange" type="button" onclick="carregarCaixaJogoAdmin()">Atualizar registros</button></div></div><div id="admin-game-cash-list"></div></section>
         <section id="admin-cancelled" class="admin-section"><div class="admin-card"><strong>ENTREGAS RECUSADAS</strong><p style="color:#aaa;margin:6px 0 0">Operações recusadas pelos administradores. O estoque não é alterado.</p></div><div class="admin-actions"><button class="admin-btn orange" onclick="carregarEntregasRecusadasAdmin()">Atualizar</button></div><div id="admin-cancelled-list"></div></section>
@@ -1569,6 +1559,89 @@ setInterval(async()=>{
 },15000);
 </script>
 <script>
+/* Recursos finais: seleção múltipla de farm, notificações e armas para ações. */
+(() => {
+  const $=id=>document.getElementById(id), esc=v=>window.escapeHtml?window.escapeHtml(v):String(v??'');
+  const role=()=>window.currentProfile?.roles?.slug||'';
+  const canWithdraw=()=>['owner','leader','sub_leader','manager'].includes(role());
+  const farmReward=routes=>({1:1,2:3,3:5})[Number(routes)]||0;
+
+  document.head.insertAdjacentHTML('beforeend',`<style>
+    .farm-member-picker{display:none;margin-top:9px;max-height:330px;overflow:auto;border:1px solid #333;border-radius:11px;padding:8px;background:#090909}.farm-member-picker.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.farm-member-option{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #292929;border-radius:9px;background:#111;color:#eee;cursor:pointer;text-align:left}.farm-member-option.selected{border-color:#fc6500;background:#1b120b}.farm-member-avatar{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#25170d;color:#fc6500;font-weight:900;flex:none}.farm-summary{margin-top:9px;color:#ffc857;font-size:12px;line-height:1.5}.weapon-actions{margin-top:16px;padding-top:14px;border-top:1px solid #292929}.weapon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.weapon-row{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center;padding:9px;border:1px solid #292929;border-radius:9px;background:#111}.weapon-row small{display:block;color:#777}.weapon-row input{width:100%;box-sizing:border-box}.weapon-log{margin-top:9px;padding:11px;border:1px solid #292929;border-radius:9px;background:#101010}.weapon-log small{display:block;color:#888;margin-top:4px}@media(max-width:650px){.farm-member-picker.open,.weapon-grid{grid-template-columns:1fr}}
+  </style>`);
+
+  function setupFarmPicker(){
+    const search=$('farm-player-search'),hidden=$('farm-player'),results=$('farm-player-results'),send=$('farm-create');
+    if(!search||!hidden||!results||!send||$('farm-select-members'))return;
+    search.style.display='none';search.parentElement?.querySelectorAll('.farm-player-search-button').forEach(b=>b.remove());hidden.value='';
+    const label=search.closest('.admin-form-field')?.querySelector('label');if(label)label.textContent='Membros que receberão o farm';
+    results.innerHTML='Nenhum membro selecionado.';
+    const button=document.createElement('button');button.id='farm-select-members';button.type='button';button.className='admin-btn orange';button.textContent='Selecionar Membro';search.insertAdjacentElement('afterend',button);
+    const picker=document.createElement('div');picker.id='farm-member-picker';picker.className='farm-member-picker';results.insertAdjacentElement('afterend',picker);
+    const info=document.createElement('div');info.id='farm-route-info';info.className='farm-summary';picker.insertAdjacentElement('afterend',info);
+    const routes=$('farm-routes'),stars=$('farm-stars');if(stars){stars.readOnly=true;stars.title='A pontuação é definida automaticamente pela quantidade de rotas.';}
+    window.__selectedFarmMembers=new Set();
+    const update=()=>{const n=window.__selectedFarmMembers.size,reward=farmReward(routes.value),currentSend=$('farm-create');hidden.value=[...window.__selectedFarmMembers].join(',');if(currentSend)currentSend.disabled=!n||!reward;results.textContent=n?`${n} membro(s) selecionado(s).`:'Nenhum membro selecionado.';if(stars)stars.value=reward;info.innerHTML=`<b>${routes.value||0} rota(s) = ${reward||'—'} estrela(s)</b><br>Rota completa: do blip 1 ao blip 20, totalizando 100 materiais de cada.`;};
+    const render=players=>{window.__farmPlayers=Array.isArray(players)?players:[];picker.innerHTML=window.__farmPlayers.map(p=>{const initials=String(p.name||'?').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();return `<button type="button" class="farm-member-option ${window.__selectedFarmMembers.has(String(p.id))?'selected':''}" data-member="${esc(p.id)}"><span class="farm-member-avatar">${esc(initials)}</span><span><b>${esc(p.name||'Sem nome')}</b><small>Passaporte #${esc(p.passport||'—')}</small></span></button>`;}).join('')||'<div class="mission-empty">Nenhum membro registrado.</div>';picker.querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>{const id=String(b.dataset.member);window.__selectedFarmMembers.has(id)?window.__selectedFarmMembers.delete(id):window.__selectedFarmMembers.add(id);b.classList.toggle('selected');update();});};
+    button.onclick=async()=>{picker.classList.toggle('open');if(!picker.classList.contains('open')||picker.dataset.loaded)return;picker.innerHTML='<div class="mission-empty">Carregando membros...</div>';try{const p=await window.adminRpc('tarjas_admin_farm_players');render(p);picker.dataset.loaded='1';}catch(e){picker.innerHTML=`<div class="mission-empty">Erro: ${esc(e.message)}</div>`;}};
+    routes.max='3';routes.oninput=()=>{if(Number(routes.value)>3)routes.value=3;update();};routes.value='1';update();
+    const clean=send.cloneNode(true);send.replaceWith(clean);clean.disabled=true;update();
+    window.enviarFarmSelecionado=async event=>{event?.preventDefault();const button=$('farm-create'),ids=[...window.__selectedFarmMembers],r=Number(routes.value),reward=farmReward(r),type=$('farm-type').value;if(!ids.length)return alert('Selecione pelo menos um membro.');if(!reward)return alert('Escolha entre 1 e 3 rotas.');if(!confirm(`Enviar ${r} rota(s), valendo ${reward} estrela(s), para ${ids.length} membro(s)?`))return;button.disabled=true;button.textContent='ENVIANDO...';try{let sent=0;for(const playerId of ids){const out=await window.adminRpc('tarjas_admin_farm_create',{p_player_id:playerId,p_type:type,p_routes:r,p_stars:reward});if(out?.success===false)throw new Error(out.message||`Não foi possível enviar para o membro ${sent+1}.`);sent++;}window.__selectedFarmMembers.clear();picker.dataset.loaded='';picker.classList.remove('open');update();await window.carregarFarmAdminPorStatus?.('active');await window.refreshTarjasNotifications?.();alert(`Farm enviado com sucesso para ${sent} membro(s).`);}catch(e){alert('Não foi possível enviar o farm: '+(e.message||e));update();}finally{button.textContent='ENVIAR FARM';if(window.__selectedFarmMembers.size)button.disabled=false;}};
+    clean.setAttribute('onclick','window.enviarFarmSelecionado(event)');
+    if(!window.__farmSendSafety){window.__farmSendSafety=true;document.addEventListener('click',event=>{const button=event.target.closest?.('#farm-create');if(!button)return;event.preventDefault();event.stopImmediatePropagation();window.enviarFarmSelecionado?.(event);},true);}
+  }
+
+  async function addWeaponControls(){
+    const box=$('estoque-modal')?.querySelector('.gestao-caixa');if(!box||!canWithdraw()||$('weapon-withdraw-launch'))return;
+    const launch=document.createElement('button');launch.id='weapon-withdraw-launch';launch.className='gestao-salvar';launch.type='button';launch.textContent='ARMAS PARA MEMBROS';box.appendChild(launch);
+    const area=document.createElement('section');area.id='weapon-withdraw-area';area.className='weapon-actions';area.style.display='none';box.appendChild(area);
+    launch.onclick=()=>{
+      const opening=area.style.display==='none';area.style.display=opening?'block':'none';
+      if(!opening)return;
+      const weapons=produtos.filter(p=>p.categoria!=='DROGAS').map(p=>({product_name:p.nome,quantity:Math.max(0,Number(estoque[p.nome]||0))}));
+      area.innerHTML=`<h3 style="color:#fc6500">ARMAS PARA MEMBROS</h3><p class="settings-help">Selecione quais armas e quantas unidades serão usadas na ação. A retirada diminui somente o estoque e não entra como lucro ou prejuízo.</p><div class="weapon-grid">${weapons.map(x=>`<label class="weapon-row"><span><b>${esc(x.product_name)}</b><small>${x.quantity} disponível(is)</small></span><input type="number" min="0" max="${x.quantity}" value="0" data-weapon="${esc(x.product_name)}" ${x.quantity<1?'disabled':''}></label>`).join('')}</div><button id="weapon-withdraw-save" class="gestao-salvar" type="button">CONFIRMAR RETIRADA</button>`;
+      area.scrollIntoView({behavior:'smooth',block:'nearest'});
+      $('weapon-withdraw-save').onclick=async()=>{
+        const items=[...area.querySelectorAll('[data-weapon]')].map(i=>({product_name:i.dataset.weapon,quantity:Math.floor(Number(i.value)||0)})).filter(i=>i.quantity>0);
+        if(!items.length)return alert('Selecione ao menos uma arma e informe a quantidade.');
+        const invalid=items.find(i=>i.quantity>Number(estoque[i.product_name]||0));if(invalid)return alert(`Estoque insuficiente para ${invalid.product_name}.`);
+        if(!confirm('Confirmar esta retirada do estoque para uma ação?'))return;
+        const save=$('weapon-withdraw-save');save.disabled=true;save.textContent='REGISTRANDO...';
+        try{const out=await window.adminRpc('tarjas_action_weapon_withdraw',{p_items:items});if(out?.success===false)throw new Error(out.message);items.forEach(i=>estoque[i.product_name]=Math.max(0,Number(estoque[i.product_name]||0)-i.quantity));renderizarEstoque();await window.refreshTarjasNotifications?.();alert('Retirada registrada. O estoque foi reduzido sem impacto financeiro.');area.remove();launch.remove();await addWeaponControls();}catch(e){save.disabled=false;save.textContent='CONFIRMAR RETIRADA';alert('Não foi possível registrar a retirada: '+(e.message||e));}
+      };
+    };
+  }
+
+  function setupWeaponAdmin(){const tabs=$('admin-actions-tab')?.parentElement;if(!tabs||$('admin-weapon-withdrawals-tab'))return;const tab=document.createElement('button');tab.id='admin-weapon-withdrawals-tab';tab.className='admin-tab';tab.dataset.adminTab='weapon-withdrawals';tab.textContent='Retiradas para ações';tabs.appendChild(tab);const host=$('admin-actions')?.parentElement;if(!host)return;const section=document.createElement('section');section.id='admin-weapon-withdrawals';section.className='admin-section';section.innerHTML='<div class="admin-card"><strong>RETIRADAS DE ARMAS PARA AÇÕES</strong><p style="color:#aaa">Histórico sem impacto no lucro ou prejuízo da empresa.</p></div><div id="weapon-withdrawal-log"></div>';host.appendChild(section);tab.onclick=async()=>{localStorage.setItem('tarjas_notice_admin_weapons',String(Date.now()));document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));section.classList.add('active');tab.classList.add('active');const out=$('weapon-withdrawal-log');out.innerHTML='<div class="admin-card">Carregando...</div>';try{const rows=await window.adminRpc('tarjas_action_weapon_withdrawal_list');out.innerHTML=rows.length?rows.map(r=>`<div class="weapon-log"><b>${esc(r.manager_name)} · #${esc(r.manager_passport||'—')}</b><small>${new Date(r.created_at).toLocaleString('pt-BR')} · ${esc(r.items_text)}</small></div>`).join(''):'<div class="admin-card">Nenhuma retirada registrada.</div>';}catch(e){out.innerHTML=`<div class="admin-card">Erro: ${esc(e.message)}</div>`;}window.refreshTarjasNotifications?.();};}
+
+  const oldOpen=window.abrirEstoque;window.abrirEstoque=async()=>{await oldOpen();await addWeaponControls();};
+  function setupWeaponWebhook(){const tab=$('admin-settings-tab');if(!tab)return;tab.addEventListener('click',()=>setTimeout(async()=>{const target=$('admin-settings-content');if(!target||$('cfg-hook-retiradas-armas'))return;try{const d=await window.adminRpc('tarjas_admin_get_settings'),hooks=d.webhooks||{};target.insertAdjacentHTML('beforeend',`<section class="webhook-group" style="--hook-color:#fc6500;margin-top:16px"><h3 style="color:#fc6500">RETIRADAS DE ARMAS PARA AÇÕES</h3><p class="settings-help">Envia responsável, armas, quantidades, data e horário.</p><div class="admin-form-field"><label>Webhook de retiradas de armas</label><input id="cfg-hook-retiradas-armas" type="url" value="${esc(hooks.retiradas_armas||'')}" placeholder="https://discord.com/api/webhooks/..."></div><button id="save-hook-retiradas-armas" class="admin-btn orange" type="button">Salvar webhook</button></section>`);$('save-hook-retiradas-armas').onclick=async()=>{try{const current=await window.adminRpc('tarjas_admin_get_settings'),webhooks={...(current.webhooks||{}),retiradas_armas:$('cfg-hook-retiradas-armas').value.trim()};const out=await window.adminRpc('tarjas_admin_save_settings',{p_webhooks:webhooks,p_xp:current.xp||{},p_level_rules:current.level_rules||{xp_per_level:100,reward_every_levels:10,stars_per_reward:5}});if(out?.success===false)throw new Error(out.message);alert('Webhook de retiradas salvo.');}catch(e){alert(e.message);}};}catch(e){console.warn('Webhook de retiradas:',e);}},500));}
+  setTimeout(()=>{
+    setupFarmPicker();setupWeaponAdmin();setupWeaponWebhook();
+    const stockButton=$('abrir-estoque');
+    if(stockButton)stockButton.onclick=()=>window.abrirEstoque();
+  },0);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)window.refreshTarjasNotifications?.();});
+})();
+</script>
+<script>
+/* Modelo final de cargos: quatro níveis fixos, sem permissões individuais. */
+(() => {
+ const $=id=>document.getElementById(id),esc=v=>window.escapeHtml?window.escapeHtml(v):String(v??'');
+ const fixed=[
+  {slug:'member',name:'Membro',badge:'ACESSO BÁSICO',description:'Acessa as funções básicas destinadas aos membros do site.'},
+  {slug:'manager',name:'Gerente',badge:'ACESSO OPERACIONAL COMPLETO',description:'Acessa toda a administração operacional, sem o Controle do dono.'},
+  {slug:'sub_leader',name:'Sublíder',badge:'ACESSO OPERACIONAL COMPLETO',description:'Acessa toda a administração operacional, sem o Controle do dono.'},
+  {slug:'leader',name:'Líder',badge:'ACESSO TOTAL',description:'Acessa todas as áreas, configurações e o Controle do dono.'}
+ ];
+ setTimeout(()=>{
+  window.carregarCargosAdmin=async()=>{const target=$('admin-roles-list');if(!target)return;target.innerHTML=fixed.map(r=>`<div class="role-card"><div class="role-card-head"><div class="role-title-wrap"><div class="role-title">${esc(r.name)}</div><div class="role-description">${esc(r.description)}</div></div><div class="role-actions"><span class="admin-badge ${r.slug==='leader'?'approved':'pending'}">${esc(r.badge)}</span></div></div></div>`).join('');};
+  const oldMembers=window.carregarMembrosAdmin;
+  if(oldMembers)window.carregarMembrosAdmin=async()=>{await oldMembers();document.querySelectorAll('[id^="member-role-"]').forEach(select=>{const order={leader:0,sub_leader:1,manager:2,member:3},slug=o=>String(o.textContent||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'_').replace('sublider','sub_leader');[...select.options].sort((a,b)=>(order[slug(a)]??9)-(order[slug(b)]??9)).forEach(o=>select.appendChild(o));});};
+ },0);
+})();
+</script>
+<script>
 /* WEBHOOKS TARJAS — painel único e separado por evento. */
 (() => {
   const webhookGroups = [
@@ -1670,13 +1743,47 @@ setInterval(async()=>{
 /* Estados das notificações: vermelho = novo; amarelo = ainda pendente. */
 (() => {
   document.head.insertAdjacentHTML('beforeend','<style>.notice-target{position:relative!important}.notice-badge{position:absolute;top:-8px;right:-8px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;color:#fff;font-size:10px;line-height:17px;text-align:center;font-weight:900;box-shadow:0 0 0 2px #0b0b0b;z-index:3}.notice-badge.new{background:#e53935}.notice-badge.pending{background:#d99b00;color:#130d00}.admin-tab .notice-badge{top:-7px;right:-7px}</style>');
-  const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]']};
+  const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]'],admin_purchases:['abrir-compras-admin'],admin_weapons:['admin-weapon-withdrawals-tab']};
   function elementsFor(key){return (targets[key]||[]).flatMap(x=>x.startsWith('[')?[...document.querySelectorAll(x)]:[document.getElementById(x)]).filter(Boolean);}
-  function showBadge(key,newCount,pendingCount){elementsFor(key).forEach(el=>{el.classList.add('notice-target');let badge=el.querySelector(':scope > .notice-badge');const isNew=Number(newCount)>0,count=isNew?Number(newCount):Number(pendingCount);if(count>0){if(!badge){badge=document.createElement('span');badge.className='notice-badge';el.appendChild(badge);}badge.className='notice-badge '+(isNew?'new':'pending');badge.textContent=count>99?'99+':String(count);badge.title=isNew?'Novas notificações':'Itens ainda pendentes';}else badge?.remove();});}
-  async function refreshNotices(){if(!window.authUser||!window.adminRpc)return;try{const data=await window.adminRpc('tarjas_notification_counts'),reviews=await window.adminRpc('tarjas_action_reviews_list').catch(()=>[]),pendingActions=new Set((reviews||[]).filter(r=>r.status==='pending').map(r=>Number(r.action_id))).size;data.actions_new=0;data.actions_pending=pendingActions;data.admin_actions_new=0;data.admin_actions_pending=pendingActions;Object.keys(targets).filter(k=>k!=='admin').forEach(k=>showBadge(k,data[k+'_new'],data[k+'_pending']));const adminKeys=['admin_actions','admin_orders','admin_wash','admin_farm','admin_deliveries','admin_missions'];showBadge('admin',adminKeys.reduce((n,k)=>n+Number(data[k+'_new']||0),0),adminKeys.reduce((n,k)=>n+Number(data[k+'_pending']||0),0));}catch(e){console.warn('Notificações indisponíveis',e);}}
-  async function markNotice(key){try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});await refreshNotices();}catch(_){} }
+  function showBadge(key,newCount,pendingCount){elementsFor(key).forEach(el=>{el.classList.add('notice-target');let badge=el.querySelector(':scope > .notice-badge');const isNew=Number(newCount)>0,count=isNew?Number(newCount):Number(pendingCount);if(count>0){if(!badge){badge=document.createElement('span');badge.className='notice-badge';el.appendChild(badge);}badge.className='notice-badge '+(isNew?'new':'pending');badge.textContent=count>99?'+99':`+${count}`;badge.title=isNew?`${count} nova(s) notificação(ões)`: `${count} item(ns) ainda pendente(s)`;}else badge?.remove();});}
+  async function refreshNotices(){
+    if(!window.authUser||!window.adminRpc)return;
+    const safe=(name,params={})=>window.adminRpc(name,params).catch(()=>[]),data=await window.adminRpc('tarjas_notification_counts').catch(()=>({}));
+    const role=window.currentProfile?.roles?.slug||'',isAdmin=['leader','owner','sub_leader','manager'].includes(role);
+    const [actions,farms,reviews,adminFarms,orders,washes,missions,purchases,weapons,myMissions,myWash]=await Promise.all([
+      safe('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}),safe('tarjas_farm_my_list'),
+      isAdmin?safe('tarjas_action_reviews_list'):[],isAdmin?safe('tarjas_admin_farm_review_list',{p_status:'pending'}):[],
+      isAdmin?safe('tarjas_admin_list_orders',{p_status:'pending'}):[],isAdmin?safe('tarjas_admin_game_cash_list'):[],
+      isAdmin?safe('tarjas_admin_list_player_missions'):[],isAdmin?safe('tarjas_purchase_list'):[],
+      isAdmin?safe('tarjas_action_weapon_withdrawal_list'):[],safe('tarjas_mission_my_data'),safe('tarjas_game_cash_my_records')
+    ]);
+    const setFallback=(key,count)=>{data[key+'_pending']=Math.max(Number(data[key+'_pending']||0),Number(count||0));if(data[key+'_new']==null)data[key+'_new']=Number(count||0);};
+    const arr=value=>Array.isArray(value)?value:[];
+    setFallback('actions',arr(actions).filter(x=>x.result==='pending'&&!x.joined).length);
+    setFallback('farm',arr(farms).filter(x=>['assigned','accepted'].includes(x.status)).length);
+    setFallback('missions',arr(myMissions?.missions).filter(x=>['assigned','active','returned'].includes(x.status)).length);
+    setFallback('wash',arr(myWash).filter(x=>['approved','rejected'].includes(x.status)).length);
+    const today=new Date().toISOString().slice(0,10);setFallback('deliveries',(window.encomendas||[]).filter(x=>x.tipo==='encomenda'&&x.dataEntrega===today&&x.status!=='rejected').length);
+    setFallback('admin_actions',arr(reviews).filter(x=>x.status==='pending').length);
+    setFallback('admin_farm',arr(adminFarms).length);
+    setFallback('admin_orders',arr(orders).length);
+    setFallback('admin_wash',arr(washes).filter(x=>x.status==='pending').length);
+    setFallback('admin_missions',arr(missions).filter(x=>['submitted','pending_review'].includes(x.status)).length);
+    setFallback('admin_purchases',arr(purchases).filter(x=>!x.resolved).length);
+    const weaponRead=Number(localStorage.getItem('tarjas_notice_admin_weapons')||0);setFallback('admin_weapons',arr(weapons).filter(x=>new Date(x.created_at).getTime()>weaponRead).length);
+    window.__tarjasNoticeCounts=window.__tarjasNoticeCounts||{};
+    Object.keys(targets).filter(key=>key!=='admin').forEach(key=>{
+      const raw=Math.max(Number(data[key+'_new']||0),Number(data[key+'_pending']||0)),stored=localStorage.getItem('tarjas_notice_dismissed_'+key);
+      window.__tarjasNoticeCounts[key]=raw;
+      if(stored!==null){const dismissed=Number(stored)||0;if(raw<=dismissed){data[key+'_new']=0;data[key+'_pending']=0;if(raw<dismissed)localStorage.setItem('tarjas_notice_dismissed_'+key,String(raw));}else{data[key+'_new']=raw-dismissed;data[key+'_pending']=raw-dismissed;}}
+    });
+    Object.keys(targets).filter(k=>k!=='admin').forEach(k=>showBadge(k,data[k+'_new'],data[k+'_pending']));
+    const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions','admin_weapons'];
+    showBadge('admin',adminKeys.reduce((n,k)=>n+Number(data[k+'_new']||0),0),adminKeys.reduce((n,k)=>n+Number(data[k+'_pending']||0),0));
+  }
+  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem('tarjas_notice_dismissed_'+key,String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions','admin_weapons'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem('tarjas_notice_dismissed_'+k)||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
   window.addEventListener('DOMContentLoaded',()=>Object.entries(targets).forEach(([key])=>elementsFor(key).forEach(el=>el.addEventListener('click',()=>{if(key!=='admin')markNotice(key)}))));
-  setInterval(refreshNotices,30000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
+  setInterval(refreshNotices,15000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
 })();
 </script>
 <style>
@@ -2026,6 +2133,7 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     if(isLeader) carregarWebhooksConfigurados();
 
     if(window.iniciarBancoDepoisDoLogin) window.iniciarBancoDepoisDoLogin();
+    setTimeout(()=>window.refreshTarjasNotifications?.(),300);
     // Ações são consultadas somente ao abrir a aba; sem avisos automáticos.
   }
 
@@ -2103,7 +2211,9 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     const target=$("admin-member-sidebar");
     if(!target)return;
     if(!rows?.length){target.innerHTML='<div class="admin-empty">Nenhum membro cadastrado.</div>';return;}
-    target.innerHTML=rows.map(r=>{
+    const roleOrder={leader:0,owner:0,sub_leader:1,manager:2,member:3};
+    const sorted=[...rows].sort((a,b)=>(roleOrder[a.role_slug]??roleOrder[String(a.role_name||'').toLowerCase().replace(/\s+/g,'_')]??9)-(roleOrder[b.role_slug]??roleOrder[String(b.role_name||'').toLowerCase().replace(/\s+/g,'_')]??9)||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+    target.innerHTML=sorted.map(r=>{
       const online=!!r.online;
       return `<div class="admin-member" title="Abrir informações de ${escapeHtml(r.name||"membro")}" onclick="abrirMembroNoPainel('${r.id}')">
         <div class="member-avatar">${escapeHtml(initials(r.name))}</div>
@@ -2688,6 +2798,8 @@ if (window.__tarjasWebhookPanel) {
 <script>
 /* Busca de membro para envio de farm: aceita nome ou passaporte. */
 (() => {
+  /* Desativado: este inicializador antigo clonava o botão e removia o envio múltiplo. */
+  return;
   document.head.insertAdjacentHTML('beforeend','<style>.farm-player-results{min-height:22px;margin-top:6px;color:#888;font-size:11px}.farm-player-search-button{margin-top:6px;width:100%}.farm-player-choice{display:block;width:100%;text-align:left;margin-top:4px;padding:8px 9px;border:1px solid #39301f;border-radius:7px;background:#111;color:#eee;cursor:pointer;font:inherit;font-size:11px}.farm-player-choice:hover,.farm-player-choice.selected{border-color:#fc6500;background:#1b120b}.farm-player-choice b{color:#fff}.farm-player-choice small{color:#fc6500;margin-left:5px}</style>');
   const search=document.getElementById('farm-player-search'),selected=document.getElementById('farm-player'),results=document.getElementById('farm-player-results'),originalSend=document.getElementById('farm-create'),send=originalSend.cloneNode(true);originalSend.replaceWith(send);
   const searchButton=document.createElement('button');searchButton.type='button';searchButton.className='admin-btn orange farm-player-search-button';searchButton.textContent='Buscar membro';search.insertAdjacentElement('afterend',searchButton);
@@ -2736,7 +2848,7 @@ if (window.__tarjasWebhookPanel) {
   setInterval(()=>{const today=new Date().toISOString().slice(0,10),count=(window.encomendas||encomendas||[]).filter(e=>e.tipo==='encomenda'&&e.dataEntrega===today&&e.status!=='rejected').length,badge=$('abrir-entregas-hoje')?.querySelector('.notice-badge');if(badge){if(count)badge.textContent=String(count);else badge.remove();}},1500);
   const setupMonthlyFinance=()=>{const box=document.querySelector('#financeiro-modal .financeiro-box'),tabs=box?.querySelector('.financeiro-tabs');if(!box||!tabs)return;document.getElementById('financeiro-mensal')?.remove();if(!document.getElementById('financeiro-mensal-principal'))tabs.insertAdjacentHTML('beforebegin',`<section id="financeiro-mensal-principal" style="margin-top:16px;padding:18px;border:1px solid #fc6500;border-radius:14px;background:linear-gradient(135deg,#17100b,#0d0d0d)"><div style="display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><span class="hero-kicker">FATURAMENTO PRINCIPAL</span><h3 style="margin:5px 0;color:#fff">FATURAMENTO MENSAL</h3></div><div class="admin-actions"><input id="financeiro-mes-principal" type="month" value="${new Date().toISOString().slice(0,7)}"><button id="financeiro-mes-principal-buscar" class="admin-btn orange" type="button">Buscar mês</button></div></div><div id="financeiro-mes-principal-total" style="margin-top:14px;color:#888">Carregando mês atual...</div></section>`);const load=async()=>{const value=$('financeiro-mes-principal')?.value;if(!value)return;const target=$('financeiro-mes-principal-total');try{const d=await rpc('tarjas_financial_monthly',{p_month:value+'-01'});target.innerHTML=`<div class="financeiro-summary" style="margin:0"><div style="grid-column:span 2;border-color:#fc6500"><span>TOTAL FATURADO NO MÊS</span><strong style="font-size:30px">${formatBrl(d.total)}</strong><small>${Number(d.count||0)} operações aprovadas</small></div><div><span>COMISSÕES</span><strong>${formatBrl(d.commission)}</strong></div><div><span>VALOR APÓS COMISSÕES</span><strong>${formatBrl(d.transfer)}</strong></div></div>`;}catch(e){target.textContent='Erro ao carregar faturamento mensal: '+e.message;}};$('financeiro-mes-principal-buscar').onclick=load;load();};
   setupMonthlyFinance();$('abrir-financeiro')?.addEventListener('click',()=>setTimeout(setupMonthlyFinance,50));
-  const purchaseAdd=$('purchase-add');if(purchaseAdd){const cleanPurchaseAdd=purchaseAdd.cloneNode(true);purchaseAdd.replaceWith(cleanPurchaseAdd);cleanPurchaseAdd.addEventListener('click',async()=>{const item=$('purchase-item').value.trim(),quantity=$('purchase-quantity').value.trim();if(!item)return alert('Informe o item necessário.');cleanPurchaseAdd.disabled=true;try{await rpc('tarjas_admin_purchase_add',{p_item:item,p_quantity:quantity});await rpc('tarjas_purchase_discord_added',{p_item:item,p_quantity:quantity}).catch(()=>{});$('purchase-item').value='';$('purchase-quantity').value='';await window.carregarCompras();}catch(e){alert('Não foi possível adicionar o item: '+e.message);}finally{cleanPurchaseAdd.disabled=false;}});}
+  const purchaseAdd=$('purchase-add');if(purchaseAdd){const cleanPurchaseAdd=purchaseAdd.cloneNode(true);purchaseAdd.replaceWith(cleanPurchaseAdd);cleanPurchaseAdd.addEventListener('click',async()=>{const item=$('purchase-item').value.trim(),quantity=$('purchase-quantity').value.trim();if(!item)return alert('Informe o item necessário.');cleanPurchaseAdd.disabled=true;try{await rpc('tarjas_admin_purchase_add',{p_item:item,p_quantity:quantity});await rpc('tarjas_purchase_discord_added',{p_item:item,p_quantity:quantity}).catch(()=>{});$('purchase-item').value='';$('purchase-quantity').value='';await window.carregarCompras();await window.refreshTarjasNotifications?.();}catch(e){alert('Não foi possível adicionar o item: '+e.message);}finally{cleanPurchaseAdd.disabled=false;}});}
   const currentMonth=new Date().toISOString().slice(0,7);if($('home-my-month'))$('home-my-month').value=currentMonth;
   const loadMyMonth=async()=>{const month=$('home-my-month')?.value||currentMonth;try{const d=await rpc('tarjas_home_individual_month',{p_month:month+'-01'});$('home-my-month-commission').textContent=formatBrl(d.commission);$('home-my-month-label').textContent=`${month.split('-').reverse().join('/')} · ${Number(d.sales_count||0)} vendas · ${Number(d.orders_count||0)} encomendas`;}catch(e){console.warn('Comissão mensal:',e.message);}};
   const loadFactionPeriods=async()=>{const now=new Date().toISOString(),day=now.slice(0,10),month=now.slice(0,7)+'-01';try{const d=await rpc('tarjas_faction_period_summary',{p_day:day,p_month:month});$('home-faction-day-total').textContent=formatBrl(d.day_total);$('home-faction-day-count').textContent=`${Number(d.day_count||0)} operações aprovadas`;$('home-faction-month-total').textContent=formatBrl(d.month_total);$('home-faction-month-count').textContent=`${Number(d.month_count||0)} operações aprovadas`;$('home-faction-sales-day').textContent=Number(d.day_sales||0);$('home-faction-sales-month').textContent=Number(d.month_sales||0);$('home-faction-orders-day').textContent=Number(d.day_orders||0);$('home-faction-orders-month').textContent=Number(d.month_orders||0);}catch(e){console.warn('Faturamento geral:',e.message);}};
