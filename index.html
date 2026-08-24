@@ -944,9 +944,6 @@ footer p {
           <button class="admin-tab" data-admin-tab="deliveries">Entregas aprovadas</button>
           <button class="admin-tab" data-admin-tab="cancelled">Entregas recusadas</button>
           <button class="admin-tab" data-admin-tab="missions">Missões e recompensas</button>
-          <button id="admin-actions-tab" class="admin-tab" data-admin-tab="actions" style="display:none">Aprovar ações</button>
-          <button id="admin-action-config-tab" class="admin-tab" data-admin-tab="action-config" style="display:none">Configurar ações</button>
-          <button id="admin-actions-archived-tab" class="admin-tab" data-admin-tab="actions-archived" style="display:none">Ações arquivadas</button>
           <button id="admin-hierarchy-tab" class="admin-tab" data-admin-tab="hierarchy" style="display:none">Hierarquia visual</button>
           <button class="admin-tab" data-admin-tab="game-cash">Lavagem</button>
           <button id="admin-settings-tab" class="admin-tab" data-admin-tab="settings" style="display:none">Webhooks e configurações</button>
@@ -1025,26 +1022,15 @@ footer p {
             </div>
           </div>
         </section>
-        <section id="admin-actions" class="admin-section">
-          <div class="admin-card">
-            <div class="mission-admin-title">APROVAR RESULTADOS DE AÇÕES</div>
-            <div class="mission-admin-sub">Aqui aparecem somente vitórias e derrotas enviadas pela equipe e que ainda aguardam sua análise.</div>
-            <button class="admin-btn orange" type="button" onclick="carregarAcoesAdmin()" style="margin-top:12px">Atualizar solicitações</button>
-          </div>
-          <div id="admin-actions-list"></div>
-        </section>
-        <section id="admin-action-config" class="admin-section"><div class="admin-card" id="action-template-admin"><div class="mission-admin-title">CONFIGURAR AÇÕES PRONTAS</div><div class="mission-admin-sub">Defina tudo uma vez. Ao criar, o gerente apenas escolherá a ação.</div><div class="admin-form-grid" style="margin-top:10px"><div class="admin-form-field"><label>Nome da ação</label><input id="action-template-name"></div><div class="admin-form-field"><label>Cartão/item para puxar</label><input id="action-template-item"></div><div class="admin-form-field"><label>Mínimo de pessoas</label><input id="action-template-min" type="number" min="1" value="1"></div><div class="admin-form-field"><label>Máximo de pessoas</label><input id="action-template-max" type="number" min="1" value="4"></div><div class="admin-form-field"><label>Estrelas por participante</label><input id="action-template-stars" type="number" min="0" value="0"></div></div><button class="admin-btn orange" type="button" onclick="salvarModeloAcao()">Criar ação pronta</button><div id="action-template-admin-list"></div></div></section>
-        <section id="admin-actions-archived" class="admin-section"><div class="admin-card"><strong>AÇÕES ARQUIVADAS</strong><p style="color:#aaa">Ações finalizadas como ganhas ou perdidas.</p></div><div id="admin-actions-archived-list"></div></section>
         <section id="admin-hierarchy" class="admin-section"><div class="admin-card"><div class="mission-admin-title">Configurar hierarquia visual</div><div class="mission-admin-sub">Somente para apresentação: não altera cargo, permissões ou acesso ao site.</div><div class="admin-form-grid" style="margin-top:12px"><div class="admin-form-field"><label>Título visual</label><input id="hierarchy-title-admin" placeholder="Ex.: Liderança"></div><div class="admin-form-field"><label>Ordem</label><input id="hierarchy-order-admin" type="number" min="1" value="1"></div></div><div class="admin-form-field" style="margin-top:8px"><label>Descrição</label><input id="hierarchy-description-admin" placeholder="O que este grupo representa"></div><div id="hierarchy-members-admin" class="hierarchy-members-select"></div><button class="admin-btn orange" type="button" onclick="salvarHierarquiaAdmin()">Adicionar à hierarquia</button></div><div id="admin-hierarchy-list"></div></section>
         <section id="admin-settings" class="admin-section">
           <div class="admin-card"><strong>CONFIGURAÇÕES RESTRITAS</strong><p style="color:#aaa;line-height:1.5">Somente o Líder pode alterar imagens, webhooks e configurações gerais do sistema.</p>
             <section id="discord-priority-webhooks" class="webhook-group" style="--hook-color:#fc6500;margin:14px 0">
               <h3>NOTIFICAÇÕES PRINCIPAIS DO DISCORD</h3>
               <div class="settings-grid">
-                <div class="admin-form-field"><label>Ação criada — marca @everyone</label><input id="priority-hook-actions" type="url" placeholder="https://discord.com/api/webhooks/..."><div class="webhook-field-actions"><button class="admin-btn orange" type="button" onclick="salvarWebhookPrincipal('acoes','priority-hook-actions',this)">Salvar</button><button class="admin-btn" type="button" onclick="testarWebhookPrincipal('priority-hook-actions','Ação criada',this)">Testar</button><span id="priority-status-acoes" class="webhook-save-status"></span></div></div>
                 <div class="admin-form-field"><label>Farm enviado — menciona o player</label><input id="priority-hook-farm" type="url" placeholder="https://discord.com/api/webhooks/..."><div class="webhook-field-actions"><button class="admin-btn orange" type="button" onclick="salvarWebhookPrincipal('farm_enviado','priority-hook-farm',this)">Salvar</button><button class="admin-btn" type="button" onclick="testarWebhookPrincipal('priority-hook-farm','Farm enviado',this)">Testar</button><span id="priority-status-farm_enviado" class="webhook-save-status"></span></div></div>
               </div>
-              <p class="settings-help" style="margin-top:10px">Esses dois endereços são salvos separadamente. O ID individual de cada jogador é configurado na aba Membros.</p>
+              <p class="settings-help" style="margin-top:10px">O endereço é salvo separadamente. O ID individual de cada jogador é configurado na aba Membros.</p>
             </section>
             <div id="admin-settings-content"></div>
           </div>
@@ -1099,6 +1085,7 @@ footer p {
     <button id="abrir-financeiro" class="small-action admin" type="button" style="display:none;">FINANCEIRO</button>
     <button id="abrir-compras-admin" class="small-action admin" type="button" style="display:none;">LISTA DE COMPRAS</button>
     <button id="abrir-farm-admin" class="small-action admin" type="button" style="display:none;">FARM ADMIN</button>
+    <button id="abrir-retirada-armas-admin" class="small-action admin" type="button" style="display:none;">RETIRADA DE ARMAS</button>
     <div class="user-menu-wrap"><button id="user-menu-toggle" class="user-avatar-button" type="button" aria-label="Abrir opções do usuário">👤</button><div id="user-menu" class="user-menu" style="display:none"><button id="abrir-perfil" type="button">Meu perfil</button><button id="logout-btn" class="logout" type="button">Sair</button></div></div>
   </div>
 </div>
@@ -1118,7 +1105,7 @@ footer p {
       <button id="abrir-entregas-hoje" class="hero-secondary" type="button">ENTREGAS</button>
       <button id="abrir-caixa-jogo" class="hero-secondary" type="button">LAVAGEM</button>
       <button id="abrir-hierarquia" class="hero-secondary" type="button">HIERARQUIA</button>
-      <button id="abrir-acoes" class="hero-secondary" type="button">AÇÕES</button>
+      <span id="abrir-acoes" hidden aria-hidden="true"></span>
       <button id="abrir-farm" class="hero-secondary" type="button">FARM</button>
       <button id="abrir-missoes" class="hero-secondary mission-hero-action" type="button">MISSÕES <span>★</span></button>
       </div>
@@ -1294,7 +1281,7 @@ async function recarregarBancoCompartilhado(){
   ]);
   estoque={}; produtos.forEach(p=>estoque[p.nome]=0); (stockRows||[]).forEach(r=>{estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0));});
   encomendas=orderRows||[];
-  try{window.__calendarActions=window.adminRpc?await window.adminRpc('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}):[];}catch(_){window.__calendarActions=[];}
+  window.__calendarActions=[];
   localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas));
   bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
 }
@@ -1306,7 +1293,7 @@ async function carregarBancoCompartilhado(){
   if(!stockRows.length){ estoque=carregarEstoque(); await atualizarEstoqueNoBanco(); }
   else { estoque={}; produtos.forEach(p=>estoque[p.nome]=0); stockRows.forEach(r=>estoque[r.product_name]=Math.max(0,Math.floor(Number(r.quantity)||0))); }
   encomendas=orderRows||[];
-  try{window.__calendarActions=window.adminRpc?await window.adminRpc('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}):[];}catch(_){window.__calendarActions=[];}
+  window.__calendarActions=[];
   localStorage.setItem(CHAVE_ESTOQUE,JSON.stringify(estoque)); localStorage.setItem(CHAVE_ENCOMENDAS,JSON.stringify(encomendas));
   bancoCompartilhadoPronto=true; renderCalendar(); renderHomeStats();
 }
@@ -1581,7 +1568,7 @@ setInterval(async()=>{
   const farmReward=routes=>({1:1,2:3,3:5})[Number(routes)]||0;
 
   document.head.insertAdjacentHTML('beforeend',`<style>
-    .farm-member-picker{display:none;margin-top:9px;max-height:330px;overflow:auto;border:1px solid #333;border-radius:11px;padding:8px;background:#090909}.farm-member-picker.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.farm-member-option{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #292929;border-radius:9px;background:#111;color:#eee;cursor:pointer;text-align:left}.farm-member-option.selected{border-color:#fc6500;background:#1b120b}.farm-member-avatar{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#25170d;color:#fc6500;font-weight:900;flex:none}.farm-summary{margin-top:9px;color:#ffc857;font-size:12px;line-height:1.5}.weapon-actions{margin-top:16px;padding-top:14px;border-top:1px solid #292929}.weapon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.weapon-row{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center;padding:9px;border:1px solid #292929;border-radius:9px;background:#111}.weapon-row small{display:block;color:#777}.weapon-row input{width:100%;box-sizing:border-box}.weapon-log{margin-top:9px;padding:11px;border:1px solid #292929;border-radius:9px;background:#101010}.weapon-log small{display:block;color:#888;margin-top:4px}@media(max-width:650px){.farm-member-picker.open,.weapon-grid{grid-template-columns:1fr}}
+    .farm-member-picker{display:none;margin-top:9px;max-height:330px;overflow:auto;border:1px solid #333;border-radius:11px;padding:8px;background:#090909}.farm-member-picker.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.farm-member-option{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #292929;border-radius:9px;background:#111;color:#eee;cursor:pointer;text-align:left}.farm-member-option.selected{border-color:#fc6500;background:#1b120b}.farm-member-avatar{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#25170d;color:#fc6500;font-weight:900;flex:none}.farm-summary{margin-top:9px;color:#ffc857;font-size:12px;line-height:1.5}.weapon-actions{margin-top:16px;padding-top:14px;border-top:1px solid #292929}.weapon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.weapon-row{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center;padding:9px;border:1px solid #292929;border-radius:9px;background:#111}.weapon-row>span{display:flex;align-items:center;gap:9px}.weapon-row .produto-miniatura{width:44px;height:44px;object-fit:contain;border-radius:7px;background:#080808}.weapon-row small{display:block;color:#777}.weapon-row input{width:100%;box-sizing:border-box}.weapon-log{margin-top:9px;padding:11px;border:1px solid #292929;border-radius:9px;background:#101010}.weapon-log small{display:block;color:#888;margin-top:4px}@media(max-width:650px){.farm-member-picker.open,.weapon-grid{grid-template-columns:1fr}}
   </style>`);
 
   function setupFarmPicker(){
@@ -1600,7 +1587,16 @@ setInterval(async()=>{
     button.onclick=async()=>{picker.classList.toggle('open');if(!picker.classList.contains('open')||picker.dataset.loaded)return;picker.innerHTML='<div class="mission-empty">Carregando membros...</div>';try{const p=await window.adminRpc('tarjas_admin_farm_players');render(p);picker.dataset.loaded='1';}catch(e){picker.innerHTML=`<div class="mission-empty">Erro: ${esc(e.message)}</div>`;}};
     routes.max='3';routes.oninput=()=>{if(Number(routes.value)>3)routes.value=3;update();};routes.value='1';update();
     const clean=send.cloneNode(true);send.replaceWith(clean);clean.disabled=true;update();
-    window.enviarFarmSelecionado=async event=>{event?.preventDefault();const button=$('farm-create'),ids=[...window.__selectedFarmMembers],r=Number(routes.value),reward=farmReward(r),type=$('farm-type').value;if(!ids.length)return alert('Selecione pelo menos um membro.');if(!reward)return alert('Escolha entre 1 e 3 rotas.');if(!confirm(`Enviar ${r} rota(s), valendo ${reward} estrela(s), para ${ids.length} membro(s)?`))return;button.disabled=true;button.textContent='ENVIANDO...';try{let sent=0;for(const playerId of ids){const out=await window.adminRpc('tarjas_admin_farm_create',{p_player_id:playerId,p_type:type,p_routes:r,p_stars:reward});if(out?.success===false)throw new Error(out.message||`Não foi possível enviar para o membro ${sent+1}.`);const notice=await window.adminRpc('tarjas_discord_farm_created',{p_player_id:playerId,p_type:type,p_routes:r,p_stars:reward});if(notice?.success===false)throw new Error('Farm criado, mas a notificação do Discord falhou: '+(notice.message||'erro desconhecido'));sent++;}window.__selectedFarmMembers.clear();picker.dataset.loaded='';picker.classList.remove('open');update();await window.carregarFarmAdminPorStatus?.('active');await window.refreshTarjasNotifications?.();alert(`Farm enviado e notificado no Discord para ${sent} membro(s).`);}catch(e){alert('Não foi possível concluir o envio: '+(e.message||e));update();}finally{button.textContent='ENVIAR FARM';if(window.__selectedFarmMembers.size)button.disabled=false;}};
+    window.enviarFarmSelecionado=async event=>{
+      event?.preventDefault();const button=$('farm-create'),ids=[...window.__selectedFarmMembers],r=Number(routes.value),reward=farmReward(r),type=$('farm-type').value;
+      if(!ids.length)return alert('Selecione pelo menos um membro.');if(!reward)return alert('Escolha entre 1 e 3 rotas.');if(!confirm(`Enviar ${r} rota(s), valendo ${reward} estrela(s), para ${ids.length} membro(s)?`))return;
+      button.disabled=true;button.textContent='ENVIANDO...';
+      try{
+        const created=await window.adminRpc('tarjas_admin_farm_create_many_notified',{p_player_ids:ids,p_type:type,p_routes:r});
+        if(created?.success===false)throw new Error(created.message||'Não foi possível criar os farms.');
+        window.__selectedFarmMembers.clear();picker.dataset.loaded='';picker.classList.remove('open');update();await window.carregarFarmAdminPorStatus?.('active');await window.refreshTarjasNotifications?.();alert(`Farm enviado para ${Number(created?.sent||ids.length)} membro(s) em uma única mensagem do Discord.`);
+      }catch(e){alert('Não foi possível concluir o envio: '+(e.message||e));update();}finally{button.textContent='ENVIAR FARM';if(window.__selectedFarmMembers.size)button.disabled=false;}
+    };
     clean.setAttribute('onclick','window.enviarFarmSelecionado(event)');
     if(!window.__farmSendSafety){window.__farmSendSafety=true;document.addEventListener('click',event=>{const button=event.target.closest?.('#farm-create');if(!button)return;event.preventDefault();event.stopImmediatePropagation();window.enviarFarmSelecionado?.(event);},true);}
   }
@@ -1612,8 +1608,8 @@ setInterval(async()=>{
     launch.onclick=()=>{
       const opening=area.style.display==='none';area.style.display=opening?'block':'none';
       if(!opening)return;
-      const weapons=produtos.filter(p=>p.categoria!=='DROGAS').map(p=>({product_name:p.nome,quantity:Math.max(0,Number(estoque[p.nome]||0))}));
-      area.innerHTML=`<h3 style="color:#fc6500">ARMAS PARA MEMBROS</h3><p class="settings-help">Selecione quais armas e quantas unidades serão usadas na ação. A retirada diminui somente o estoque e não entra como lucro ou prejuízo.</p><div class="weapon-grid">${weapons.map(x=>`<label class="weapon-row"><span><b>${esc(x.product_name)}</b><small>${x.quantity} disponível(is)</small></span><input type="number" min="0" max="${x.quantity}" value="0" data-weapon="${esc(x.product_name)}" ${x.quantity<1?'disabled':''}></label>`).join('')}</div><button id="weapon-withdraw-save" class="gestao-salvar" type="button">CONFIRMAR RETIRADA</button>`;
+      const weapons=produtos.filter(p=>p.categoria!=='DROGAS').map(p=>({product_name:p.nome,quantity:Math.max(0,Number(estoque[p.nome]||0)),image:produtoImagem(p,produtos.indexOf(p))}));
+      area.innerHTML=`<h3 style="color:#fc6500">RETIRADA DE ARMAS</h3><p class="settings-help">Selecione as armas e quantidades. A retirada diminui imediatamente o estoque e não entra como lucro ou prejuízo.</p><div class="weapon-grid">${weapons.map(x=>`<label class="weapon-row"><span><img class="produto-miniatura" src="${esc(x.image)}" alt="${esc(x.product_name)}"><span><b>${esc(x.product_name)}</b><small>${x.quantity} disponível(is) no estoque</small></span></span><input type="number" min="0" max="${x.quantity}" value="0" data-weapon="${esc(x.product_name)}" ${x.quantity<1?'disabled':''}></label>`).join('')}</div><button id="weapon-withdraw-save" class="gestao-salvar" type="button">CONFIRMAR RETIRADA</button>`;
       area.scrollIntoView({behavior:'smooth',block:'nearest'});
       $('weapon-withdraw-save').onclick=async()=>{
         const items=[...area.querySelectorAll('[data-weapon]')].map(i=>({product_name:i.dataset.weapon,quantity:Math.floor(Number(i.value)||0)})).filter(i=>i.quantity>0);
@@ -1626,12 +1622,12 @@ setInterval(async()=>{
     };
   }
 
-  function setupWeaponAdmin(){const tabs=$('admin-actions-tab')?.parentElement;if(!tabs||$('admin-weapon-withdrawals-tab'))return;const tab=document.createElement('button');tab.id='admin-weapon-withdrawals-tab';tab.className='admin-tab';tab.dataset.adminTab='weapon-withdrawals';tab.textContent='Retiradas para ações';tabs.appendChild(tab);const host=$('admin-actions')?.parentElement;if(!host)return;const section=document.createElement('section');section.id='admin-weapon-withdrawals';section.className='admin-section';section.innerHTML='<div class="admin-card"><strong>RETIRADAS DE ARMAS PARA AÇÕES</strong><p style="color:#aaa">Histórico sem impacto no lucro ou prejuízo da empresa.</p></div><div id="weapon-withdrawal-log"></div>';host.appendChild(section);tab.onclick=async()=>{localStorage.setItem('tarjas_notice_admin_weapons',String(Date.now()));document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));section.classList.add('active');tab.classList.add('active');const out=$('weapon-withdrawal-log');out.innerHTML='<div class="admin-card">Carregando...</div>';try{const rows=await window.adminRpc('tarjas_action_weapon_withdrawal_list');out.innerHTML=rows.length?rows.map(r=>`<div class="weapon-log"><b>${esc(r.manager_name)} · #${esc(r.manager_passport||'—')}</b><small>${new Date(r.created_at).toLocaleString('pt-BR')} · ${esc(r.items_text)}</small></div>`).join(''):'<div class="admin-card">Nenhuma retirada registrada.</div>';}catch(e){out.innerHTML=`<div class="admin-card">Erro: ${esc(e.message)}</div>`;}window.refreshTarjasNotifications?.();};}
-
   const oldOpen=window.abrirEstoque;window.abrirEstoque=async()=>{await oldOpen();await addWeaponControls();};
+  window.abrirRetiradaArmasAdmin=async()=>{if(!canWithdraw())return alert('Disponível somente para administradores.');await window.abrirEstoque();setTimeout(()=>$('weapon-withdraw-launch')?.click(),80);};
   function setupWeaponWebhook(){const tab=$('admin-settings-tab');if(!tab)return;tab.addEventListener('click',()=>setTimeout(async()=>{const target=$('admin-settings-content');if(!target||$('cfg-hook-retiradas-armas'))return;try{const d=await window.adminRpc('tarjas_admin_get_settings'),hooks=d.webhooks||{};target.insertAdjacentHTML('beforeend',`<section class="webhook-group" style="--hook-color:#fc6500;margin-top:16px"><h3 style="color:#fc6500">RETIRADAS DE ARMAS PARA AÇÕES</h3><p class="settings-help">Envia responsável, armas, quantidades, data e horário.</p><div class="admin-form-field"><label>Webhook de retiradas de armas</label><input id="cfg-hook-retiradas-armas" type="url" value="${esc(hooks.retiradas_armas||'')}" placeholder="https://discord.com/api/webhooks/..."></div><button id="save-hook-retiradas-armas" class="admin-btn orange" type="button">Salvar webhook</button></section>`);$('save-hook-retiradas-armas').onclick=async()=>{try{const current=await window.adminRpc('tarjas_admin_get_settings'),webhooks={...(current.webhooks||{}),retiradas_armas:$('cfg-hook-retiradas-armas').value.trim()};const out=await window.adminRpc('tarjas_admin_save_settings',{p_webhooks:webhooks,p_xp:current.xp||{},p_level_rules:current.level_rules||{xp_per_level:100,reward_every_levels:10,stars_per_reward:5}});if(out?.success===false)throw new Error(out.message);alert('Webhook de retiradas salvo.');}catch(e){alert(e.message);}};}catch(e){console.warn('Webhook de retiradas:',e);}},500));}
   setTimeout(()=>{
-    setupFarmPicker();setupWeaponAdmin();setupWeaponWebhook();
+    setupFarmPicker();setupWeaponWebhook();
+    const weaponShortcut=$('abrir-retirada-armas-admin');if(weaponShortcut)weaponShortcut.onclick=()=>window.abrirRetiradaArmasAdmin();
     const stockButton=$('abrir-estoque');
     if(stockButton)stockButton.onclick=()=>window.abrirEstoque();
   },0);
@@ -1639,10 +1635,29 @@ setInterval(async()=>{
 })();
 </script>
 <script>
+/* O sistema de ações foi descontinuado. Remove qualquer interface legada que
+   ainda seja criada por blocos antigos deste arquivo cumulativo. */
+(()=>{
+  const actionIds=[
+    'acoes-modal','admin-actions-tab','admin-action-config-tab','admin-actions-archived-tab',
+    'admin-actions','admin-action-config','admin-actions-archived','action-create-launch','cfg-hook-action-results'
+  ];
+  const removeLegacyActions=()=>{
+    actionIds.forEach(id=>document.getElementById(id)?.remove());
+    document.querySelectorAll('[data-admin-tab="actions"],[data-admin-tab="action-config"],[data-admin-tab="actions-archived"]').forEach(el=>el.remove());
+    document.querySelectorAll('#admin-settings-content .webhook-group').forEach(section=>{
+      if(/resultados? de a[cç][oõ]es|webhook de a[cç][oõ]es/i.test(section.textContent||''))section.remove();
+    });
+  };
+  removeLegacyActions();
+  new MutationObserver(removeLegacyActions).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+<script>
 /* Modelos automáticos de ação e webhook de alterações manuais do estoque. */
 (() => {
  document.head.insertAdjacentHTML('beforeend','<style>#acoes-criar #home-action-title,#acoes-criar #home-action-item,#acoes-criar #home-action-roster,#acoes-criar #home-action-min,#acoes-criar #home-action-max,#acoes-criar #home-action-stars{pointer-events:none;opacity:.82;background:#111;border-color:#3a3a3a}#acoes-criar .admin-form-field:has(#home-action-type){display:none!important}#acoes-criar .admin-form-field:has(#home-action-template){grid-column:1/-1}</style>');
- const $=id=>document.getElementById(id),rpc=(n,p={})=>window.adminRpc(n,p),esc=v=>window.escapeHtml?window.escapeHtml(v):String(v??'');
+ const $=id=>document.getElementById(id),rpc=(n,p={})=>/^tarjas_actions?/.test(n)?Promise.resolve([]):window.adminRpc(n,p),esc=v=>window.escapeHtml?window.escapeHtml(v):String(v??'');
  async function carregarModelos(){try{const rows=await rpc('tarjas_action_template_list');window.__actionTemplates=rows||[];const select=$('home-action-template');if(select)select.innerHTML='<option value="">Escolha qual ação será feita</option>'+rows.map(x=>`<option value="${x.id}">${esc(x.name)} · ${esc(x.pull_item||'Sem item')}</option>`).join('');const list=$('action-template-admin-list');if(list)list.innerHTML=rows.length?rows.map(x=>`<div class="admin-card"><strong>${esc(x.name)}</strong><small style="display:block;color:#888">${esc(x.action_type||'Geral')} · Cartão/item: ${esc(x.pull_item||'—')} · ${Number(x.min_people||1)}–${Number(x.max_people||4)} pessoas · ${Number(x.stars_per_participant||0)} ★</small><button class="admin-btn danger" type="button" onclick="excluirModeloAcao(${x.id})">Excluir</button></div>`).join(''):'<div class="mission-empty">Nenhuma ação pronta criada.</div>';}catch(e){console.warn('Modelos de ação:',e.message);}}
  window.salvarModeloAcao=async()=>{const name=$('action-template-name').value.trim(),type='Geral',item=$('action-template-item').value.trim(),min=Math.max(1,Number($('action-template-min').value)||1),max=Math.max(1,Number($('action-template-max').value)||4),stars=Math.max(0,Number($('action-template-stars').value)||0);if(!name||!item)return alert('Informe o nome da ação e o cartão/item.');if(max<min)return alert('O máximo deve ser maior ou igual ao mínimo.');try{const out=await rpc('tarjas_action_template_save_full',{p_name:name,p_type:type,p_item:item,p_min:min,p_max:max,p_stars:stars});if(out?.success===false)throw new Error(out.message);$('action-template-name').value='';$('action-template-item').value='';await carregarModelos();alert('Ação pronta criada.');}catch(e){alert('Não foi possível criar: '+e.message);}};
  window.excluirModeloAcao=async id=>{if(!confirm('Excluir este modelo de ação?'))return;try{await rpc('tarjas_action_template_delete',{p_id:Number(id)});await carregarModelos();}catch(e){alert(e.message);}};
@@ -1690,15 +1705,15 @@ setInterval(async()=>{
     ['Equipe', '#9b59b6', [
       ['missoes', 'Missões e recompensas']
     ]],
-    ['Ações', '#00b894', [
-      ['acoes', 'Ação criada'], ['action_results', 'Resultado aprovado da ação']
-    ]],
     ['Lavagem', '#ff4fa3', [
       ['lavagem_enviada', 'Lavagem enviada'], ['lavagem_aprovada', 'Lavagem aprovada'], ['lavagem_recusada', 'Lavagem recusada']
     ]],
     ['Farm', '#f1c40f', [
       ['farm_enviado', 'Farm enviado'], ['farm_aceito', 'Farm aceito'], ['farm_entregue', 'Farm concluído pelo jogador'],
       ['farm_aprovado', 'Farm aprovado / estrelas liberadas'], ['farm_expirado', 'Farm expirado']
+    ]],
+    ['Retirada de armas', '#fc6500', [
+      ['retiradas_armas', 'Retirada de armas do estoque']
     ]],
     ['Controle', '#e67e22', [
       ['estoque', 'Alterações de estoque'], ['entregas', 'Entregas']
@@ -1801,19 +1816,19 @@ setInterval(async()=>{
 /* Estados das notificações: vermelho = novo; amarelo = ainda pendente. */
 (() => {
   document.head.insertAdjacentHTML('beforeend','<style>.notice-target{position:relative!important}.notice-badge{position:absolute;top:-8px;right:-8px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;color:#fff;font-size:10px;line-height:17px;text-align:center;font-weight:900;box-shadow:0 0 0 2px #0b0b0b;z-index:3}.notice-badge.new{background:#e53935}.notice-badge.pending{background:#d99b00;color:#130d00}.admin-tab .notice-badge{top:-7px;right:-7px}</style>');
-  const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]'],admin_purchases:['abrir-compras-admin'],admin_weapons:['admin-weapon-withdrawals-tab']};
+  const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]'],admin_purchases:['abrir-compras-admin']};
   function elementsFor(key){return (targets[key]||[]).flatMap(x=>x.startsWith('[')?[...document.querySelectorAll(x)]:[document.getElementById(x)]).filter(Boolean);}
   function showBadge(key,newCount,pendingCount){elementsFor(key).forEach(el=>{el.classList.add('notice-target');let badge=el.querySelector(':scope > .notice-badge');const isNew=Number(newCount)>0,count=isNew?Number(newCount):Number(pendingCount);if(count>0){if(!badge){badge=document.createElement('span');badge.className='notice-badge';el.appendChild(badge);}badge.className='notice-badge '+(isNew?'new':'pending');badge.textContent=count>99?'+99':`+${count}`;badge.title=isNew?`${count} nova(s) notificação(ões)`: `${count} item(ns) ainda pendente(s)`;}else badge?.remove();});}
   async function refreshNotices(){
     if(!window.authUser||!window.adminRpc)return;
     const safe=(name,params={})=>window.adminRpc(name,params).catch(()=>[]),data=await window.adminRpc('tarjas_notification_counts').catch(()=>({}));
     const role=window.currentProfile?.roles?.slug||'',isAdmin=['leader','owner','sub_leader','manager'].includes(role);
-    const [actions,farms,reviews,adminFarms,orders,washes,missions,purchases,weapons,myMissions,myWash]=await Promise.all([
+    const [actions,farms,reviews,adminFarms,orders,washes,missions,purchases,myMissions,myWash]=await Promise.all([
       safe('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}),safe('tarjas_farm_my_list'),
       isAdmin?safe('tarjas_action_reviews_list'):[],isAdmin?safe('tarjas_admin_farm_review_list',{p_status:'pending'}):[],
       isAdmin?safe('tarjas_admin_list_orders',{p_status:'pending'}):[],isAdmin?safe('tarjas_admin_game_cash_list'):[],
       isAdmin?safe('tarjas_admin_list_player_missions'):[],isAdmin?safe('tarjas_purchase_list'):[],
-      isAdmin?safe('tarjas_action_weapon_withdrawal_list'):[],safe('tarjas_mission_my_data'),safe('tarjas_game_cash_my_records')
+      safe('tarjas_mission_my_data'),safe('tarjas_game_cash_my_records')
     ]);
     const setFallback=(key,count)=>{data[key+'_pending']=Math.max(Number(data[key+'_pending']||0),Number(count||0));if(data[key+'_new']==null)data[key+'_new']=Number(count||0);};
     const arr=value=>Array.isArray(value)?value:[];
@@ -1828,7 +1843,6 @@ setInterval(async()=>{
     setFallback('admin_wash',arr(washes).filter(x=>x.status==='pending').length);
     setFallback('admin_missions',arr(missions).filter(x=>['submitted','pending_review'].includes(x.status)).length);
     setFallback('admin_purchases',arr(purchases).filter(x=>!x.resolved).length);
-    const weaponRead=Number(localStorage.getItem('tarjas_notice_admin_weapons')||0);setFallback('admin_weapons',arr(weapons).filter(x=>new Date(x.created_at).getTime()>weaponRead).length);
     window.__tarjasNoticeCounts=window.__tarjasNoticeCounts||{};
     Object.keys(targets).filter(key=>key!=='admin').forEach(key=>{
       const raw=Math.max(Number(data[key+'_new']||0),Number(data[key+'_pending']||0)),stored=localStorage.getItem('tarjas_notice_dismissed_'+key);
@@ -1836,10 +1850,10 @@ setInterval(async()=>{
       if(stored!==null){const dismissed=Number(stored)||0;if(raw<=dismissed){data[key+'_new']=0;data[key+'_pending']=0;if(raw<dismissed)localStorage.setItem('tarjas_notice_dismissed_'+key,String(raw));}else{data[key+'_new']=raw-dismissed;data[key+'_pending']=raw-dismissed;}}
     });
     Object.keys(targets).filter(k=>k!=='admin').forEach(k=>showBadge(k,data[k+'_new'],data[k+'_pending']));
-    const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions','admin_weapons'];
+    const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'];
     showBadge('admin',adminKeys.reduce((n,k)=>n+Number(data[k+'_new']||0),0),adminKeys.reduce((n,k)=>n+Number(data[k+'_pending']||0),0));
   }
-  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem('tarjas_notice_dismissed_'+key,String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions','admin_weapons'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem('tarjas_notice_dismissed_'+k)||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
+  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem('tarjas_notice_dismissed_'+key,String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem('tarjas_notice_dismissed_'+k)||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
   window.addEventListener('DOMContentLoaded',()=>Object.entries(targets).forEach(([key])=>elementsFor(key).forEach(el=>el.addEventListener('click',()=>{if(key!=='admin')markNotice(key)}))));
   setInterval(refreshNotices,15000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
 })();
@@ -2161,10 +2175,11 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     const isLeader=["leader","owner"].includes(profile.roles?.slug);
     $("abrir-compras-admin").style.display=ownerOrAdmin?"inline-block":"none";
     $("abrir-farm-admin").style.display=ownerOrAdmin?"inline-block":"none";
+    $("abrir-retirada-armas-admin").style.display=ownerOrAdmin?"inline-block":"none";
     $("abrir-estoque").style.display="inline-block";
-    $("admin-actions-tab").style.display=(isLeader||has("manage_actions"))?"inline-block":"none";
-    $("admin-action-config-tab").style.display=isLeader?"inline-block":"none";
-    $("admin-actions-archived-tab").style.display=(isLeader||has("manage_actions"))?"inline-block":"none";
+    if($("admin-actions-tab"))$("admin-actions-tab").style.display=(isLeader||has("manage_actions"))?"inline-block":"none";
+    if($("admin-action-config-tab"))$("admin-action-config-tab").style.display=isLeader?"inline-block":"none";
+    if($("admin-actions-archived-tab"))$("admin-actions-archived-tab").style.display=(isLeader||has("manage_actions"))?"inline-block":"none";
     $("admin-hierarchy-tab").style.display=ownerOrAdmin?"inline-block":"none";
     $("admin-settings-tab").style.display=isLeader?"inline-block":"none";
     $("owner-controls-tab").style.display=isLeader?"inline-block":"none";
@@ -2212,20 +2227,27 @@ $("entregas-data-busca").addEventListener("change",renderizarEntregasHoje);
     }
 
     window.authUser=data.session.user;
+    let profile;
     try{
-      const p=await loadProfile(window.authUser);
-      if(p.status==="suspended"){
-        await client.auth.signOut();
-        loginView();
-        msg("Esta conta está suspensa.","error");
-        return;
-      }
-      enter(p);
+      profile=await loadProfile(window.authUser);
     }catch(e){
       console.error("TARJAS PERFIL",e);
       await client.auth.signOut();
       loginView();
-      msg("A conta entrou no Auth, mas o perfil não foi encontrado. Execute o SQL novo e cadastre novamente.","error");
+      msg("A conta existe no Auth, mas o perfil correspondente não pôde ser carregado.","error");
+      return;
+    }
+    if(profile.status==="suspended"){
+      await client.auth.signOut();
+      loginView();
+      msg("Esta conta está suspensa.","error");
+      return;
+    }
+    try{
+      enter(profile);
+    }catch(e){
+      console.error("TARJAS INTERFACE",e);
+      msg("Perfil carregado, mas ocorreu um erro ao abrir a interface. Atualize a página.","error");
     }
   }
 
