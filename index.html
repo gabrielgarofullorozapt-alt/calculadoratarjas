@@ -1601,29 +1601,34 @@ setInterval(async()=>{
     if(!window.__farmSendSafety){window.__farmSendSafety=true;document.addEventListener('click',event=>{const button=event.target.closest?.('#farm-create');if(!button)return;event.preventDefault();event.stopImmediatePropagation();window.enviarFarmSelecionado?.(event);},true);}
   }
 
-  async function addWeaponControls(){
-    const box=$('estoque-modal')?.querySelector('.gestao-caixa');if(!box||!canWithdraw()||$('weapon-withdraw-launch'))return;
-    const launch=document.createElement('button');launch.id='weapon-withdraw-launch';launch.className='gestao-salvar';launch.type='button';launch.textContent='ARMAS PARA MEMBROS';box.appendChild(launch);
-    const area=document.createElement('section');area.id='weapon-withdraw-area';area.className='weapon-actions';area.style.display='none';box.appendChild(area);
-    launch.onclick=()=>{
-      const opening=area.style.display==='none';area.style.display=opening?'block':'none';
-      if(!opening)return;
-      const weapons=produtos.filter(p=>p.categoria!=='DROGAS').map(p=>({product_name:p.nome,quantity:Math.max(0,Number(estoque[p.nome]||0)),image:produtoImagem(p,produtos.indexOf(p))}));
-      area.innerHTML=`<h3 style="color:#fc6500">RETIRADA DE ARMAS</h3><p class="settings-help">Selecione as armas e quantidades. A retirada diminui imediatamente o estoque e não entra como lucro ou prejuízo.</p><div class="weapon-grid">${weapons.map(x=>`<label class="weapon-row"><span><img class="produto-miniatura" src="${esc(x.image)}" alt="${esc(x.product_name)}"><span><b>${esc(x.product_name)}</b><small>${x.quantity} disponível(is) no estoque</small></span></span><input type="number" min="0" max="${x.quantity}" value="0" data-weapon="${esc(x.product_name)}" ${x.quantity<1?'disabled':''}></label>`).join('')}</div><button id="weapon-withdraw-save" class="gestao-salvar" type="button">CONFIRMAR RETIRADA</button>`;
-      area.scrollIntoView({behavior:'smooth',block:'nearest'});
-      $('weapon-withdraw-save').onclick=async()=>{
-        const items=[...area.querySelectorAll('[data-weapon]')].map(i=>({product_name:i.dataset.weapon,quantity:Math.floor(Number(i.value)||0)})).filter(i=>i.quantity>0);
-        if(!items.length)return alert('Selecione ao menos uma arma e informe a quantidade.');
-        const invalid=items.find(i=>i.quantity>Number(estoque[i.product_name]||0));if(invalid)return alert(`Estoque insuficiente para ${invalid.product_name}.`);
-        if(!confirm('Confirmar esta retirada do estoque para uma ação?'))return;
-        const save=$('weapon-withdraw-save');save.disabled=true;save.textContent='REGISTRANDO...';
-        try{const out=await window.adminRpc('tarjas_action_weapon_withdraw',{p_items:items});if(out?.success===false)throw new Error(out.message);items.forEach(i=>estoque[i.product_name]=Math.max(0,Number(estoque[i.product_name]||0)-i.quantity));renderizarEstoque();await window.refreshTarjasNotifications?.();alert('Retirada registrada. O estoque foi reduzido sem impacto financeiro.');area.remove();launch.remove();await addWeaponControls();}catch(e){save.disabled=false;save.textContent='CONFIRMAR RETIRADA';alert('Não foi possível registrar a retirada: '+(e.message||e));}
-      };
+  function setStockModalMode(withdrawal){
+    const box=$('estoque-modal')?.querySelector('.gestao-caixa');if(!box)return;
+    box.querySelector('h2').style.display=withdrawal?'none':'';
+    $('estoque-aviso').style.display=withdrawal?'none':'';
+    $('estoque-lista').style.display=withdrawal?'none':'';
+    $('estoque-salvar').style.display='none';
+    $('weapon-withdraw-area')?.remove();
+  }
+
+  async function renderWeaponWithdrawal(){
+    const box=$('estoque-modal')?.querySelector('.gestao-caixa');if(!box||!canWithdraw())return;
+    const weapons=produtos.filter(p=>p.categoria!=='DROGAS').map(p=>({product_name:p.nome,quantity:Math.max(0,Number(estoque[p.nome]||0)),image:produtoImagem(p,produtos.indexOf(p))}));
+    const area=document.createElement('section');area.id='weapon-withdraw-area';area.className='weapon-actions';
+    area.innerHTML=`<h3 style="color:#fc6500">RETIRADA DE ARMAS</h3><p class="settings-help">Selecione as armas e quantidades. A retirada diminui imediatamente o estoque e não entra como lucro ou prejuízo.</p><div class="weapon-grid">${weapons.map(x=>`<label class="weapon-row"><span><img class="produto-miniatura" src="${esc(x.image)}" alt="${esc(x.product_name)}"><span><b>${esc(x.product_name)}</b><small>${x.quantity} disponível(is) no estoque</small></span></span><input type="number" min="0" max="${x.quantity}" value="0" data-weapon="${esc(x.product_name)}" ${x.quantity<1?'disabled':''}></label>`).join('')}</div><button id="weapon-withdraw-save" class="gestao-salvar" type="button">CONFIRMAR RETIRADA</button>`;
+    box.appendChild(area);
+    $('weapon-withdraw-save').onclick=async()=>{
+      const items=[...area.querySelectorAll('[data-weapon]')].map(i=>({product_name:i.dataset.weapon,quantity:Math.floor(Number(i.value)||0)})).filter(i=>i.quantity>0);
+      if(!items.length)return alert('Selecione ao menos uma arma com estoque disponível.');
+      const invalid=items.find(i=>i.quantity>Number(estoque[i.product_name]||0));if(invalid)return alert(`Estoque insuficiente para ${invalid.product_name}.`);
+      if(!confirm('Confirmar esta retirada do estoque?'))return;
+      const save=$('weapon-withdraw-save');save.disabled=true;save.textContent='REGISTRANDO...';
+      try{const out=await window.adminRpc('tarjas_action_weapon_withdraw',{p_items:items});if(out?.success===false)throw new Error(out.message);await window.refreshTarjasNotifications?.();alert('Retirada registrada e descontada do estoque.');await window.abrirRetiradaArmasAdmin();}catch(e){save.disabled=false;save.textContent='CONFIRMAR RETIRADA';alert('Não foi possível registrar a retirada: '+(e.message||e));}
     };
   }
 
-  const oldOpen=window.abrirEstoque;window.abrirEstoque=async()=>{await oldOpen();await addWeaponControls();};
-  window.abrirRetiradaArmasAdmin=async()=>{if(!canWithdraw())return alert('Disponível somente para administradores.');await window.abrirEstoque();setTimeout(()=>$('weapon-withdraw-launch')?.click(),80);};
+  const oldOpen=window.abrirEstoque;
+  window.abrirEstoque=async()=>{setStockModalMode(false);await oldOpen();setStockModalMode(false);};
+  window.abrirRetiradaArmasAdmin=async()=>{if(!canWithdraw())return alert('Disponível somente para administradores.');await oldOpen();setStockModalMode(true);await renderWeaponWithdrawal();};
   function setupWeaponWebhook(){const tab=$('admin-settings-tab');if(!tab)return;tab.addEventListener('click',()=>setTimeout(async()=>{const target=$('admin-settings-content');if(!target||$('cfg-hook-retiradas-armas'))return;try{const d=await window.adminRpc('tarjas_admin_get_settings'),hooks=d.webhooks||{};target.insertAdjacentHTML('beforeend',`<section class="webhook-group" style="--hook-color:#fc6500;margin-top:16px"><h3 style="color:#fc6500">RETIRADAS DE ARMAS PARA AÇÕES</h3><p class="settings-help">Envia responsável, armas, quantidades, data e horário.</p><div class="admin-form-field"><label>Webhook de retiradas de armas</label><input id="cfg-hook-retiradas-armas" type="url" value="${esc(hooks.retiradas_armas||'')}" placeholder="https://discord.com/api/webhooks/..."></div><button id="save-hook-retiradas-armas" class="admin-btn orange" type="button">Salvar webhook</button></section>`);$('save-hook-retiradas-armas').onclick=async()=>{try{const current=await window.adminRpc('tarjas_admin_get_settings'),webhooks={...(current.webhooks||{}),retiradas_armas:$('cfg-hook-retiradas-armas').value.trim()};const out=await window.adminRpc('tarjas_admin_save_settings',{p_webhooks:webhooks,p_xp:current.xp||{},p_level_rules:current.level_rules||{xp_per_level:100,reward_every_levels:10,stars_per_reward:5}});if(out?.success===false)throw new Error(out.message);alert('Webhook de retiradas salvo.');}catch(e){alert(e.message);}};}catch(e){console.warn('Webhook de retiradas:',e);}},500));}
   setTimeout(()=>{
     setupFarmPicker();setupWeaponWebhook();
