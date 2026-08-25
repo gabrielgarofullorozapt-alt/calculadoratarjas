@@ -1847,6 +1847,7 @@ setInterval(async()=>{
 (() => {
   document.head.insertAdjacentHTML('beforeend','<style>.notice-target{position:relative!important}.notice-badge{position:absolute;top:-8px;right:-8px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;color:#fff;font-size:10px;line-height:17px;text-align:center;font-weight:900;box-shadow:0 0 0 2px #0b0b0b;z-index:3}.notice-badge.new{background:#e53935}.admin-tab .notice-badge{top:-7px;right:-7px}</style>');
   const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]'],admin_purchases:['abrir-compras-admin']};
+  const noticeStorageKey=key=>`tarjas_notice_dismissed_${window.authUser?.id||'anonymous'}_${key}`;
   function elementsFor(key){return (targets[key]||[]).flatMap(x=>x.startsWith('[')?[...document.querySelectorAll(x)]:[document.getElementById(x)]).filter(Boolean);}
   function showBadge(key,newCount){elementsFor(key).forEach(el=>{el.classList.add('notice-target');let badge=el.querySelector(':scope > .notice-badge'),count=Number(newCount)||0;if(count>0){if(!badge){badge=document.createElement('span');el.appendChild(badge);}badge.className='notice-badge new';badge.textContent=count>99?'+99':`+${count}`;badge.title=`${count} nova(s) notificação(ões)`;}else badge?.remove();});}
   async function refreshNotices(){
@@ -1875,16 +1876,16 @@ setInterval(async()=>{
     setFallback('admin_purchases',arr(purchases).filter(x=>!x.resolved).length);
     window.__tarjasNoticeCounts=window.__tarjasNoticeCounts||{};
     Object.keys(targets).filter(key=>key!=='admin').forEach(key=>{
-      const serverNew=Number(data[key+'_new']||0),raw=Math.max(serverNew,Number(data[key+'_pending']||0)),stored=localStorage.getItem('tarjas_notice_dismissed_'+key);
+      const serverNew=Number(data[key+'_new']||0),raw=Math.max(serverNew,Number(data[key+'_pending']||0)),storageKey=noticeStorageKey(key),stored=localStorage.getItem(storageKey);
       window.__tarjasNoticeCounts[key]=raw;
-      if(serverNew<1&&stored!==null){const dismissed=Number(stored)||0;if(raw<=dismissed){data[key+'_new']=0;data[key+'_pending']=0;if(raw<dismissed)localStorage.setItem('tarjas_notice_dismissed_'+key,String(raw));}else{data[key+'_new']=raw-dismissed;data[key+'_pending']=raw-dismissed;}}
+      if(stored!==null){const dismissed=Number(stored)||0;if(raw<=dismissed){data[key+'_new']=0;data[key+'_pending']=0;if(raw<dismissed)localStorage.setItem(storageKey,String(raw));}else{data[key+'_new']=raw-dismissed;data[key+'_pending']=raw-dismissed;}}
     });
     Object.keys(targets).filter(k=>k!=='admin').forEach(k=>showBadge(k,data[k+'_new']));
     const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'];
     showBadge('admin',adminKeys.reduce((n,k)=>n+Number(data[k+'_new']||0),0));
   }
-  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem('tarjas_notice_dismissed_'+key,String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem('tarjas_notice_dismissed_'+k)||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
-  document.addEventListener('click',event=>{for(const key of Object.keys(targets)){if(key!=='admin'&&elementsFor(key).some(el=>el===event.target||el.contains(event.target))){markNotice(key);break;}}});
+  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem(noticeStorageKey(key),String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem(noticeStorageKey(k))||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
+  document.addEventListener('click',event=>{for(const key of Object.keys(targets)){if(key!=='admin'&&elementsFor(key).some(el=>el===event.target||el.contains(event.target))){markNotice(key);break;}}},true);
   setInterval(refreshNotices,15000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
 })();
 </script>
