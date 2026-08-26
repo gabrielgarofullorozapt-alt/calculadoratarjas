@@ -1848,32 +1848,32 @@ setInterval(async()=>{
   document.head.insertAdjacentHTML('beforeend','<style>.notice-target{position:relative!important}.notice-badge{position:absolute;top:-8px;right:-8px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;color:#fff;font-size:10px;line-height:17px;text-align:center;font-weight:900;box-shadow:0 0 0 2px #0b0b0b;z-index:3}.notice-badge.new{background:#e53935}.admin-tab .notice-badge{top:-7px;right:-7px}</style>');
   const targets={actions:['abrir-acoes'],farm:['abrir-farm'],missions:['abrir-missoes'],wash:['abrir-caixa-jogo'],deliveries:['abrir-entregas-hoje'],admin:['abrir-admin'],admin_actions:['admin-actions-tab'],admin_orders:['[data-admin-tab="sales"]'],admin_wash:['[data-admin-tab="game-cash"]'],admin_farm:['abrir-farm-admin'],admin_deliveries:['[data-admin-tab="deliveries"]'],admin_missions:['[data-admin-tab="missions"]'],admin_purchases:['abrir-compras-admin']};
   const noticeStorageKey=key=>`tarjas_notice_dismissed_${window.authUser?.id||'anonymous'}_${key}`;
+  let noticeRefreshRunning=false;
   function elementsFor(key){return (targets[key]||[]).flatMap(x=>x.startsWith('[')?[...document.querySelectorAll(x)]:[document.getElementById(x)]).filter(Boolean);}
   function showBadge(key,newCount){elementsFor(key).forEach(el=>{el.classList.add('notice-target');let badge=el.querySelector(':scope > .notice-badge'),count=Number(newCount)||0;if(count>0){if(!badge){badge=document.createElement('span');el.appendChild(badge);}badge.className='notice-badge new';badge.textContent=count>99?'+99':`+${count}`;badge.title=`${count} nova(s) notificação(ões)`;}else badge?.remove();});}
   async function refreshNotices(){
-    if(!window.authUser||!window.adminRpc)return;
+    if(document.hidden||noticeRefreshRunning||!window.authUser||!window.adminRpc)return;
+    noticeRefreshRunning=true;
+    try{
     const safe=(name,params={})=>window.adminRpc(name,params).catch(()=>[]),data=await window.adminRpc('tarjas_notification_counts').catch(()=>({}));
     const role=window.currentProfile?.roles?.slug||'',isAdmin=['leader','owner','sub_leader','manager'].includes(role);
-    const [actions,farms,reviews,adminFarms,orders,washes,missions,purchases,myMissions,myWash]=await Promise.all([
-      safe('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}),safe('tarjas_farm_my_list'),
-      isAdmin?safe('tarjas_action_reviews_list'):[],isAdmin?safe('tarjas_admin_farm_review_list',{p_status:'pending'}):[],
+    const [actions,reviews,orders,washes,missions,myMissions,myWash]=await Promise.all([
+      safe('tarjas_actions_list',{p_type:'',p_date:null,p_result:''}),
+      isAdmin?safe('tarjas_action_reviews_list'):[],
       isAdmin?safe('tarjas_admin_list_orders',{p_status:'pending'}):[],isAdmin?safe('tarjas_admin_game_cash_list'):[],
-      isAdmin?safe('tarjas_admin_list_player_missions'):[],isAdmin?safe('tarjas_purchase_list'):[],
+      isAdmin?safe('tarjas_admin_list_player_missions'):[],
       safe('tarjas_mission_my_data'),safe('tarjas_game_cash_my_records')
     ]);
     const setFallback=(key,count)=>{data[key+'_pending']=Math.max(Number(data[key+'_pending']||0),Number(count||0));if(data[key+'_new']==null)data[key+'_new']=Number(count||0);};
     const arr=value=>Array.isArray(value)?value:[];
     setFallback('actions',arr(actions).filter(x=>x.result==='pending'&&!x.joined).length);
-    setFallback('farm',arr(farms).filter(x=>['assigned','accepted'].includes(x.status)).length);
     setFallback('missions',arr(myMissions?.missions).filter(x=>['assigned','active','returned'].includes(x.status)).length);
     setFallback('wash',arr(myWash).filter(x=>['approved','rejected'].includes(x.status)).length);
     const today=new Date().toISOString().slice(0,10);setFallback('deliveries',(window.encomendas||[]).filter(x=>x.tipo==='encomenda'&&x.dataEntrega===today&&x.status!=='rejected').length);
     setFallback('admin_actions',arr(reviews).filter(x=>x.status==='pending').length);
-    setFallback('admin_farm',arr(adminFarms).length);
     setFallback('admin_orders',arr(orders).length);
     setFallback('admin_wash',arr(washes).filter(x=>x.status==='pending').length);
     setFallback('admin_missions',arr(missions).filter(x=>['submitted','pending_review'].includes(x.status)).length);
-    setFallback('admin_purchases',arr(purchases).filter(x=>!x.resolved).length);
     window.__tarjasNoticeCounts=window.__tarjasNoticeCounts||{};
     Object.keys(targets).filter(key=>key!=='admin').forEach(key=>{
       const serverNew=Number(data[key+'_new']||0),raw=Math.max(serverNew,Number(data[key+'_pending']||0)),storageKey=noticeStorageKey(key),stored=localStorage.getItem(storageKey);
@@ -1883,10 +1883,11 @@ setInterval(async()=>{
     Object.keys(targets).filter(k=>k!=='admin').forEach(k=>showBadge(k,data[k+'_new']));
     const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'];
     showBadge('admin',adminKeys.reduce((n,k)=>n+Number(data[k+'_new']||0),0));
+    }finally{noticeRefreshRunning=false;}
   }
-  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem(noticeStorageKey(key),String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem(noticeStorageKey(k))||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}await refreshNotices();}
+  async function markNotice(key){const visible=Math.max(0,...elementsFor(key).map(el=>Number(String(el.querySelector(':scope > .notice-badge')?.textContent||'0').replace(/\D/g,''))||0)),current=Number(window.__tarjasNoticeCounts?.[key]||0),dismissed=Math.max(visible,current);localStorage.setItem(noticeStorageKey(key),String(dismissed));showBadge(key,0,0);const adminKeys=['admin_actions','admin_orders','admin_wash','admin_deliveries','admin_missions'],remaining=adminKeys.reduce((sum,k)=>sum+Math.max(0,Number(window.__tarjasNoticeCounts?.[k]||0)-Number(localStorage.getItem(noticeStorageKey(k))||0)),0);showBadge('admin',remaining,0);try{await window.adminRpc('tarjas_mark_notifications_read',{p_key:key});}catch(_){}}
   document.addEventListener('click',event=>{for(const key of Object.keys(targets)){if(key!=='admin'&&elementsFor(key).some(el=>el===event.target||el.contains(event.target))){markNotice(key);break;}}},true);
-  setInterval(refreshNotices,15000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
+  setInterval(refreshNotices,120000);setTimeout(refreshNotices,1200);window.refreshTarjasNotifications=refreshNotices;
 })();
 </script>
 <style>
